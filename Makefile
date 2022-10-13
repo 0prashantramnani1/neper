@@ -48,47 +48,12 @@ lib := \
 
 tcp_rr-objs := tcp_rr_main.o tcp_rr.o rr.o $(lib)
 
-tcp_stream-objs := tcp_stream_main.o tcp_stream.o stream.o $(lib)
-
-tcp_crr-objs := tcp_crr_main.o tcp_crr.o rr.o $(lib)
-
-udp_rr-objs := udp_rr_main.o udp_rr.o rr.o $(lib)
-
-udp_stream-objs := udp_stream_main.o udp_stream.o stream.o $(lib)
-
-psp_stream-objs := psp_stream_main.o psp_stream.o stream.o psp_lib.o $(lib)
-
-psp_crr-objs := psp_crr_main.o psp_crr.o rr.o psp_lib.o $(lib)
-
-psp_rr-objs := psp_rr_main.o psp_rr.o rr.o psp_lib.o $(lib)
-
 ext-libs := -lm -lrt -lpthread
 
 tcp_rr: $(tcp_rr-objs)
 	$(CC) $(LDFLAGS) -o $@ $^ $(ext-libs)
 
-tcp_stream: $(tcp_stream-objs)
-	$(CC) $(LDFLAGS) -o $@ $^ $(ext-libs)
-
-tcp_crr: $(tcp_crr-objs)
-	$(CC) $(LDFLAGS) -o $@ $^ $(ext-libs)
-
-udp_rr: $(udp_rr-objs)
-	$(CC) $(LDFLAGS) -o $@ $^ $(ext-libs)
-
-udp_stream: $(udp_stream-objs)
-	$(CC) $(LDFLAGS) -o $@ $^ $(ext-libs)
-
-psp_stream: $(psp_stream-objs)
-	$(CC) $(LDFLAGS) -o $@ $^ $(ext-libs)
-
-psp_crr: $(psp_crr-objs)
-	$(CC) $(LDFLAGS) -o $@ $^ $(ext-libs)
-
-psp_rr: $(psp_rr-objs)
-	$(CC) $(LDFLAGS) -o $@ $^ $(ext-libs)
-
-binaries: tcp_rr tcp_stream tcp_crr udp_rr udp_stream psp_stream psp_crr psp_rr
+binaries: tcp_rr 
 
 clean:
-	rm -f *.o tcp_rr tcp_stream tcp_crr udp_rr udp_stream psp_stream psp_crr psp_rr
+	rm -f *.o tcp_rr 

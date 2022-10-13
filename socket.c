@@ -19,11 +19,13 @@
 #include "socket.h"
 #include "thread.h"
 
+/*
 #ifndef NO_LIBNUMA
 #include "third_party/libnuma/numa.h"
 #include <linux/filter.h>
 #include <linux/bpf.h>
 #endif
+*/
 
 #ifndef SO_MAX_PACING_RATE
 #define SO_MAX_PACING_RATE 47

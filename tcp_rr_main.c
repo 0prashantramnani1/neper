@@ -21,6 +21,12 @@
 #include "define_all_flags.h"
 #include "check_all_options.h"
 
+//CALADAN
+#include <base/log.h>
+#include <runtime/runtime.h>
+#include <runtime/timer.h>
+
+
 int main(int argc, char **argv)
 {
         struct options opts = {.secret = "neper tcp_rr 201703241250"};
@@ -59,7 +65,15 @@ int main(int argc, char **argv)
         }
 
         /* Run the actual test */
-        exit_code = tcp_rr(&opts, &cb);
+	struct arg_struct arg;
+	arg.opts = &opts;
+	arg.cb   = &cb;
+
+	thread_fn_t fn;
+	fn = tcp_rr;
+	char *config = "server.config";
+	exit_code = runtime_init(config, fn, &arg);
+        //exit_code = tcp_rr(&opts, &cb);
 exit:
         logging_exit(&cb);
         return exit_code;

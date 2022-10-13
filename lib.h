@@ -124,6 +124,11 @@ struct options {
         bool nostats;
 };
 
+struct arg_struct {
+        struct options *opts;
+        struct callbacks *cb;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -131,7 +136,8 @@ extern "C" {
 int tcp_stream(struct options *, struct callbacks *);
 int psp_stream(struct options *, struct callbacks *);
 int udp_stream(struct options *, struct callbacks *);
-int tcp_rr(struct options *, struct callbacks *);
+//int tcp_rr(struct options *, struct callbacks *);
+int tcp_rr(struct arg_struct *);
 int udp_rr(struct options *, struct callbacks *);
 int psp_rr(struct options *, struct callbacks *);
 int tcp_crr(struct options *, struct callbacks *);

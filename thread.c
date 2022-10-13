@@ -36,6 +36,17 @@
 #include <libnuma/numaint.h>
 #endif
 
+#include <stdio.h>
+#include <string.h>
+#include <limits.h>
+
+#include <base/stddef.h>
+#include <base/time.h>
+#include <net/ip.h>
+#include <runtime/runtime.h>
+#include <runtime/sync.h>
+#include <runtime/tcp.h>
+
 // max value = 1.0025^8192 = 764278329
 // If TIME_RESOLUTION is 0.01 us, max latency in histogram = 7.642783298s
 #define NEPER_HISTO_SIZE   8192  /* # of buckets in the histogram */
@@ -511,22 +522,31 @@ static void free_worker_threads(int num_threads, struct thread *t)
 int run_main_thread(struct options *opts, struct callbacks *cb,
                     const struct neper_fn *fn)
 {
+	printf("IN run_main_thread \n");
         void *(*thread_func)(void *) = (void *)loop;
-        pthread_barrier_t ready_barrier; /* shared by threads */
 
-        struct timespec time_start = {0}; /* shared by flows */
-        pthread_mutex_t time_start_mutex = PTHREAD_MUTEX_INITIALIZER;
+	barrier_t ready_barrier;
+	barrier_init(&ready_barrier, 1);
+	if(!barrier_wait(&ready_barrier)) {
+		printf("Not all threads started \n");
+	}
 
-        struct rusage rusage_start; /* updated when first packet comes */
-        struct rusage rusage_end; /* local to this function, never pass out */
+        //pthread_barrier_t ready_barrier; /* shared by threads */
 
-        struct addrinfo *ai;
-        struct thread *ts; /* worker threads */
-        struct control_plane *cp;
+        //struct timespec time_start = {0}; /* shared by flows */
+        //pthread_mutex_t time_start_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-        struct countdown_cond *data_pending;
+        //struct rusage rusage_start; /* updated when first packet comes */
+        //struct rusage rusage_end; /* local to this function, never pass out */
+
+        //struct addrinfo *ai;
+        //struct thread *ts; /* worker threads */
+        //struct control_plane *cp;
+
+        //struct countdown_cond *data_pending;
 
         /* Set the options used for capturing cpu usage */
+	/*
         if (opts->stime_use_proc)
                 set_getrusage_enhanced(opts->stime_use_proc, opts->num_threads);
 
@@ -552,36 +572,41 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         if (opts->pin_numa && numa_available() == -1)
                 PLOG_FATAL(cb, "libnuma not available");
 #endif
-
-        cp = control_plane_create(opts, cb, data_pending, fn);
-        control_plane_start(cp, &ai);
+*/
+        //cp = control_plane_create(opts, cb, data_pending, fn);
+        //control_plane_start(cp, &ai);
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
-        reset_port(ai, atoi(opts->port), cb);
-        ts = calloc(opts->num_threads, sizeof(struct thread));
+        //reset_port(ai, atoi(opts->port), cb);
+        //ts = calloc(opts->num_threads, sizeof(struct thread));
+	/*
         start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
                              &time_start, &time_start_mutex, &rusage_start, ai,
                              data_pending, &loop_init_c,
                              &loop_init_m, &loop_inited);
-        free(ai);
+			     */
+        //free(ai);
         LOG_INFO(cb, "started worker threads");
+	printf("WORKING 1 \n");
 
         /* rusage_start is now exposed to other threads  */
-        pthread_mutex_lock(&time_start_mutex);
-        getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
-        pthread_mutex_unlock(&time_start_mutex);
-        control_plane_wait_until_done(cp);
-        getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
+        //pthread_mutex_lock(&time_start_mutex);
+        //getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
+        //pthread_mutex_unlock(&time_start_mutex);
+        //control_plane_wait_until_done(cp);
+        //getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
 
-        stop_worker_threads(cb, opts->num_threads, ts, &ready_barrier,
-                            &loop_init_c, &loop_init_m);
+        //stop_worker_threads(cb, opts->num_threads, ts, &ready_barrier,
+        //                    &loop_init_c, &loop_init_m);
         LOG_INFO(cb, "stopped worker threads");
 
-        PRINT(cb, "invalid_secret_count", "%d", control_plane_incidents(cp));
-
+        //PRINT(cb, "invalid_secret_count", "%d", control_plane_incidents(cp));
+	
+	
         /* rusage_start and time_start were (are?) visible to other threads */
-        pthread_mutex_lock(&time_start_mutex);
+        //pthread_mutex_lock(&time_start_mutex);
         /* begin printing rusage */
+	/*
         PRINT(cb, "time_start", "%ld.%09ld", time_start.tv_sec,
               time_start.tv_nsec);
         PRINT(cb, "utime_start", "%ld.%06ld", rusage_start.ru_utime.tv_sec,
@@ -602,16 +627,19 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         PRINT(cb, "nvcsw_end", "%ld", rusage_end.ru_nvcsw);
         PRINT(cb, "nivcsw_start", "%ld", rusage_start.ru_nivcsw);
         PRINT(cb, "nivcsw_end", "%ld", rusage_end.ru_nivcsw);
-        pthread_mutex_unlock(&time_start_mutex);
+	*/
+        //pthread_mutex_unlock(&time_start_mutex);
         /* end printing rusage */
 
-        int ret = fn->fn_report(ts);
-        control_plane_stop(cp);
-        control_plane_destroy(cp);
+        //int ret = fn->fn_report(ts);
+	int ret = 0;
+	printf("WORKING 2 \n");
+        //control_plane_stop(cp);
+        //control_plane_destroy(cp);
         PRINT(cb, "local_throughput", "%lld", opts->local_rate);
         PRINT(cb, "remote_throughput", "%lld", opts->remote_rate);
 
-        free_worker_threads(opts->num_threads, ts);
-        free(data_pending);
+        //free_worker_threads(opts->num_threads, ts);
+        //free(data_pending);
         return ret;
 }
