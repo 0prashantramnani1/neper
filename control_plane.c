@@ -26,6 +26,9 @@
 #include "lib.h"
 #include "logging.h"
 
+#include <runtime/tcp.h>
+
+
 /*
  * Client and server exchange typed (struct hs_msg) on the control
  * connection to synchronize and pass parameters and results.
@@ -191,8 +194,9 @@ static int ctrl_connect(const char *host, const char *port,
 
 static int ctrl_listen(const char *host, const char *port,
                        struct addrinfo **ai, struct options *opts,
-                       struct callbacks *cb)
+                       struct callbacks *cb, tcpqueue_t* control_plane_q)
 {
+	/*
         struct addrinfo *result, *rp;
         int fd_listen = 0;
 
@@ -226,6 +230,16 @@ static int ctrl_listen(const char *host, const char *port,
         if (listen(fd_listen, opts->listen_backlog))
                 PLOG_FATAL(cb, "listen");
         return fd_listen;
+	*/
+
+	struct netaddr laddr;
+	laddr.ip = 0;
+	laddr.port = (uint16_t)atoi(port);	
+	int ret = tcp_listen(laddr, 4096, &control_plane_q);
+	if(ret == 0) {
+		printf("Control plane listen success \n");
+	}
+	return ret;
 }
 
 static int ctrl_accept(int ctrl_port, int *num_incidents, struct callbacks *cb,
@@ -346,7 +360,7 @@ struct control_plane* control_plane_create(struct options *opts,
         return cp;
 }
 
-void control_plane_start(struct control_plane *cp, struct addrinfo **ai)
+void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueue_t *control_plane_q)
 {
         if (cp->opts->client) {
                 cp->ctrl_conn = ctrl_connect(cp->opts->host,
@@ -359,7 +373,7 @@ void control_plane_start(struct control_plane *cp, struct addrinfo **ai)
         } else {
                 cp->ctrl_port = ctrl_listen(cp->opts->host,
                                             cp->opts->control_port, ai,
-                                            cp->opts, cp->cb);
+                                            cp->opts, cp->cb, control_plane_q);
                 LOG_INFO(cp->cb, "opened control port");
                 if (cp-> fn->fn_ctrl_server) {
                         cp->fn->fn_ctrl_server(cp->ctrl_conn, cp->cb);

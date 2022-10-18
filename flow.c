@@ -145,7 +145,7 @@ void flow_create(const struct flow_create_args *args)
 /* Returns true if the deadline for the flow has expired.
  * Takes into account the rounding of the timer.
  */
-static const int ONE_MS = 1000000;
+//static const int ONE_MS = 1000000;
 static int deadline_expired(const struct flow *f)
 {
         return (f->f_thread->rl.now + ONE_MS/2 >= f->f_next_event);

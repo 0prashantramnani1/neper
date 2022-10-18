@@ -22,6 +22,9 @@
 
 #include "lib.h"
 
+#include <runtime/runtime.h>
+#include <runtime/sync.h>
+
 struct addrinfo;
 struct neper_fn;
 struct neper_histo_factory;
@@ -103,6 +106,42 @@ struct thread {
         struct flow **flows;  /* indexed by flow_id(flow) */
         int flow_space;  /* space allocated in *flows */
 };
+
+struct thread_tt {
+        int index;
+        //pthread_t id;
+        //int epfd;                     /* The fd used by this thread for epoll */
+        //int stop_efd;
+        //int ai_socktype;              /* supplied by the application */
+        const struct neper_fn *fn;    /* supplied by the application */
+        //struct addrinfo *ai;
+        //uint64_t transactions;
+        const struct options *opts;
+        struct callbacks *cb;
+        //struct addrinfo **local_hosts;
+        //int num_local_hosts;
+        //int flow_first;               /* global index of thread's first flow */
+        //int flow_limit;               /* number of flows to create on thread */
+        //int flow_count;               /* number of flows created on thread */
+        //int percentiles;              /* number of requested percentiles */
+        //int stop;
+        //void *f_mbuf;                 /* replaces per-flow buffers */
+        barrier_t *ready;
+        mutex_t *loop_init_m;
+        condvar_t *loop_init_c;
+        int *loop_inited;
+        struct timespec *time_start;
+        mutex_t *time_start_mutex;
+        //struct rusage *rusage_start;
+        //struct neper_histo_factory *histo_factory;
+        //struct neper_stats *stats;
+        //struct neper_rusage *rusage;
+        struct countdown_cond *data_pending;
+        //struct rate_limit rl;
+        //struct flow **flows;  /* indexed by flow_id(flow) */
+        //int flow_space;  /* space allocated in *flows */
+};
+
 
 int thread_stats_events(const struct thread *);
 int thread_stats_snaps(const struct thread *);

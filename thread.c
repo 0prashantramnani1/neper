@@ -40,12 +40,8 @@
 #include <string.h>
 #include <limits.h>
 
-#include <base/stddef.h>
-#include <base/time.h>
-#include <net/ip.h>
-#include <runtime/runtime.h>
-#include <runtime/sync.h>
-#include <runtime/tcp.h>
+//#include <runtime/runtime.h>
+//#include <runtime/sync.h>
 
 // max value = 1.0025^8192 = 764278329
 // If TIME_RESOLUTION is 0.01 us, max latency in histogram = 7.642783298s
@@ -348,9 +344,9 @@ static void get_numa_allowed_cpus(struct callbacks *cb, int numa_idx,
 #endif
 
 void start_worker_threads(struct options *opts, struct callbacks *cb,
-                          struct thread *t, void *(*thread_func)(void *),
+                          struct thread_tt *t, void *(*thread_func)(void *),
                           const struct neper_fn *fn,
-                          pthread_barrier_t *ready, struct timespec *time_start,
+                          barrier_t *ready, struct timespec *time_start,
                           pthread_mutex_t *time_start_mutex,
                           struct rusage *rusage_start, struct addrinfo *ai,
                           struct countdown_cond *data_pending,
@@ -358,71 +354,80 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                           pthread_mutex_t *loop_init_m,
                           int *loop_inited)
 {
-        cpu_set_t *cpuset;
-        pthread_attr_t attr;
+	printf("IN start_worker_threads \n");
+
+	
+        //cpu_set_t *cpuset;
+        //pthread_attr_t attr;
         int s, i, allowed_cores;
 
-        cpuset = calloc(CPU_SETSIZE, sizeof(cpu_set_t));
-        if (!cpuset)
-                PLOG_FATAL(cb, "calloc cpuset");
-        s = pthread_barrier_init(ready, NULL, opts->num_threads + 1);
-        if (s != 0)
-                LOG_FATAL(cb, "pthread_barrier_init: %s", strerror(s));
+        //cpuset = calloc(CPU_SETSIZE, sizeof(cpu_set_t));
+        //if (!cpuset)
+        //        PLOG_FATAL(cb, "calloc cpuset");
+        //s = pthread_barrier_init(ready, NULL, opts->num_threads + 1);
 
-        s = pthread_attr_init(&attr);
-        if (s != 0)
-                LOG_FATAL(cb, "pthread_attr_init: %s", strerror(s));
+	barrier_init(ready, 1);
+	printf("1.s \n");
+        //if (s != 0)
+        //        LOG_FATAL(cb, "pthread_barrier_init: %s", strerror(s));
 
-        allowed_cores = get_cpuset(cpuset, cb);
-        LOG_INFO(cb, "Number of allowed_cores = %d", allowed_cores);
+        //s = pthread_attr_init(&attr);
+        //if (s != 0)
+        //        LOG_FATAL(cb, "pthread_attr_init: %s", strerror(s));
+
+        //allowed_cores = get_cpuset(cpuset, cb);
+        //LOG_INFO(cb, "Number of allowed_cores = %d", allowed_cores);
 
         int percentiles = percentiles_count(&opts->percentiles);
 
         for (i = 0; i < opts->num_threads; i++) {
                 t[i].index = i;
                 t[i].fn = fn;
-                t[i].ai_socktype = fn->fn_type;
-                t[i].ai = copy_addrinfo(ai);
-                t[i].epfd = epoll_create1_or_die(cb);
-                t[i].stop_efd = eventfd(0, 0);
-                if (t[i].stop_efd == -1)
-                        PLOG_FATAL(cb, "eventfd");
+                //t[i].ai_socktype = fn->fn_type;
+                //t[i].ai = copy_addrinfo(ai);
+                //t[i].epfd = epoll_create1_or_die(cb);
+                //t[i].stop_efd = eventfd(0, 0);
+                //if (t[i].stop_efd == -1)
+                //        PLOG_FATAL(cb, "eventfd");
                 t[i].opts = opts;
                 t[i].cb = cb;
-                t[i].num_local_hosts = count_local_hosts(opts);
-                t[i].flow_first = first_flow_in_thread(&t[i]);
-                t[i].flow_limit = flows_in_thread(&t[i]);
-                t[i].flow_count = 0;
-                t[i].percentiles = percentiles;
-                t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
-                                                     cb);
+                //t[i].num_local_hosts = count_local_hosts(opts);
+                //t[i].flow_first = first_flow_in_thread(&t[i]);
+                //t[i].flow_limit = flows_in_thread(&t[i]);
+                //t[i].flow_count = 0;
+                //t[i].percentiles = percentiles;
+                //t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
+                //                                     cb);
                 t[i].ready = ready;
                 t[i].time_start = time_start;
                 t[i].time_start_mutex = time_start_mutex;
-                t[i].rusage_start = rusage_start;
-                t[i].stats = neper_stats_init(cb);
-                t[i].rusage = neper_rusage(opts->interval);
-                t[i].data_pending = data_pending;
-                t[i].histo_factory = neper_histo_factory(&t[i],
-                                                         NEPER_HISTO_SIZE,
-                                                         NEPER_HISTO_GROWTH);
+                //t[i].rusage_start = rusage_start;
+               // t[i].stats = neper_stats_init(cb);
+                //t[i].rusage = neper_rusage(opts->interval);
+                //t[i].data_pending = data_pending;
+                //t[i].histo_factory = neper_histo_factory(&t[i],
+                //                                         NEPER_HISTO_SIZE,
+                //                                         NEPER_HISTO_GROWTH);
                 t[i].loop_inited = loop_inited;
                 t[i].loop_init_c = loop_init_c;
                 t[i].loop_init_m = loop_init_m;
 
 
-                t[i].flows = NULL;
-                t[i].flow_space = 0;
+                //t[i].flows = NULL;
+                //t[i].flow_space = 0;
+		
                 /* support for rate limited flows */
-                t[i].rl.pending_flows = calloc_or_die(t[i].flow_limit,
-                                              sizeof(struct flow *), t->cb);
-                t[i].rl.pending_count = 0;
-                t[i].rl.next_event = ~0ULL;
+	
+                //t[i].rl.pending_flows = calloc_or_die(t[i].flow_limit,
+                //                              sizeof(struct flow *), t->cb);
+                //t[i].rl.pending_count = 0;
+                //t[i].rl.next_event = ~0ULL;
 
-                s = pthread_create(&t[i].id, &attr, thread_func, &t[i]);
-                if (s != 0)
-                        LOG_FATAL(cb, "pthread_create: %s", strerror(s));
-
+                //s = pthread_create(&t[i].id, &attr, thread_func, &t[i]);
+                //if (s != 0)
+                //        LOG_FATAL(cb, "pthread_create: %s", strerror(s));
+		
+		/*
                 if (opts->pin_cpu) {
                         s = pthread_setaffinity_np(t[i].id,
                                                 sizeof(cpu_set_t),
@@ -449,15 +454,18 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
 
                 }
 #endif
+	*/
         }
+	
 
-        s = pthread_attr_destroy(&attr);
-        if (s != 0)
-                LOG_FATAL(cb, "pthread_attr_destroy: %s", strerror(s));
-        free(cpuset);
+        //s = pthread_attr_destroy(&attr);
+        //if (s != 0)
+        //        LOG_FATAL(cb, "pthread_attr_destroy: %s", strerror(s));
+        //free(cpuset);
 
-        pthread_barrier_wait(ready);
-        LOG_INFO(cb, "worker threads are ready");
+        barrier_wait(ready);
+        //LOG_INFO(cb, "worker threads are ready");
+	
 }
 
 void stop_worker_threads(struct callbacks *cb, int num_threads,
@@ -526,24 +534,28 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         void *(*thread_func)(void *) = (void *)loop;
 
 	barrier_t ready_barrier;
-	barrier_init(&ready_barrier, 1);
-	if(!barrier_wait(&ready_barrier)) {
-		printf("Not all threads started \n");
-	}
+	//if(!barrier_wait(&ready_barrier)) {
+//		printf("Not all threads started \n");
+//	}
 
+	tcpqueue_t *control_plane_q;
+	printf("0\n");
         //pthread_barrier_t ready_barrier; /* shared by threads */
 
-        //struct timespec time_start = {0}; /* shared by flows */
+        struct timespec time_start = {0}; /* shared by flows */
+	mutex_t time_start_mutex;
+	mutex_init(&time_start_mutex);
+
         //pthread_mutex_t time_start_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-        //struct rusage rusage_start; /* updated when first packet comes */
+        struct rusage rusage_start; /* updated when first packet comes */
         //struct rusage rusage_end; /* local to this function, never pass out */
 
-        //struct addrinfo *ai;
-        //struct thread *ts; /* worker threads */
-        //struct control_plane *cp;
-
-        //struct countdown_cond *data_pending;
+        struct addrinfo *ai;
+        struct thread_tt *ts; /* worker threads */
+        struct control_plane *cp;
+	printf("0.5\n");
+        struct countdown_cond *data_pending;
 
         /* Set the options used for capturing cpu usage */
 	/*
@@ -555,6 +567,14 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         pthread_cond_t loop_init_c = PTHREAD_COND_INITIALIZER;
         pthread_mutex_t loop_init_m = PTHREAD_MUTEX_INITIALIZER;
+	*/
+
+	condvar_t loop_init_c;
+	condvar_init(&loop_init_c);
+
+	mutex_t loop_init_m;
+	mutex_init(&loop_init_m);
+
         int loop_inited = 0;
 
         if (opts->test_length > 0) {
@@ -565,6 +585,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
                 data_pending = calloc(1, sizeof(*data_pending));
                 countdown_cond_init(data_pending, -(opts->test_length));
         }
+	/*
         if (opts->dry_run)
                 return 0;
 
@@ -573,19 +594,20 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
                 PLOG_FATAL(cb, "libnuma not available");
 #endif
 */
-        //cp = control_plane_create(opts, cb, data_pending, fn);
-        //control_plane_start(cp, &ai);
+	printf("1 \n");
+        cp = control_plane_create(opts, cb, data_pending, fn);
+        control_plane_start(cp, &ai, control_plane_q);
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         //reset_port(ai, atoi(opts->port), cb);
-        //ts = calloc(opts->num_threads, sizeof(struct thread));
-	/*
+        ts = calloc(opts->num_threads, sizeof(struct thread_tt));
+	printf("2\n");
         start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
                              &time_start, &time_start_mutex, &rusage_start, ai,
                              data_pending, &loop_init_c,
                              &loop_init_m, &loop_inited);
-			     */
-        //free(ai);
+			     
+        free(ai);
         LOG_INFO(cb, "started worker threads");
 	printf("WORKING 1 \n");
 
