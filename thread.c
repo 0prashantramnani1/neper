@@ -366,7 +366,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         //        PLOG_FATAL(cb, "calloc cpuset");
         //s = pthread_barrier_init(ready, NULL, opts->num_threads + 1);
 
-	barrier_init(ready, 1);
+	barrier_init(ready, 2);
 	printf("1.s \n");
         //if (s != 0)
         //        LOG_FATAL(cb, "pthread_barrier_init: %s", strerror(s));
@@ -424,6 +424,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //t[i].rl.next_event = ~0ULL;
 
                 //s = pthread_create(&t[i].id, &attr, thread_func, &t[i]);
+		s = thread_spawn(thread_func, &t[i]);
                 //if (s != 0)
                 //        LOG_FATAL(cb, "pthread_create: %s", strerror(s));
 		
