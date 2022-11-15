@@ -299,39 +299,46 @@ static int ctrl_listen(const char *host, const char *port,
 }
 
 static int ctrl_accept(int ctrl_port, int *num_incidents, struct callbacks *cb,
-                       struct options *opts)
+                       struct options *opts, tcpqueue_t *ctrl_queue)
 {
+        // TODO: check for exit conditions
+        
         char dump[8192], host[NI_MAXHOST], port[NI_MAXSERV];
-        struct sockaddr_storage cli_addr;
-        socklen_t cli_len;
-        int ctrl_conn, s;
+        // struct sockaddr_storage cli_addr;
+        // socklen_t cli_len;
+        int ctrl_conn = -11, s;
+
+        //CALADAN
+        tcpconn_t *ctrl_conn_caladan;
+        int ret;
+        
         ssize_t len;
         struct hs_msg msg = {};
 
 retry:
-        cli_len = sizeof(cli_addr);
-        while ((ctrl_conn = accept(ctrl_port, (struct sockaddr *)&cli_addr,
-                                   &cli_len)) == -1) {
-                if (errno == EINTR || errno == ECONNABORTED)
-                        continue;
+        // cli_len = sizeof(cli_addr);
+        while ((ret = tcp_accept(ctrl_queue, &ctrl_conn_caladan)) != 0) {
+                // if (errno == EINTR || errno == ECONNABORTED)
+                //         continue;
                 PLOG_FATAL(cb, "accept");
         }
-        s = getnameinfo((struct sockaddr *)&cli_addr, cli_len,
-                        host, sizeof(host), port, sizeof(port),
-                        NI_NUMERICHOST | NI_NUMERICSERV);
-        if (s) {
-                LOG_ERROR(cb, "getnameinfo: %s", gai_strerror(s));
-                strcpy(host, "(unknown)");
-                strcpy(port, "(unknown)");
-        }
+        // s = getnameinfo((struct sockaddr *)&cli_addr, cli_len,
+        //                 host, sizeof(host), port, sizeof(port),
+        //                 NI_NUMERICHOST | NI_NUMERICSERV);
+        // if (s) {
+        //         LOG_ERROR(cb, "getnameinfo: %s", gai_strerror(s));
+        //         strcpy(host, "(unknown)");
+        //         strcpy(port, "(unknown)");
+        // }
         memset(&msg, 0, sizeof(msg));
         LOG_INFO(cb, "+++ SER <-- CLI ? CLI_HELLO");
-        while ((len = read(ctrl_conn, &msg, sizeof(msg))) == -1) {
-                if (errno == EINTR)
-                        continue;
+        while ((len = tcp_read(ctrl_conn_caladan, &msg, sizeof(msg))) <= 0) {
+                // if (errno == EINTR)
+                //         continue;
                 PLOG_ERROR(cb, "read");
-                do_close(ctrl_conn);
-                goto retry;
+                exit(-1);
+                // do_close(ctrl_conn);
+                // goto retry;
         }
         if (memcmp(msg.secret, opts->secret, sizeof(msg.secret)) != 0 ||
             ntohl(msg.type) != CLI_HELLO) {
@@ -342,8 +349,9 @@ retry:
                                  port, dump);
                 } else
                         LOG_WARN(cb, "Invalid secret from %s:%s", host, port);
-                do_close(ctrl_conn);
-                goto retry;
+                exit(-1);        
+                // do_close(ctrl_conn);
+                // goto retry;
         }
         LOG_INFO(cb, "+++ SER <-- CLI   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
@@ -359,7 +367,9 @@ retry:
         LOG_INFO(cb, "+++ SER --> CLI   SER_ACK -T %d -F %d -l %d",
                         ntohl(msg.num_threads), ntohl(msg.num_flows),
                         ntohl(msg.test_length));
-        send_msg(ctrl_conn, &msg, cb, __func__);
+        // send_msg(ctrl_conn, &msg, cb, __func__);
+        send_msg_caladan(ctrl_conn_caladan, &msg, cb, __func__);
+
         LOG_INFO(cb, "Control connection established with %s:%s", host, port);
         return ctrl_conn;
 }
@@ -399,6 +409,7 @@ struct control_plane {
         struct countdown_cond *data_pending;
         const struct neper_fn *fn;
         int *client_fds;
+        tcpqueue_t *ctrl_queue;
 };
 
 struct control_plane* control_plane_create(struct options *opts,
@@ -433,6 +444,8 @@ void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueu
                 cp->ctrl_port = ctrl_listen(cp->opts->host,
                                             cp->opts->control_port, ai,
                                             cp->opts, cp->cb, control_plane_q);
+                // TODO: Refactor                                            
+                cp->ctrl_queue = control_plane_q;                                            
                 LOG_INFO(cp->cb, "opened control port");
                 if (cp-> fn->fn_ctrl_server) {
                         cp->fn->fn_ctrl_server(cp->ctrl_conn, cp->cb);
@@ -465,32 +478,44 @@ void control_plane_wait_until_done(struct control_plane *cp)
                         LOG_INFO(cp->cb, "finished data wait");
                 }
         } else {
+                // TODO: Multi-Client support
                 const int n = cp->opts->num_clients;
                 int* client_fds = calloc(n, sizeof(int));
                 int i;
 
+                tcpconn_t **client_caladan;
+                client_caladan = calloc(n, sizeof(tcpconn_t *));
+
+                // TODO: Refactor
                 if (!client_fds)
                         PLOG_FATAL(cp->cb, "calloc client_fds");
+
+                if (!client_caladan)
+                        PLOG_FATAL(cp->cb, "calloc client_caladan");          
+
                 cp->client_fds = client_fds;
 
                 LOG_INFO(cp->cb, "expecting %d clients", n);
                 for (i = 0; i < n; i++) {
                         client_fds[i] = ctrl_accept(cp->ctrl_port,
                                                     &cp->num_incidents, cp->cb,
-                                                    cp->opts);
+                                                    cp->opts, cp->ctrl_queue);
                         LOG_INFO(cp->cb, "client %d connected", i);
                 }
-                do_close(cp->ctrl_port);  /* disallow further connections */
-                if (cp->opts->nonblocking) {
-                        for (i = 0; i < n; i++)
-                                set_nonblocking(client_fds[i], cp->cb);
-                }
-                LOG_INFO(cp->cb, "expecting %d notifications", n);
-                for (i = 0; i < n; i++) {
-                        ctrl_wait_client(client_fds[i], (struct options *)cp->opts,
-                                         cp->cb);
-                        LOG_INFO(cp->cb, "received notification %d", i);
-                }
+                // do_close(cp->ctrl_port);  /* disallow further connections */
+                tcp_qclose(cp->ctrl_queue);
+
+                //TODO:Post Data transfer control plane
+                // if (cp->opts->nonblocking) {
+                //         for (i = 0; i < n; i++)
+                //                 set_nonblocking(client_fds[i], cp->cb);
+                // }
+                // LOG_INFO(cp->cb, "expecting %d notifications", n);
+                // for (i = 0; i < n; i++) {
+                //         ctrl_wait_client(client_fds[i], (struct options *)cp->opts,
+                //                          cp->cb);
+                //         LOG_INFO(cp->cb, "received notification %d", i);
+                // }
         }
 }
 

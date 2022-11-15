@@ -607,12 +607,14 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         LOG_INFO(cb, "started worker threads");
         
         return 0;
-////////////////////////////////////////////////////////////////////////
         /* rusage_start is now exposed to other threads  */
         //pthread_mutex_lock(&time_start_mutex);
         //getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
         //pthread_mutex_unlock(&time_start_mutex);
-        //control_plane_wait_until_done(cp);
+        control_plane_wait_until_done(cp);
+
+////////////////////////////////////////////////////////////////////////
+
         //getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
 
         //stop_worker_threads(cb, opts->num_threads, ts, &ready_barrier,
