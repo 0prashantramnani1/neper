@@ -37,7 +37,7 @@ static void handler_stop(struct flow *f, uint32_t events)
  * functions and then processes events until the thread is marked as stopped.
  */
 
-void *loop(struct thread_tt *t)
+void *loop(struct thread_neper *t)
 {
 	printf("In main LOOP \n");
         //const struct options *opts = t->opts;

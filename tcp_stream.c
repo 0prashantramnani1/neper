@@ -33,8 +33,13 @@ static const struct neper_fn server_fn = {
         .fn_type      = SOCK_STREAM
 };
 
-int tcp_stream(struct options *opts, struct callbacks *cb)
+// int tcp_stream(struct options *opts, struct callbacks *cb)
+//Caladan
+int tcp_stream(struct arg_struct *arg)
 {
+        struct options *opts = arg->opts;
+	struct callbacks *cb = arg->cb;
+        
         const struct neper_fn *fn = opts->client ? &client_fn : &server_fn;
         return run_main_thread(opts, cb, fn);
 }

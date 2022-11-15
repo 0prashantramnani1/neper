@@ -26,7 +26,9 @@
 #include "lib.h"
 #include "logging.h"
 
+// CALADAN
 #include <runtime/tcp.h>
+#include <net/ip.h>
 
 
 /*
@@ -93,6 +95,23 @@ static void send_msg(int fd, struct hs_msg *msg, struct callbacks *cb,
                 LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
 }
 
+// CALADAN
+static void send_msg_caladan(tcpconn_t *c, struct hs_msg *msg, struct callbacks *cb,
+                     const char *fn)
+{
+        int n;
+
+        // while ((n = write(fd, msg, sizeof(*msg))) == -1) {
+        while (n = tcp_write(c, msg, sizeof(*msg)) == -1) {                
+                if (errno == EINTR || errno == EAGAIN)
+                        continue;
+                PLOG_FATAL(cb, "%s: write", fn);
+        }
+        if (n != sizeof(*msg))
+                LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
+}
+//
+
 static int try_connect(int s, const struct sockaddr *addr, socklen_t addr_len)
 {
         for (;;) {
@@ -158,6 +177,19 @@ retry:
         return sfd;
 }
 
+// CALADAN
+// TODO: Move to a better location
+static int str_to_ip(const char *str, uint32_t *addr)
+{
+	uint8_t a, b, c, d;
+	if(sscanf(str, "%hhu.%hhu.%hhu.%hhu", &a, &b, &c, &d) != 4) {
+		return -EINVAL;
+	}
+
+	*addr = MAKE_IP_ADDR(a, b, c, d);
+	return 0;
+}
+
 static int ctrl_connect(const char *host, const char *port,
                         struct addrinfo **ai, struct options *opts,
                         struct callbacks *cb)
@@ -165,10 +197,11 @@ static int ctrl_connect(const char *host, const char *port,
         int ctrl_conn, optval = 1;
         struct hs_msg msg = {};
 
-        ctrl_conn = connect_any(host, port, ai, opts, cb);
-        if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
-                       sizeof(optval)))
-                PLOG_ERROR(cb, "setsockopt(TCP_NODELAY)");
+        // ctrl_conn = connect_any(host, port, ai, opts, cb);
+        // if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
+        //                sizeof(optval)))
+        //         PLOG_ERROR(cb, "setsockopt(TCP_NODELAY)");
+        
         msg = (struct hs_msg){ .magic = htonl(opts->magic),
                 .type = htonl(CLI_HELLO),
                 .num_threads = htonl(opts->num_threads),
@@ -176,11 +209,29 @@ static int ctrl_connect(const char *host, const char *port,
                 .test_length = htonl(opts->test_length),
                 .max_pacing_rate = htobe64(opts->max_pacing_rate),
         };
+
+        // CALADAN
+        static struct netaddr raddr, laddr;
+        uint32_t addr;
+        int ret = str_to_ip(host, &addr);
+
+        laddr.ip = 0;
+	laddr.port = 0;
+
+        raddr.ip = addr;
+        raddr.port = (uint16_t)atoi(port);
+
+        tcpconn_t *c;
+        ret = tcp_dial(laddr, raddr, &c);
+        //
+
         memcpy(msg.secret, opts->secret, sizeof(msg.secret));
         LOG_INFO(cb, "+++ CLI --> SER   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
-        send_msg(ctrl_conn, &msg, cb, __func__);
+        send_msg_caladan(ctrl_conn, &msg, cb, __func__);
+
+        return ctrl_conn; // REMOVE
 
         /* Wait for the server to respond */
         msg.type = htonl(SER_ACK);
@@ -192,6 +243,11 @@ static int ctrl_connect(const char *host, const char *port,
         return ctrl_conn;
 }
 
+// static int ctrl_listen(const char *host, const char *port,
+//                        struct addrinfo **ai, struct options *opts,
+//                        struct callbacks *cb)
+
+// CALADAN
 static int ctrl_listen(const char *host, const char *port,
                        struct addrinfo **ai, struct options *opts,
                        struct callbacks *cb, tcpqueue_t* control_plane_q)
@@ -236,8 +292,8 @@ static int ctrl_listen(const char *host, const char *port,
 	laddr.ip = 0;
 	laddr.port = (uint16_t)atoi(port);	
 	int ret = tcp_listen(laddr, 4096, &control_plane_q);
-	if(ret == 0) {
-		printf("Control plane listen success \n");
+	if(ret != 0) {
+		LOG_ERROR(cb, "Server listen on control_port failed! \n");
 	}
 	return ret;
 }
@@ -360,6 +416,9 @@ struct control_plane* control_plane_create(struct options *opts,
         return cp;
 }
 
+// void control_plane_start(struct control_plane *cp, struct addrinfo **ai)
+
+// CALADAN
 void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueue_t *control_plane_q)
 {
         if (cp->opts->client) {

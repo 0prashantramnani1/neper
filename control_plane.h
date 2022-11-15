@@ -30,10 +30,14 @@ struct control_plane* control_plane_create(struct options *opts,
                                            struct callbacks *cb,
                                            struct countdown_cond *data_pending,
                                            const struct neper_fn *fn);
-void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueue_t *control_plane_q);
+// void control_plane_start(struct control_plane *cp, struct addrinfo **ai);                                        
 void control_plane_wait_until_done(struct control_plane *cp);
 void control_plane_stop(struct control_plane *cp);
 int control_plane_incidents(struct control_plane *cp);
 void control_plane_destroy(struct control_plane *cp);
+
+// CALADAN
+void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueue_t *control_plane_q);
+
 
 #endif

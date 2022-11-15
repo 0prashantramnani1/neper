@@ -344,7 +344,7 @@ static void get_numa_allowed_cpus(struct callbacks *cb, int numa_idx,
 #endif
 
 void start_worker_threads(struct options *opts, struct callbacks *cb,
-                          struct thread_tt *t, void *(*thread_func)(void *),
+                          struct thread_neper *t, void *(*thread_func)(void *),
                           const struct neper_fn *fn,
                           barrier_t *ready, struct timespec *time_start,
                           pthread_mutex_t *time_start_mutex,
@@ -531,31 +531,29 @@ static void free_worker_threads(int num_threads, struct thread *t)
 int run_main_thread(struct options *opts, struct callbacks *cb,
                     const struct neper_fn *fn)
 {
-	printf("IN run_main_thread \n");
         void *(*thread_func)(void *) = (void *)loop;
-
-	barrier_t ready_barrier;
-	//if(!barrier_wait(&ready_barrier)) {
-//		printf("Not all threads started \n");
-//	}
-
-	tcpqueue_t *control_plane_q;
-	printf("0\n");
         //pthread_barrier_t ready_barrier; /* shared by threads */
 
+        //CALADAN
+	barrier_t ready_barrier;
+	tcpqueue_t *control_plane_q;
+        
         struct timespec time_start = {0}; /* shared by flows */
+        //pthread_mutex_t time_start_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+        //CALADAN
 	mutex_t time_start_mutex;
 	mutex_init(&time_start_mutex);
 
-        //pthread_mutex_t time_start_mutex = PTHREAD_MUTEX_INITIALIZER;
-
+        // TODO: Check
         struct rusage rusage_start; /* updated when first packet comes */
         //struct rusage rusage_end; /* local to this function, never pass out */
 
         struct addrinfo *ai;
-        struct thread_tt *ts; /* worker threads */
+        struct thread_neper *ts; /* worker threads */
         struct control_plane *cp;
-	printf("0.5\n");
+
+        // TODO: Check
         struct countdown_cond *data_pending;
 
         /* Set the options used for capturing cpu usage */
@@ -586,32 +584,30 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
                 data_pending = calloc(1, sizeof(*data_pending));
                 countdown_cond_init(data_pending, -(opts->test_length));
         }
-	/*
         if (opts->dry_run)
                 return 0;
-
+/*
 #ifndef NO_LIBNUMA
         if (opts->pin_numa && numa_available() == -1)
                 PLOG_FATAL(cb, "libnuma not available");
 #endif
 */
-	printf("1 \n");
         cp = control_plane_create(opts, cb, data_pending, fn);
         control_plane_start(cp, &ai, control_plane_q);
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         //reset_port(ai, atoi(opts->port), cb);
-        ts = calloc(opts->num_threads, sizeof(struct thread_tt));
-	printf("2\n");
-        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
-                             &time_start, &time_start_mutex, &rusage_start, ai,
-                             data_pending, &loop_init_c,
-                             &loop_init_m, &loop_inited);
+        // ts = calloc(opts->num_threads, sizeof(struct thread_neper));
+        // start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
+        //                      &time_start, &time_start_mutex, &rusage_start, ai,
+        //                      data_pending, &loop_init_c,
+        //                      &loop_init_m, &loop_inited);
 			     
         free(ai);
         LOG_INFO(cb, "started worker threads");
-	printf("WORKING 1 \n");
-
+        
+        return 0;
+////////////////////////////////////////////////////////////////////////
         /* rusage_start is now exposed to other threads  */
         //pthread_mutex_lock(&time_start_mutex);
         //getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */

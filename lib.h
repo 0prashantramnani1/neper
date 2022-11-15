@@ -133,15 +133,18 @@ struct arg_struct {
 extern "C" {
 #endif
 
-int tcp_stream(struct options *, struct callbacks *);
+// int tcp_stream(struct options *, struct callbacks *);
 int psp_stream(struct options *, struct callbacks *);
 int udp_stream(struct options *, struct callbacks *);
-//int tcp_rr(struct options *, struct callbacks *);
-int tcp_rr(struct arg_struct *);
+// int tcp_rr(struct options *, struct callbacks *);
 int udp_rr(struct options *, struct callbacks *);
 int psp_rr(struct options *, struct callbacks *);
 int tcp_crr(struct options *, struct callbacks *);
 int psp_crr(struct options *, struct callbacks *);
+
+// CALADAN
+int tcp_rr(struct arg_struct *);
+int tcp_stream(struct arg_struct *);
 
 #ifdef __cplusplus
 }

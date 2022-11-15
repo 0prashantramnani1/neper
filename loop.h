@@ -17,8 +17,8 @@
 #ifndef THIRD_PARTY_NEPER_LOOP_H
 #define THIRD_PARTY_NEPER_LOOP_H
 
-struct thread_tt;
+struct thread_neper;
 
-void *loop(struct thread_tt *);
+void *loop(struct thread_neper *);
 
 #endif

@@ -20,6 +20,11 @@
 #include "define_all_flags.h"
 #include "check_all_options.h"
 
+//CALADAN
+#include <base/log.h>
+#include <runtime/runtime.h>
+#include <runtime/timer.h>
+
 int main(int argc, char **argv)
 {
         struct options opts = {.secret = "neper tcp_stream 201703241300"};
@@ -41,6 +46,7 @@ int main(int argc, char **argv)
         if (opts.logtostderr)
                 cb.logtostderr(cb.logger);
 
+        // TODO: Check {
         if (opts.enable_tcp_maerts) {
                 opts.enable_read = opts.client;
                 opts.enable_write = !opts.client;
@@ -55,6 +61,7 @@ int main(int argc, char **argv)
                 opts.recv_flags = MSG_TRUNC;
         if (opts.zerocopy)
                 opts.send_flags = MSG_ZEROCOPY;
+        // }
 
         flags_parser_dump(fp);
         flags_parser_destroy(fp);
@@ -74,7 +81,15 @@ int main(int argc, char **argv)
         }
 
         /* Run the actual test */
-        exit_code = tcp_stream(&opts, &cb);
+        struct arg_struct arg;
+	arg.opts = &opts;
+	arg.cb   = &cb;
+
+        thread_fn_t fn;
+	fn = tcp_stream;
+	char *config = "server.config";
+	exit_code = runtime_init(config, fn, &arg);
+        // exit_code = tcp_stream(&opts, &cb);
 exit:
         logging_exit(&cb);
         return exit_code;

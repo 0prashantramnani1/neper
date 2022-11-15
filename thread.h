@@ -107,7 +107,7 @@ struct thread {
         int flow_space;  /* space allocated in *flows */
 };
 
-struct thread_tt {
+struct thread_neper {
         int index;
         //pthread_t id;
         //int epfd;                     /* The fd used by this thread for epoll */
