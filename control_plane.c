@@ -250,7 +250,7 @@ static int ctrl_connect(const char *host, const char *port,
 // CALADAN
 static int ctrl_listen(const char *host, const char *port,
                        struct addrinfo **ai, struct options *opts,
-                       struct callbacks *cb, tcpqueue_t* control_plane_q)
+                       struct callbacks *cb, tcpqueue_t** control_plane_q)
 {
 	/*
         struct addrinfo *result, *rp;
@@ -291,7 +291,7 @@ static int ctrl_listen(const char *host, const char *port,
 	struct netaddr laddr;
 	laddr.ip = 0;
 	laddr.port = (uint16_t)atoi(port);	
-	int ret = tcp_listen(laddr, 4096, &control_plane_q);
+	int ret = tcp_listen(laddr, 4096, control_plane_q);
 	if(ret != 0) {
 		LOG_ERROR(cb, "Server listen on control_port failed! \n");
 	}
@@ -302,7 +302,7 @@ static int ctrl_accept(int ctrl_port, int *num_incidents, struct callbacks *cb,
                        struct options *opts, tcpqueue_t *ctrl_queue)
 {
         // TODO: check for exit conditions
-        
+        printf("2.1!!!!!!!!\n");
         char dump[8192], host[NI_MAXHOST], port[NI_MAXSERV];
         // struct sockaddr_storage cli_addr;
         // socklen_t cli_len;
@@ -314,7 +314,7 @@ static int ctrl_accept(int ctrl_port, int *num_incidents, struct callbacks *cb,
         
         ssize_t len;
         struct hs_msg msg = {};
-
+        printf("2.2!!!!!!!!\n");
 retry:
         // cli_len = sizeof(cli_addr);
         while ((ret = tcp_accept(ctrl_queue, &ctrl_conn_caladan)) != 0) {
@@ -322,6 +322,7 @@ retry:
                 //         continue;
                 PLOG_FATAL(cb, "accept");
         }
+        printf("2.3!!!!!!!!\n");
         // s = getnameinfo((struct sockaddr *)&cli_addr, cli_len,
         //                 host, sizeof(host), port, sizeof(port),
         //                 NI_NUMERICHOST | NI_NUMERICSERV);
@@ -340,6 +341,7 @@ retry:
                 // do_close(ctrl_conn);
                 // goto retry;
         }
+        printf("2.4!!!!!!!!\n");
         if (memcmp(msg.secret, opts->secret, sizeof(msg.secret)) != 0 ||
             ntohl(msg.type) != CLI_HELLO) {
                 if (num_incidents)
@@ -353,6 +355,7 @@ retry:
                 // do_close(ctrl_conn);
                 // goto retry;
         }
+        printf("2.5!!!!!!!!\n");
         LOG_INFO(cb, "+++ SER <-- CLI   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
@@ -363,13 +366,13 @@ retry:
                 .num_flows = htonl(opts->num_flows),
                 .test_length = htonl(opts->test_length),
         };
-
+        printf("2.6!!!!!!!!\n");
         LOG_INFO(cb, "+++ SER --> CLI   SER_ACK -T %d -F %d -l %d",
                         ntohl(msg.num_threads), ntohl(msg.num_flows),
                         ntohl(msg.test_length));
         // send_msg(ctrl_conn, &msg, cb, __func__);
         send_msg_caladan(ctrl_conn_caladan, &msg, cb, __func__);
-
+        printf("2.7!!!!!!!!\n");
         LOG_INFO(cb, "Control connection established with %s:%s", host, port);
         return ctrl_conn;
 }
@@ -443,7 +446,7 @@ void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueu
         } else {
                 cp->ctrl_port = ctrl_listen(cp->opts->host,
                                             cp->opts->control_port, ai,
-                                            cp->opts, cp->cb, control_plane_q);
+                                            cp->opts, cp->cb, &control_plane_q);
                 // TODO: Refactor                                            
                 cp->ctrl_queue = control_plane_q;                                            
                 LOG_INFO(cp->cb, "opened control port");
@@ -464,6 +467,7 @@ static void sig_alarm_handler(int sig)
 
 void control_plane_wait_until_done(struct control_plane *cp)
 {
+        printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         if (cp->opts->client) {
                 if (cp->opts->test_length > 0) {
                         signal(SIGALRM, sig_alarm_handler);
@@ -482,10 +486,10 @@ void control_plane_wait_until_done(struct control_plane *cp)
                 const int n = cp->opts->num_clients;
                 int* client_fds = calloc(n, sizeof(int));
                 int i;
-
+                printf("1!!!!!!!!\n");
                 tcpconn_t **client_caladan;
                 client_caladan = calloc(n, sizeof(tcpconn_t *));
-
+                printf("1.5!!!!!!!!\n");
                 // TODO: Refactor
                 if (!client_fds)
                         PLOG_FATAL(cp->cb, "calloc client_fds");
@@ -494,7 +498,7 @@ void control_plane_wait_until_done(struct control_plane *cp)
                         PLOG_FATAL(cp->cb, "calloc client_caladan");          
 
                 cp->client_fds = client_fds;
-
+                printf("2!!!!!!!!\n");
                 LOG_INFO(cp->cb, "expecting %d clients", n);
                 for (i = 0; i < n; i++) {
                         client_fds[i] = ctrl_accept(cp->ctrl_port,
@@ -502,9 +506,10 @@ void control_plane_wait_until_done(struct control_plane *cp)
                                                     cp->opts, cp->ctrl_queue);
                         LOG_INFO(cp->cb, "client %d connected", i);
                 }
+                printf("3!!!!!!!!\n");
                 // do_close(cp->ctrl_port);  /* disallow further connections */
                 tcp_qclose(cp->ctrl_queue);
-
+                printf("4!!!!!!!!\n");
                 //TODO:Post Data transfer control plane
                 // if (cp->opts->nonblocking) {
                 //         for (i = 0; i < n; i++)

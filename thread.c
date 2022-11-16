@@ -603,10 +603,11 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         //                      data_pending, &loop_init_c,
         //                      &loop_init_m, &loop_inited);
 			     
-        free(ai);
+        // free(ai);
         LOG_INFO(cb, "started worker threads");
-        
-        return 0;
+        printf("0!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+        // return 0;
         /* rusage_start is now exposed to other threads  */
         //pthread_mutex_lock(&time_start_mutex);
         //getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
