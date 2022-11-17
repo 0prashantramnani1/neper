@@ -218,7 +218,7 @@ struct neper_pq *thread_stats_pq(struct thread *ts)
         return pq;
 }
 
-static int flows_in_thread(const struct thread *t)
+static int flows_in_thread(const struct thread_neper *t)
 {
         const struct options *opts = t->opts;
         const int num_flows = opts->num_flows;
@@ -233,7 +233,7 @@ static int flows_in_thread(const struct thread *t)
         return flows_in_this_thread;
 }
 
-static int first_flow_in_thread(const struct thread *t)
+static int first_flow_in_thread(const struct thread_neper *t)
 {
         const struct options *opts = t->opts;
         const int num_flows = opts->num_flows;
@@ -354,9 +354,9 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                           pthread_mutex_t *loop_init_m,
                           int *loop_inited)
 {
-	printf("IN start_worker_threads \n");
-
-	
+	LOG_INFO(cb, "Configuring woker threads \n");
+        printf("Configuring woker threads \n");
+        
         //cpu_set_t *cpuset;
         //pthread_attr_t attr;
         int s, i, allowed_cores;
@@ -365,9 +365,9 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         //if (!cpuset)
         //        PLOG_FATAL(cb, "calloc cpuset");
         //s = pthread_barrier_init(ready, NULL, opts->num_threads + 1);
-
-	barrier_init(ready, 2);
-	printf("1.s \n");
+        printf("0\n");
+	barrier_init(ready, opts->num_threads + 1);
+        printf("1\n");
         //if (s != 0)
         //        LOG_FATAL(cb, "pthread_barrier_init: %s", strerror(s));
 
@@ -378,43 +378,55 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         //allowed_cores = get_cpuset(cpuset, cb);
         //LOG_INFO(cb, "Number of allowed_cores = %d", allowed_cores);
 
-        int percentiles = percentiles_count(&opts->percentiles);
+        // int percentiles = percentiles_count(&opts->percentiles);
 
         for (i = 0; i < opts->num_threads; i++) {
+                printf("2 + :%d\n",i);
                 t[i].index = i;
                 t[i].fn = fn;
                 //t[i].ai_socktype = fn->fn_type;
                 //t[i].ai = copy_addrinfo(ai);
                 //t[i].epfd = epoll_create1_or_die(cb);
+                printf("3 + :%d\n",i);
+                create_waiter(&t[i].waiter);
+                // TODO: stop_epfd
                 //t[i].stop_efd = eventfd(0, 0);
                 //if (t[i].stop_efd == -1)
                 //        PLOG_FATAL(cb, "eventfd");
                 t[i].opts = opts;
                 t[i].cb = cb;
-                //t[i].num_local_hosts = count_local_hosts(opts);
-                //t[i].flow_first = first_flow_in_thread(&t[i]);
-                //t[i].flow_limit = flows_in_thread(&t[i]);
-                //t[i].flow_count = 0;
+                printf("4 + :%d\n",i);
+                t[i].num_local_hosts = count_local_hosts(opts);
+                printf("4.1 + :%d\n",i);
+                t[i].flow_first = first_flow_in_thread(&t[i]);
+                printf("4.2 + :%d\n",i);
+                t[i].flow_limit = flows_in_thread(&t[i]);
+                printf("4.3 + :%d\n",i);
+                t[i].flow_count = 0;
                 //t[i].percentiles = percentiles;
+                // TODO: LOCAL HOSTS
                 //t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
                 //                                     cb);
+                printf("5 + :%d\n",i);
                 t[i].ready = ready;
                 t[i].time_start = time_start;
                 t[i].time_start_mutex = time_start_mutex;
                 //t[i].rusage_start = rusage_start;
                // t[i].stats = neper_stats_init(cb);
                 //t[i].rusage = neper_rusage(opts->interval);
+                // TODO: DATA PENDING
                 //t[i].data_pending = data_pending;
                 //t[i].histo_factory = neper_histo_factory(&t[i],
                 //                                         NEPER_HISTO_SIZE,
                 //                                         NEPER_HISTO_GROWTH);
+                printf("6 + :%d\n",i);
                 t[i].loop_inited = loop_inited;
                 t[i].loop_init_c = loop_init_c;
                 t[i].loop_init_m = loop_init_m;
 
 
-                //t[i].flows = NULL;
-                //t[i].flow_space = 0;
+                t[i].flows = NULL;
+                t[i].flow_space = 0;
 		
                 /* support for rate limited flows */
 	
@@ -425,8 +437,8 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
 
                 //s = pthread_create(&t[i].id, &attr, thread_func, &t[i]);
 		s = thread_spawn(thread_func, &t[i]);
-                //if (s != 0)
-                //        LOG_FATAL(cb, "pthread_create: %s", strerror(s));
+                if (s != 0)
+                       LOG_FATAL(cb, "thread_spawn: %s", strerror(s));
 		
 		/*
                 if (opts->pin_cpu) {
@@ -463,9 +475,11 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         //if (s != 0)
         //        LOG_FATAL(cb, "pthread_attr_destroy: %s", strerror(s));
         //free(cpuset);
-
+        printf("7\n",i);
+        printf("Waiting for server threads to setup\n");
         barrier_wait(ready);
-        //LOG_INFO(cb, "worker threads are ready");
+        printf("worker threads are ready\n");
+        LOG_INFO(cb, "worker threads are ready");
 	
 }
 
@@ -597,16 +611,16 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         //reset_port(ai, atoi(opts->port), cb);
-        // ts = calloc(opts->num_threads, sizeof(struct thread_neper));
-        // start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
-        //                      &time_start, &time_start_mutex, &rusage_start, ai,
-        //                      data_pending, &loop_init_c,
-        //                      &loop_init_m, &loop_inited);
+        ts = calloc(opts->num_threads, sizeof(struct thread_neper));
+        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
+                             &time_start, &time_start_mutex, &rusage_start, ai,
+                             data_pending, &loop_init_c,
+                             &loop_init_m, &loop_inited);
 			     
         // free(ai);
         LOG_INFO(cb, "started worker threads");
         printf("0!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-	exit(-1);
+	//exit(-1);
         // return 0;
         /* rusage_start is now exposed to other threads  */
         //pthread_mutex_lock(&time_start_mutex);
