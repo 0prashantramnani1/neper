@@ -107,8 +107,8 @@ static void send_msg_caladan(tcpconn_t *c, struct hs_msg *msg, struct callbacks 
                         continue;
                 PLOG_FATAL(cb, "%s: write", fn);
         }
-        if (n != sizeof(*msg))
-                LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
+        //if (n != sizeof(*msg))
+        //        LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
 }
 //
 
