@@ -606,7 +606,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         // free(ai);
         LOG_INFO(cb, "started worker threads");
         printf("0!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-
+	exit(-1);
         // return 0;
         /* rusage_start is now exposed to other threads  */
         //pthread_mutex_lock(&time_start_mutex);

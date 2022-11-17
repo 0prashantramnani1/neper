@@ -101,14 +101,18 @@ static void send_msg_caladan(tcpconn_t *c, struct hs_msg *msg, struct callbacks 
 {
         int n;
 
+	printf("2.1\n");
         // while ((n = write(fd, msg, sizeof(*msg))) == -1) {
+	printf("SIZE OF MSG: %d\n", sizeof(*msg));
         while (n = tcp_write(c, msg, sizeof(*msg)) == -1) {                
+		printf("2.2\n");
                 if (errno == EINTR || errno == EAGAIN)
                         continue;
                 PLOG_FATAL(cb, "%s: write", fn);
         }
-        if (n != sizeof(*msg))
-                LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
+	printf("2.3\n");
+        //if (n != sizeof(*msg))
+        //        LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
 }
 //
 
@@ -221,22 +225,33 @@ static int ctrl_connect(const char *host, const char *port,
         raddr.ip = addr;
         raddr.port = (uint16_t)atoi(port);
 
+	printf("0\n");
+
         tcpconn_t *c;
         ret = tcp_dial(laddr, raddr, &c);
+	printf("CILENT DIAL: ret: %d \n", ret); 
         //
-
+	printf("1\n");
         memcpy(msg.secret, opts->secret, sizeof(msg.secret));
         LOG_INFO(cb, "+++ CLI --> SER   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
-        send_msg_caladan(ctrl_conn, &msg, cb, __func__);
 
-        return ctrl_conn; // REMOVE
+	printf("2\n");
+        send_msg_caladan(c, &msg, cb, __func__);
+
+	printf("3\n");
+        //return ctrl_conn; // REMOVE
 
         /* Wait for the server to respond */
         msg.type = htonl(SER_ACK);
-        if (recv_msg(ctrl_conn, &msg, cb, __func__))
+        //if (recv_msg(ctrl_conn, &msg, cb, __func__))
+	int len = 0;
+	len = tcp_read(c, &msg, sizeof(msg));
+	//if(tcp_read(c, &msg, sizeof(msg)) <= 0)
+	if(len <= 0)
                 LOG_FATAL(cb, "exiting");
+	printf("Client: size of message read from server: %d\n", len);
         LOG_INFO(cb, "+++ CLI <-- SER   SER_ACK -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
