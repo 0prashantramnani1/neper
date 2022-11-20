@@ -22,6 +22,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
+// CALADAN
+#include<runtime/poll.h>
+#include <runtime/sync.h>
+#include <runtime/tcp.h>
+
 struct flow;  /* note: struct is defined opaquely within flow.c */
 struct neper_stat;
 struct thread;
@@ -35,17 +40,19 @@ int                flow_id(const struct flow *);
 void              *flow_mbuf(const struct flow *);
 void              *flow_opaque(const struct flow *);
 struct neper_stat *flow_stat(const struct flow *);
-struct thread     *flow_thread(const struct flow *);
+struct thread_neper *flow_thread(const struct flow *);
 
 int flow_postpone(struct flow *);
 int flow_serve_pending(struct thread *t);  /* process postponed events */
-void flow_event(const struct epoll_event *);  /* process one epoll event */
+void flow_event(const poll_trigger_t *);  /* process one epoll event */
 void flow_mod(struct flow *, flow_handler, uint32_t events, bool or_die);
 void flow_reconnect(struct flow *, flow_handler, uint32_t events);
 
 struct flow_create_args {
-        struct thread *thread;      /* owner of this flow */
+        struct thread_neper *thread;      /* owner of this flow */
         int fd;                     /* the associated fd for epoll */
+        tcpconn_t *c;               /* associated tcp connection*/
+        tcpqueue_t *q;               /* associated tcp queue for accepting connections*/
         uint32_t events;            /* the epoll event mask */
         void *opaque;               /* state opaque to the calling layer */
         flow_handler handler;       /* state machine: initial callback */

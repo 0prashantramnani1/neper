@@ -21,8 +21,9 @@
 #include "thread.h"
 
 // CALADAN
-#include <runtime/sync.h>
-#include <runtime/tcp.h>
+// #include <runtime/sync.h>
+// #include <runtime/tcp.h>
+// #include <runtime/poll.h>
 
 #define NETPERF_PORT	8000
 #define BUF_SIZE	32768
@@ -42,7 +43,11 @@ void *loop(struct thread_neper *t)
 {
 	printf("In main LOOP \n");
         const struct options *opts = t->opts;
-        //struct epoll_event *events;
+        // struct epoll_event *events;
+
+        //CALADAN
+        poll_trigger_t *events;
+
 	/*
         const struct flow_create_args args = {
                 .thread  = t,
@@ -65,32 +70,41 @@ void *loop(struct thread_neper *t)
         mutex_lock(t->loop_init_m);
         while (*t->loop_inited < t->index)
                 condvar_wait(t->loop_init_c, t->loop_init_m);
-        // t->fn->fn_loop_init(t);
+        t->fn->fn_loop_init(t);
         (*t->loop_inited)++;
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
 
         // events = calloc_or_die(opts->maxevents, sizeof(*events), t->cb);
+
+        // CALADAN
+        // initialising triggers/events
+        events = calloc(opts->maxevents, sizeof(*events));
+        // for(int i=0;i<opts->maxevents;i++) {
+        //         poll_trigger_init(&events[i]);
+        // }
+
         /* support for rate limited flows */
         //t->rl.pending_flows = calloc_or_die(t->flow_limit, sizeof(struct flow *), t->cb);
         //t->rl.next_event = ~0ULL; /* no pending timeouts */
         //t->rl.pending_count = 0; /* no pending flows */
         barrier_wait(t->ready);
 
-        //while (!t->stop) {
-        //        /* Serve pending event, compute timeout to next event */
+        while (!t->stop) {
+               /* Serve pending event, compute timeout to next event */
         //        int ms = flow_serve_pending(t);
         //        int nfds = epoll_wait(t->epfd, events, opts->maxevents, ms);
-        //        int i;
+               int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+               int i;
 
-        //        if (nfds == -1) {
-        //                if (errno == EINTR)
-        //                        continue;
-        //                PLOG_FATAL(t->cb, "epoll_wait");
-        //        }
-        //        for (i = 0; i < nfds && !t->stop; i++)
-        //                flow_event(&events[i]);
-        //}
+               if (nfds == -1) {
+                       if (errno == EINTR)
+                               continue;
+                       PLOG_FATAL(t->cb, "epoll_wait");
+               }
+               for (i = 0; i < nfds && !t->stop; i++)
+                       flow_event(&events[i]);
+        }
        // thread_flush_stat(t);
         //free(events);
         //do_close(t->epfd);

@@ -127,8 +127,8 @@ struct thread_neper {
         int flow_limit;               /* number of flows to create on thread */
         int flow_count;               /* number of flows created on thread */
         //int percentiles;              /* number of requested percentiles */
-        //int stop;
-        //void *f_mbuf;                 /* replaces per-flow buffers */
+        int stop;
+        void *f_mbuf;                 /* replaces per-flow buffers */
         barrier_t *ready;
         mutex_t *loop_init_m;
         condvar_t *loop_init_c;

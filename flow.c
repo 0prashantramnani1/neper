@@ -26,12 +26,15 @@
  */
 
 struct flow {
-        struct thread * f_thread;   /* owner of this flow */
+        struct thread_neper * f_thread;   /* owner of this flow */
         flow_handler    f_handler;  /* state machine: current callback */
         void *          f_opaque;   /* state machine: opaque state */
         void *          f_mbuf;     /* send/recv message buffer */
         int             f_fd;       /* open file descriptor */
         int             f_id;       /* index of this flow within the thread */
+        tcpconn_t *f_c;               /* associated tcp connection*/
+        // TODO: Maybe move f_q to neper_thread
+        tcpqueue_t *f_q;              /* associated tcp queue for accepting connections*/
 
         /* support for paced send: track next event and epoll events */
         uint64_t        f_next_event;  /* absolute time (ns) of next event */
@@ -65,35 +68,57 @@ struct neper_stat *flow_stat(const struct flow *f)
         return f->f_stat;
 }
 
-struct thread *flow_thread(const struct flow *f)
+struct thread_neper *flow_thread(const struct flow *f)
 {
         return f->f_thread;
 }
 
-void flow_event(const struct epoll_event *e)
+tcpqueue_t *flow_queue(const struct flow *f)
 {
-        struct flow *f = e->data.ptr;
-        f->f_events = e->events; /* support for paced send */
-        f->f_handler(f, e->events);
+        return f->f_q;
+}
+
+void flow_event(const poll_trigger_t *e)
+{
+        // struct flow *f = e->data.ptr;
+
+        struct flow* f = e->data_poll;
+
+        // f->f_events = e->events; /* support for paced send */
+        f->f_handler(f, e->event_type);
 }
 
 static void flow_ctl(struct flow *f, int op, flow_handler fh, uint32_t events,
                      bool or_die)
 {
-        if (f->f_fd >= 0) {
+        if (f->f_q != NULL || f->f_c != NULL) {
                 f->f_handler = fh;
 
-                struct epoll_event ev;
-                ev.events = events | EPOLLRDHUP;
-                ev.data.ptr = f;
+                // struct epoll_event ev;
+                // ev.events = events | EPOLLRDHUP;
+                // ev.data.ptr = f;
 
-                int err = epoll_ctl(f->f_thread->epfd, op, f->f_fd, &ev);
+                struct list_head *h;
+                poll_trigger_t *t;
+                int ret = create_trigger(&t);
+
+                // int err = epoll_ctl(f->f_thread->epfd, op, f->f_fd, &ev);
+                int err;
+                // poll_arm_w_queue(w, h, t, SEV_READ, cb, accept_arg, q, -7);
+                if(f->f_q != NULL) {
+                        h = tcpqueue_get_triggers(f->f_q);
+                        poll_arm_w_queue_neper(f->f_thread->waiter, h, t, events, NULL, NULL, f->f_q, f);
+                } else {
+                        h = tcp_get_triggers(f->f_q);
+                        poll_arm_w_sock_neper(f->f_thread->waiter, h, t, events, NULL, NULL, f->f_c, f);
+                }
                 if (err) {
                         if (or_die)
                                 PLOG_FATAL(f->f_thread->cb, "epoll_ctl()");
-                        close(f->f_fd);
-                        f->f_fd = -1;
-                        flow_delete(f);
+                        // TODO: Close flow
+                        // close(f->f_fd);
+                        // f->f_fd = -1;
+                        // flow_delete(f);
                 }
         }
 }
@@ -119,12 +144,17 @@ void flow_reconnect(struct flow *f, flow_handler fh, uint32_t events)
 
 void flow_create(const struct flow_create_args *args)
 {
-        struct thread *t = args->thread;
+        struct thread_neper *t = args->thread;
         struct flow *f = calloc_or_die(1, sizeof(struct flow), t->cb);
 
         f->f_thread = t;
         f->f_opaque = args->opaque;
-        f->f_fd     = args->fd;
+        // f->f_fd     = args->fd;
+        if(args->q != NULL) {
+                f->f_q = args->q;
+        } else {
+                f->f_c = args->c;
+        }
 
         if (args->mbuf_alloc) {
                 /* The next line is a hack. mbuf_alloc implies traffic and */
@@ -148,7 +178,8 @@ void flow_create(const struct flow_create_args *args)
 //static const int ONE_MS = 1000000;
 static int deadline_expired(const struct flow *f)
 {
-        return (f->f_thread->rl.now + ONE_MS/2 >= f->f_next_event);
+        //TODO: Check for failures
+        return 0;//(f->f_thread->rl.now + ONE_MS/2 >= f->f_next_event);
 }
 
 /* Flows with delayed events are stored unsorted in a per-thread array.

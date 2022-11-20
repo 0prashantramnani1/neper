@@ -39,7 +39,7 @@
  * Set sockopts that has to be set before the socket is established and
  * are common to all data sockets.
  */
-
+// TODO: Look at socket options 
 static void socket_init_not_established(struct thread *t, int s)
 {
         const struct options *opts = t->opts;
@@ -94,13 +94,19 @@ static void socket_init_established(struct thread *t, int s)
 
 static void socket_accept(struct flow *f)
 {
-        struct thread *t = flow_thread(f);
-        int fd_listen = flow_fd(f);
-        struct sockaddr_storage cli_addr;
-        socklen_t cli_len = sizeof(cli_addr);
+        struct thread_neper *t = flow_thread(f);
+        // int fd_listen = flow_fd(f);
+        tcpqueue_t *q = flow_queue(f);
+        // struct sockaddr_storage cli_addr;
+        // socklen_t cli_len = sizeof(cli_addr);
 
-        int s = accept(fd_listen, (struct sockaddr *)&cli_addr, &cli_len);
-        if (s == -1) {
+        // int s = accept(fd_listen, (struct sockaddr *)&cli_addr, &cli_len);
+
+        //CALADAN
+        tcpconn_t *c;
+        int s = tcp_accept(q, &c);
+        printf("neper socket_accept: CONNECTION ACCEPTED");
+        if (s <= 0) {
                 switch (errno) {
                 case EINTR:
                 case ECONNABORTED:
@@ -112,9 +118,9 @@ static void socket_accept(struct flow *f)
                 }
         } else {
                 // TODO(soheil): we can probably remove this line.
-                socket_init_not_established(t, s);
-                socket_init_established(t, s);
-                t->fn->fn_flow_init(t, s);
+                // socket_init_not_established(t, s);
+                // socket_init_established(t, s);
+                // t->fn->fn_flow_init(t, s);
         }
 }
 
@@ -226,19 +232,19 @@ static int socket_bind_listener(struct thread *t, struct addrinfo *ai)
         return s;
 }
 
-void socket_listen(struct thread *t)
+void socket_listen(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
         struct callbacks *cb = t->cb;
 
-        struct addrinfo hints = {
-                .ai_flags    = AI_PASSIVE,
-                .ai_family   = t->ai->ai_family,
-                .ai_socktype = t->ai_socktype
-        };
+        // struct addrinfo hints = {
+        //         .ai_flags    = AI_PASSIVE,
+        //         .ai_family   = t->ai->ai_family,
+        //         .ai_socktype = t->ai_socktype
+        // };
 
-        struct addrinfo *ai = getaddrinfo_or_die(opts->host, opts->port, &hints,
-                                                 cb);
+        // struct addrinfo *ai = getaddrinfo_or_die(opts->host, opts->port, &hints,
+        //                                          cb);
         int port = atoi(opts->port);
         int i, n, s;
 
@@ -246,37 +252,52 @@ void socket_listen(struct thread *t)
                 .thread  = t,
                 .fd      = -1,
                 .opaque  = NULL,
-                .events  = EPOLLIN,
+                // .events  = EPOLLIN,
+                .events  = SEV_READ,
                 .handler = handler_accept,
                 .mbuf_alloc = NULL,
                 .stat    = NULL
         };
 
-        switch (ai->ai_socktype) {
-        case SOCK_STREAM:
-                n = opts->num_ports ? opts->num_ports : 1;
-                for (i = 0; i < n; i++) {
-                        s = socket_bind_listener(t, ai);
-                        socket_init_not_established(t, s);
-                        listen_or_die(s, t->opts->listen_backlog, cb);
-                        if (t->fn->fn_post_listen) {
-                                t->fn->fn_post_listen(t, s, ai);
-                        }
-                        args.fd = s;
-                        flow_create(&args);
-                        reset_port(ai, ++port, cb);
+        // switch (ai->ai_socktype) {
+        // case SOCK_STREAM:
+        // TODO: Multi port - Multi thread support
+        n = opts->num_ports ? opts->num_ports : 1;
+        for (i = 0; i < n; i++) {
+                // s = socket_bind_listener(t, ai);
+                // socket_init_not_established(t, s);
+                // listen_or_die(s, t->opts->listen_backlog, cb);
+
+                // TODO: Will have to change this definition to support multi threads per port
+                tcpqueue_t *data_plane_q;
+                struct netaddr laddr;
+                laddr.ip = 0;
+                laddr.port = (uint16_t)atoi(opts->port) + t->index;	
+                int ret = tcp_listen(laddr, 4096, &data_plane_q);
+                if(ret != 0) {
+                        LOG_ERROR(cb, "Server listen on data_port failed! \n");
                 }
-                break;
+                tcpqueue_set_nonblocking(data_plane_q, 1);
 
-        case SOCK_DGRAM:
-                s = socket_bind_listener(t, ai);
-                socket_init_not_established(t, s);
-                socket_init_established(t, s);
-                t->fn->fn_flow_init(t, s);
-                break;
+                // if (t->fn->fn_post_listen) {
+                //         t->fn->fn_post_listen(t, s, ai);
+                // }
+                args.q = data_plane_q;
+                args.c = NULL;
+                flow_create(&args);
+                // reset_port(ai, ++port, cb);
         }
+        // break;
 
-        freeaddrinfo(ai);
+        // case SOCK_DGRAM:
+        //         s = socket_bind_listener(t, ai);
+        //         socket_init_not_established(t, s);
+        //         socket_init_established(t, s);
+        //         t->fn->fn_flow_init(t, s);
+        //         break;
+        // }
+
+        // freeaddrinfo(ai);
 }
 
 int socket_connect_one(struct thread *t, int flags)
