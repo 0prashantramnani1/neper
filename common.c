@@ -22,6 +22,9 @@
 #include "hexdump.h"
 #include "parse.h"
 
+// CALADAN
+#include <net/ip.h>
+
 #define kilo (1000)
 #define kibi (1024)
 #define mega (1000 * 1000)
@@ -321,4 +324,15 @@ int create_suicide_timeout(int sec_to_suicide)
                 return -1;
         }
         return 0;
+}
+
+int str_to_ip(const char *str, uint32_t *addr)
+{
+	uint8_t a, b, c, d;
+	if(sscanf(str, "%hhu.%hhu.%hhu.%hhu", &a, &b, &c, &d) != 4) {
+		return -EINVAL;
+	}
+
+	*addr = MAKE_IP_ADDR(a, b, c, d);
+	return 0;
 }

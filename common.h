@@ -136,4 +136,5 @@ void print_unit(const char *name, const void *var, struct callbacks *);
 const struct rate_conversion *auto_unit(const double throughput,
                                         const struct rate_conversion *opt,
                                         struct callbacks *);
+int str_to_ip(const char *str, uint32_t *addr);                                        
 #endif

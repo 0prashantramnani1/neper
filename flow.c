@@ -83,8 +83,10 @@ void flow_event(const poll_trigger_t *e)
         // struct flow *f = e->data.ptr;
 
         struct flow* f = e->data_poll;
-
+        
+        // TODO: Paced send??
         // f->f_events = e->events; /* support for paced send */
+//        f->f_handler(f, e->events);
         f->f_handler(f, e->event_type);
 }
 
@@ -105,6 +107,8 @@ static void flow_ctl(struct flow *f, int op, flow_handler fh, uint32_t events,
                 // int err = epoll_ctl(f->f_thread->epfd, op, f->f_fd, &ev);
                 int err;
                 // poll_arm_w_queue(w, h, t, SEV_READ, cb, accept_arg, q, -7);
+
+                //TODO: Make generic
                 if(f->f_q != NULL) {
                         h = tcpqueue_get_triggers(f->f_q);
                         poll_arm_w_queue_neper(f->f_thread->waiter, h, t, events, NULL, NULL, f->f_q, f);

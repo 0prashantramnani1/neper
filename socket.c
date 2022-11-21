@@ -74,11 +74,13 @@ static void socket_init_not_established(struct thread *t, int s)
  * are common to all data sockets.
  */
 
-static void socket_init_established(struct thread *t, int s)
+// static void socket_init_established(struct thread *t, int s)
+static void socket_init_established(struct thread *t,  tcpconn_t *c)
 {
         struct callbacks *cb = t->cb;
 
-        set_nonblocking(s, cb);
+        // set_nonblocking(s, cb);
+        tcp_set_nonblocking(c, true);
 }
 
 
@@ -300,67 +302,88 @@ void socket_listen(struct thread_neper *t)
         // freeaddrinfo(ai);
 }
 
-int socket_connect_one(struct thread *t, int flags)
+int socket_connect_one(struct thread_neper *t, int flags)
 {
-        struct addrinfo *ai = t->ai;
+        // struct addrinfo *ai = t->ai;
 
-        int s = socket_or_die(ai->ai_family, t->ai_socktype | flags, 0, t->cb);
+        // int s = socket_or_die(ai->ai_family, t->ai_socktype | flags, 0, t->cb);
+        tcpconn_t *c;
 
-        if (!t->local_hosts && t->opts->source_port > 0) {
-                int flow_idx = (t->flow_first + t->flow_count);
-                int port = flow_idx + t->opts->source_port;
+        // TODO: Check if soure_port is needed
+        // if (!t->local_hosts && t->opts->source_port > 0) {
+        //         int flow_idx = (t->flow_first + t->flow_count);
+        //         int port = flow_idx + t->opts->source_port;
 
-                if (ai->ai_family == AF_INET) {
-                        struct sockaddr_in source;
+        //         if (ai->ai_family == AF_INET) {
+        //                 struct sockaddr_in source;
 
-                        source.sin_family = AF_INET;
-                        source.sin_addr.s_addr = INADDR_ANY;
-                        source.sin_port = htons(port);
-                        if (bind(s, &source, sizeof(source))) {
-                                PLOG_FATAL(t->cb, "bind for source port");
-                        }
-                } else {
-                        struct sockaddr_in6 source;
+        //                 source.sin_family = AF_INET;
+        //                 source.sin_addr.s_addr = INADDR_ANY;
+        //                 source.sin_port = htons(port);
+        //                 if (bind(s, &source, sizeof(source))) {
+        //                         PLOG_FATAL(t->cb, "bind for source port");
+        //                 }
+        //         } else {
+        //                 struct sockaddr_in6 source;
 
-                        source.sin6_family = AF_INET6;
-                        source.sin6_addr = in6addr_any;
-                        source.sin6_port = htons(port);
-                        if (bind(s, &source, sizeof(source))) {
-                                PLOG_FATAL(t->cb, "bind for source port");
-                        }
-                }
-        }
+        //                 source.sin6_family = AF_INET6;
+        //                 source.sin6_addr = in6addr_any;
+        //                 source.sin6_port = htons(port);
+        //                 if (bind(s, &source, sizeof(source))) {
+        //                         PLOG_FATAL(t->cb, "bind for source port");
+        //                 }
+        //         }
+        // }
 
         /* If the server has multiple listen ports then use them round-robin. */
         int n = t->opts->num_ports ? t->opts->num_ports : 1;
         int i = (t->flow_first + t->flow_count) % n;
         int port = atoi(t->opts->port) + i;
-        reset_port(ai, port, t->cb);
+        // reset_port(ai, port, t->cb);
 
-        if (t->opts->tcp_fastopen && t->ai_socktype == SOCK_STREAM) {
-                int enable = 1;
-                setsockopt(s, IPPROTO_TCP, TCP_FASTOPEN_CONNECT, &enable,
-                           sizeof(enable));
-        }
+        // TODO: Check for tcp_fastopen
+        // if (t->opts->tcp_fastopen && t->ai_socktype == SOCK_STREAM) {
+        //         int enable = 1;
+        //         setsockopt(s, IPPROTO_TCP, TCP_FASTOPEN_CONNECT, &enable,
+        //                    sizeof(enable));
+        // }
 
-        socket_init_not_established(t, s);
-        if (t->local_hosts) {
-                int i = (t->flow_first + t->flow_count) % t->num_local_hosts;
-                bind_or_die(s, t->local_hosts[i], t->cb);
-        }
-        if (t->fn->fn_pre_connect) {
-                t->fn->fn_pre_connect(t, s, ai);
-        }
-        connect_or_die(s, ai, t->cb);
-        socket_init_established(t, s);
-        return s;
+        // socket_init_not_established(t, s);
+        // if (t->local_hosts) {
+        //         int i = (t->flow_first + t->flow_count) % t->num_local_hosts;
+        //         bind_or_die(s, t->local_hosts[i], t->cb);
+        // }
+        // if (t->fn->fn_pre_connect) {
+        //         t->fn->fn_pre_connect(t, s, ai);
+        // }
+        char *host = t->opts->host;
+
+        static struct netaddr raddr, laddr;
+        uint32_t addr;
+        int ret = str_to_ip(host, &addr);
+
+        laddr.ip = 0;
+	laddr.port = 0;
+
+        raddr.ip = addr;
+        raddr.port = (uint16_t)atoi(port);
+
+        ret = tcp_dial(laddr, raddr, &c);
+
+        // connect_or_die(s, ai, t->cb);
+        socket_init_established(t, c);
+        // return s;
+
+        // TODO: Return new connection
+        return 0;
 }
 
-void socket_connect_all(struct thread *t)
+void socket_connect_all(struct thread_neper *t)
 {
+        // TODO: look at async connect
         int i, flags = t->opts->async_connect ? SOCK_NONBLOCK : 0;
         for (i = 0; i < t->flow_limit; i++) {
                 int s = socket_connect_one(t, flags);
-                t->fn->fn_flow_init(t, s);
+                // t->fn->fn_flow_init(t, s);
         }
 }
