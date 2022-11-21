@@ -1,0 +1,134 @@
+payload_size: 64
+num_flows 10     Throughput: 88284.0
+-----------------------
+num_flows 30     Throughput: 92390.0
+-----------------------
+num_flows 50     Throughput: 93998.0
+-----------------------
+num_flows 70     Throughput: 92226.0
+-----------------------
+num_flows 90     Throughput: 93914.0
+-----------------------
+num_flows 110     Throughput: 96105.0
+-----------------------
+num_flows 130     Throughput: 100333.0
+-----------------------
+num_flows 150     Throughput: 98941.0
+-----------------------
+payload_size: 128
+num_flows 10     Throughput: 89964.0
+-----------------------
+num_flows 30     Throughput: 91836.0
+-----------------------
+num_flows 50     Throughput: 93939.0
+-----------------------
+num_flows 70     Throughput: 91437.0
+-----------------------
+num_flows 90     Throughput: 94397.0
+-----------------------
+num_flows 110     Throughput: 97931.0
+-----------------------
+num_flows 130     Throughput: 100091.0
+-----------------------
+num_flows 150     Throughput: 104224.0
+-----------------------
+payload_size: 256
+num_flows 10     Throughput: 90381.0
+-----------------------
+num_flows 30     Throughput: 89949.0
+-----------------------
+num_flows 50     Throughput: 93123.0
+-----------------------
+num_flows 70     Throughput: 91282.0
+-----------------------
+num_flows 90     Throughput: 97659.0
+-----------------------
+num_flows 110     Throughput: 97210.0
+-----------------------
+num_flows 130     Throughput: 100148.0
+-----------------------
+num_flows 150     Throughput: 100832.0
+-----------------------
+payload_size: 512
+num_flows 10     Throughput: 92404.0
+-----------------------
+num_flows 30     Throughput: 91179.0
+-----------------------
+num_flows 50     Throughput: 94420.0
+-----------------------
+num_flows 70     Throughput: 94015.0
+-----------------------
+num_flows 90     Throughput: 95187.0
+-----------------------
+num_flows 110     Throughput: 98361.0
+-----------------------
+num_flows 130     Throughput: 98948.0
+-----------------------
+num_flows 150     Throughput: 101007.0
+-----------------------
+payload_size: 1024
+num_flows 10     Throughput: 90924.0
+-----------------------
+num_flows 30     Throughput: 91647.0
+-----------------------
+num_flows 50     Throughput: 92875.0
+-----------------------
+num_flows 70     Throughput: 89363.0
+-----------------------
+num_flows 90     Throughput: 95863.0
+-----------------------
+num_flows 110     Throughput: 97632.0
+-----------------------
+num_flows 130     Throughput: 101857.0
+-----------------------
+num_flows 150     Throughput: 99582.0
+-----------------------
+payload_size: 2048
+num_flows 10     Throughput: 93218.0
+-----------------------
+num_flows 30     Throughput: 92742.0
+-----------------------
+num_flows 50     Throughput: 91889.0
+-----------------------
+num_flows 70     Throughput: 91882.0
+-----------------------
+num_flows 90     Throughput: 94705.0
+-----------------------
+num_flows 110     Throughput: 98664.0
+-----------------------
+num_flows 130     Throughput: 98994.0
+-----------------------
+num_flows 150     Throughput: 103359.0
+-----------------------
+payload_size: 4096
+num_flows 10     Throughput: 94016.0
+-----------------------
+num_flows 30     Throughput: 90797.0
+-----------------------
+num_flows 50     Throughput: 94212.0
+-----------------------
+num_flows 70     Throughput: 93541.0
+-----------------------
+num_flows 90     Throughput: 94239.0
+-----------------------
+num_flows 110     Throughput: 98686.0
+-----------------------
+num_flows 130     Throughput: 101109.0
+-----------------------
+num_flows 150     Throughput: 101521.0
+-----------------------
+payload_size: 8192
+num_flows 10     Throughput: 92738.0
+-----------------------
+num_flows 30     Throughput: 92022.0
+-----------------------
+num_flows 50     Throughput: 93058.0
+-----------------------
+num_flows 70     Throughput: 93914.0
+-----------------------
+num_flows 90     Throughput: 94044.0
+-----------------------
+num_flows 110     Throughput: 100354.0
+-----------------------
+num_flows 130     Throughput: 98960.0
+-----------------------

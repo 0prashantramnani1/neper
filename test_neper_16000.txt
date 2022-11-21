@@ -1,0 +1,15 @@
+payload_size: 16384
+num_flows 10     Throughput: 90520.0
+-----------------------
+num_flows 30     Throughput: 92512.0
+-----------------------
+num_flows 50     Throughput: 92937.0
+-----------------------
+num_flows 70     Throughput: 92551.0
+-----------------------
+num_flows 90     Throughput: 97903.0
+-----------------------
+num_flows 110     Throughput: 96894.0
+-----------------------
+num_flows 130     Throughput: 101826.0
+-----------------------
