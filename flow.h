@@ -42,6 +42,8 @@ void              *flow_opaque(const struct flow *);
 struct neper_stat *flow_stat(const struct flow *);
 struct thread_neper *flow_thread(const struct flow *);
 
+tcpqueue_t          *flow_queue(const struct flow *);
+
 int flow_postpone(struct flow *);
 int flow_serve_pending(struct thread *t);  /* process postponed events */
 void flow_event(const poll_trigger_t *);  /* process one epoll event */

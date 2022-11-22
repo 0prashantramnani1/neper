@@ -106,8 +106,14 @@ static void socket_accept(struct flow *f)
 
         //CALADAN
         tcpconn_t *c;
+        printf("neper socket_accept: goinf into tcp_Accept\n");
         int s = tcp_accept(q, &c);
-        printf("neper socket_accept: CONNECTION ACCEPTED");
+        printf("neper socket_accept: coming out of tcp_accept\n");
+        // if(q != NULL) {
+        // Hack to make tcpqueue level triggered
+        // tcpqueue_check_triggers(q);
+        // }
+        printf("neper socket_accept: CONNECTION ACCEPTED\n");
         if (s <= 0) {
                 switch (errno) {
                 case EINTR:
@@ -274,7 +280,8 @@ void socket_listen(struct thread_neper *t)
                 tcpqueue_t *data_plane_q;
                 struct netaddr laddr;
                 laddr.ip = 0;
-                laddr.port = (uint16_t)atoi(opts->port) + t->index;	
+                laddr.port = (uint16_t)atoi(opts->port) + t->index;
+                printf("SERVER_SIDE : SERVER LISTENING IN PORT %d\n", laddr.port);	
                 int ret = tcp_listen(laddr, 4096, &data_plane_q);
                 if(ret != 0) {
                         LOG_ERROR(cb, "Server listen on data_port failed! \n");
@@ -366,7 +373,7 @@ int socket_connect_one(struct thread_neper *t, int flags)
 	laddr.port = 0;
 
         raddr.ip = addr;
-        raddr.port = (uint16_t)atoi(port);
+        raddr.port = (uint16_t)port;
 
         ret = tcp_dial(laddr, raddr, &c);
 
