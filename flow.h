@@ -43,6 +43,7 @@ struct neper_stat *flow_stat(const struct flow *);
 struct thread_neper *flow_thread(const struct flow *);
 
 tcpqueue_t          *flow_queue(const struct flow *);
+tcpconn_t          *flow_connection(const struct flow *);
 
 int flow_postpone(struct flow *);
 int flow_serve_pending(struct thread *t);  /* process postponed events */

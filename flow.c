@@ -78,6 +78,11 @@ tcpqueue_t *flow_queue(const struct flow *f)
         return f->f_q;
 }
 
+tcpconn_t *flow_connection(const struct flow *f)
+{
+        return f->f_c;
+}
+
 void flow_event(const poll_trigger_t *e)
 {
         // struct flow *f = e->data.ptr;
@@ -155,6 +160,7 @@ void flow_create(const struct flow_create_args *args)
         f->f_opaque = args->opaque;
         // f->f_fd     = args->fd;
         if(args->q != NULL) {
+                printf("flow_create: ASSIGNING data_plane_q to listening flow\n");
                 f->f_q = args->q;
         } else {
                 f->f_c = args->c;
@@ -166,6 +172,7 @@ void flow_create(const struct flow_create_args *args)
                 f->f_id   = t->flow_count++;
                 f->f_mbuf = args->mbuf_alloc(t);
         }
+        // TODO: Look at stats
         if (args->stat) {
                 f->f_stat = args->stat(f);
                 if (f->f_stat != NULL) {

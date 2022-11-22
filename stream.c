@@ -24,7 +24,7 @@
 #include "stats.h"
 #include "thread.h"
 
-static void *stream_alloc(struct thread *t)
+static void *stream_alloc(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
 
@@ -36,17 +36,20 @@ static void *stream_alloc(struct thread *t)
         return t->f_mbuf;
 }
 
-static uint32_t stream_events(struct thread *t)
+static uint32_t stream_events(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
 
-        uint32_t events = EPOLLRDHUP;
+        uint32_t events = 0; //EPOLLRDHUP;
         if (opts->enable_write)
-                events |= EPOLLOUT;
+                events |= SEV_WRITE;
+                // events |= EPOLLOUT;
         if (opts->enable_read)
-                events |= EPOLLIN;
-        if (opts->edge_trigger)
-                events |= EPOLLET;
+                events |= SEV_READ;
+                // events |= EPOLLIN;
+        // TODO: Implement Edge trigger properly                
+        // if (opts->edge_trigger)
+        //         events |= EPOLLET;
         return events;
 }
 
@@ -54,10 +57,11 @@ void stream_handler(struct flow *f, uint32_t events)
 {
         static const uint64_t NSEC_PER_SEC = 1000*1000*1000;
 
-        struct neper_stat *stat = flow_stat(f);
-        struct thread *t = flow_thread(f);
+        // struct neper_stat *stat = flow_stat(f);
+        struct thread_neper *t = flow_thread(f);
         void *mbuf = flow_mbuf(f);
-        int fd = flow_fd(f);
+        // int fd = flow_fd(f);
+        tcpconn_t * c = flow_connection(f);
         const struct options *opts = t->opts;
         /*
          * The actual size can be calculated with CMSG_SPACE(sizeof(struct X)),
@@ -79,14 +83,17 @@ void stream_handler(struct flow *f, uint32_t events)
         };
         ssize_t n;
 
-        if (events & (EPOLLHUP | EPOLLRDHUP))
-                return flow_delete(f);
+        // TODO: Delete flows
+        // if (events & (EPOLLHUP | EPOLLRDHUP))
+        //         return flow_delete(f);
 
         if (events & EPOLLIN)
                 do {
                         do {
-                                n = recv(fd, mbuf, opts->buffer_size,
-                                         opts->recv_flags);
+                                // n = recv(fd, mbuf, opts->buffer_size,
+                                //          opts->recv_flags);
+
+                                n = tcp_read(c, mbuf, opts->buffer_size);
                         } while(n == -1 && errno == EINTR);
                         if (n == -1) {
                                 if (errno != EAGAIN)
@@ -97,12 +104,13 @@ void stream_handler(struct flow *f, uint32_t events)
                                 flow_delete(f);
                                 return;
                         }
-                        stat->event(t, stat, n, false, NULL);
+                        // stat->event(t, stat, n, false, NULL);
                 } while (opts->edge_trigger);
 
         if (events & EPOLLOUT)
                 do {
-                        n = send(fd, mbuf, opts->buffer_size, opts->send_flags);
+                        // n = send(fd, mbuf, opts->buffer_size, opts->buffer_size);
+                        n = tcp_write(c, mbuf, opts->buffer_size);
                         if (n == -1) {
                                 if (errno != EAGAIN)
                                         PLOG_ERROR(t->cb, "send");
@@ -116,24 +124,25 @@ void stream_handler(struct flow *f, uint32_t events)
                         }
                 } while (opts->edge_trigger);
 
-        if (events & EPOLLERR) {
-                do {
-                        n = recvmsg(fd, &msg, MSG_ERRQUEUE);
-                } while(n == -1 && errno == EINTR);
-                if (n == -1) {
-                        if (errno != EAGAIN)
-                                PLOG_ERROR(t->cb, "recvmsg() on ERRQUEUE failed");
-                        return;
-                }
-                /*
-                 * No need to process anything for the purpose of benchmarking,
-                 * as flow_mbuf(f) won't be released before flow is terminated.
-                 *
-                 * Maybe examine sock_extended_err.ee_code to find out whether
-                 * zerocopy actually happened. i.e. SO_EE_CODE_ZEROCOPY_COPIED
-                 * e.g. Linux kernel tools/testing/selftests/net/msg_zerocopy.c
-                 */
-        }
+        //TODO: Look at error
+        // if (events & EPOLLERR) {
+        //         do {
+        //                 n = recvmsg(fd, &msg, MSG_ERRQUEUE);
+        //         } while(n == -1 && errno == EINTR);
+        //         if (n == -1) {
+        //                 if (errno != EAGAIN)
+        //                         PLOG_ERROR(t->cb, "recvmsg() on ERRQUEUE failed");
+        //                 return;
+        //         }
+        //         /*
+        //          * No need to process anything for the purpose of benchmarking,
+        //          * as flow_mbuf(f) won't be released before flow is terminated.
+        //          *
+        //          * Maybe examine sock_extended_err.ee_code to find out whether
+        //          * zerocopy actually happened. i.e. SO_EE_CODE_ZEROCOPY_COPIED
+        //          * e.g. Linux kernel tools/testing/selftests/net/msg_zerocopy.c
+        //          */
+        // }
 }
 
 int stream_report(struct thread *ts)
@@ -180,15 +189,17 @@ static struct neper_stat *neper_stream_init(struct flow *f)
         return neper_stat_init(f, NULL, 0);
 }
 
-void stream_flow_init(struct thread *t, int fd)
+void stream_flow_init(struct thread_neper *t, tcpconn_t *c)
 {
         const struct flow_create_args args = {
                 .thread  = t,
-                .fd      = fd,
+                // .fd      = fd,
+                .c       = c,
                 .events  = stream_events(t),
                 .opaque  = NULL,
                 .handler = stream_handler,
-                .stat    = neper_stream_init,
+                // TODO: Calculate Stats
+                // .stat    = neper_stream_init,
                 .mbuf_alloc = stream_alloc
         };
 

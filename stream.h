@@ -19,10 +19,15 @@
 
 #include <stdint.h>
 
+// CALADAN
+#include <runtime/tcp.h>
+
 struct flow;
 struct thread;
+struct thread_neper;
 
-void stream_flow_init(struct thread *, int fd);
+//void stream_flow_init(struct thread *, int fd);
+void stream_flow_init(struct thread_neper *, tcpconn_t *);
 void stream_handler(struct flow *, uint32_t events);
 int stream_report(struct thread *);
 

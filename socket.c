@@ -127,8 +127,8 @@ static void socket_accept(struct flow *f)
         } else {
                 // TODO(soheil): we can probably remove this line.
                 // socket_init_not_established(t, s);
-                // socket_init_established(t, s);
-                // t->fn->fn_flow_init(t, s);
+                socket_init_established(t, c);
+                t->fn->fn_flow_init(t, c);
         }
 }
 

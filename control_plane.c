@@ -525,6 +525,8 @@ void control_plane_wait_until_done(struct control_plane *cp)
                 // do_close(cp->ctrl_port);  /* disallow further connections */
                 tcp_qclose(cp->ctrl_queue);
                 printf("4!!!!!!!!\n");
+                printf("WAITING FOR CLIENT TO GET DONE\n");
+                while(1);
                 //TODO:Post Data transfer control plane
                 // if (cp->opts->nonblocking) {
                 //         for (i = 0; i < n; i++)

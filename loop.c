@@ -41,7 +41,7 @@ static void handler_stop(struct flow *f, uint32_t events)
 
 void *loop(struct thread_neper *t)
 {
-	printf("In main LOOP \n");
+	printf("In main LOOP with thread_id: %d\n", t->index);
         const struct options *opts = t->opts;
         // struct epoll_event *events;
 
@@ -74,6 +74,8 @@ void *loop(struct thread_neper *t)
         (*t->loop_inited)++;
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
+	printf("SERVER_SIDE : 1\n");
+
 
         // events = calloc_or_die(opts->maxevents, sizeof(*events), t->cb);
 
@@ -89,12 +91,15 @@ void *loop(struct thread_neper *t)
         //t->rl.next_event = ~0ULL; /* no pending timeouts */
         //t->rl.pending_count = 0; /* no pending flows */
         barrier_wait(t->ready);
+        printf("SERVER_SIDE : 2\n");
 
-        while (!t->stop) {
+        while (!t->stop) {      
                /* Serve pending event, compute timeout to next event */
         //        int ms = flow_serve_pending(t);
         //        int nfds = epoll_wait(t->epfd, events, opts->maxevents, ms);
                int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+               if(nfds > 0)
+                        printf("SERVER_SIDE: nfds: %d\n", nfds);
                int i;
 
                if (nfds == -1) {
