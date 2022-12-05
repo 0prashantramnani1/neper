@@ -388,7 +388,7 @@ tcpconn_t *socket_connect_one(struct thread_neper *t, int flags)
         // return s;
 
         // TODO: Return new connection
-        return 0;
+        return c;
 }
 
 void socket_connect_all(struct thread_neper *t)
