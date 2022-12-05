@@ -98,25 +98,17 @@ static void socket_init_established(struct thread_neper *t,  tcpconn_t *c)
 static void socket_accept(struct flow *f)
 {
         struct thread_neper *t = flow_thread(f);
-        // int fd_listen = flow_fd(f);
         tcpqueue_t *q = flow_queue(f);
-        // struct sockaddr_storage cli_addr;
-        // socklen_t cli_len = sizeof(cli_addr);
-
-        // int s = accept(fd_listen, (struct sockaddr *)&cli_addr, &cli_len);
 
         //CALADAN
         tcpconn_t *c;
-        printf("neper socket_accept: goinf into tcp_Accept\n");
         int s = tcp_accept(q, &c);
+
+        // Hack to make queue epoll level triggered
         tcpqueue_check_triggers(q);
 
-        printf("neper socket_accept: coming out of tcp_accept s: %d\n", s);
-        // if(q != NULL) {
-        // Hack to make tcpqueue level triggered
-        // tcpqueue_check_triggers(q);
-        // }
-        printf("neper socket_accept: CONNECTION ACCEPTED\n");
+        printf("Thread ID: %d - %d connetions accpted\n", t->index, tcpqueue_get_num_connections_accepted(q));
+
         if (s < 0) {
                 switch (errno) {
                 case EINTR:
@@ -129,12 +121,8 @@ static void socket_accept(struct flow *f)
                 }
         } else {
                 // TODO(soheil): we can probably remove this line.
-                // socket_init_not_established(t, s);
                 socket_init_established(t, c);
-
                 stream_flow_init(t, c);
-
-                // t->fn->fn_flow_init(t, c);
         }
 }
 
@@ -251,14 +239,6 @@ void socket_listen(struct thread_neper *t)
         const struct options *opts = t->opts;
         struct callbacks *cb = t->cb;
 
-        // struct addrinfo hints = {
-        //         .ai_flags    = AI_PASSIVE,
-        //         .ai_family   = t->ai->ai_family,
-        //         .ai_socktype = t->ai_socktype
-        // };
-
-        // struct addrinfo *ai = getaddrinfo_or_die(opts->host, opts->port, &hints,
-        //                                          cb);
         int port = atoi(opts->port);
         int i, n, s;
 
@@ -273,53 +253,36 @@ void socket_listen(struct thread_neper *t)
                 .stat    = NULL
         };
 
-        // switch (ai->ai_socktype) {
-        // case SOCK_STREAM:
+
         // TODO: Multi port - Multi thread support
-        n = opts->num_ports ? opts->num_ports : 1;
+        // n = opts->num_ports ? opts->num_ports : 1;
+
+        // TODO: Maybe be implement REUSEADDR to distribute the load accross
+        // multiple listeners
+
+        n = 1; // One thread will only listen to one port 
         for (i = 0; i < n; i++) {
-                // s = socket_bind_listener(t, ai);
-                // socket_init_not_established(t, s);
-                // listen_or_die(s, t->opts->listen_backlog, cb);
 
                 // TODO: Will have to change this definition to support multi threads per port
                 tcpqueue_t *data_plane_q;
                 struct netaddr laddr;
                 laddr.ip = 0;
                 laddr.port = (uint16_t)atoi(opts->port) + t->index;
-                printf("SERVER_SIDE : SERVER LISTENING IN PORT %d\n", laddr.port);	
+                printf("Thread ID: %d - Server listening on port (data_plane) %d\n", t->index, laddr.port);	
                 int ret = tcp_listen(laddr, 4096, &data_plane_q);
                 if(ret != 0) {
                         LOG_ERROR(cb, "Server listen on data_port failed! \n");
                 }
                 tcpqueue_set_nonblocking(data_plane_q, 1);
 
-                // if (t->fn->fn_post_listen) {
-                //         t->fn->fn_post_listen(t, s, ai);
-                // }
                 args.q = data_plane_q;
                 args.c = NULL;
                 flow_create(&args);
-                // reset_port(ai, ++port, cb);
         }
-        // break;
-
-        // case SOCK_DGRAM:
-        //         s = socket_bind_listener(t, ai);
-        //         socket_init_not_established(t, s);
-        //         socket_init_established(t, s);
-        //         t->fn->fn_flow_init(t, s);
-        //         break;
-        // }
-
-        // freeaddrinfo(ai);
 }
 
 tcpconn_t *socket_connect_one(struct thread_neper *t, int flags)
 {
-        // struct addrinfo *ai = t->ai;
-
-        // int s = socket_or_die(ai->ai_family, t->ai_socktype | flags, 0, t->cb);
         tcpconn_t *c;
 
         // TODO: Check if soure_port is needed
@@ -352,7 +315,6 @@ tcpconn_t *socket_connect_one(struct thread_neper *t, int flags)
         int n = t->opts->num_ports ? t->opts->num_ports : 1;
         int i = (t->flow_first + t->flow_count) % n;
         int port = atoi(t->opts->port) + i;
-        // reset_port(ai, port, t->cb);
 
         // TODO: Check for tcp_fastopen
         // if (t->opts->tcp_fastopen && t->ai_socktype == SOCK_STREAM) {
@@ -361,13 +323,9 @@ tcpconn_t *socket_connect_one(struct thread_neper *t, int flags)
         //                    sizeof(enable));
         // }
 
-        // socket_init_not_established(t, s);
         // if (t->local_hosts) {
         //         int i = (t->flow_first + t->flow_count) % t->num_local_hosts;
         //         bind_or_die(s, t->local_hosts[i], t->cb);
-        // }
-        // if (t->fn->fn_pre_connect) {
-        //         t->fn->fn_pre_connect(t, s, ai);
         // }
         char *host = t->opts->host;
 
@@ -383,11 +341,8 @@ tcpconn_t *socket_connect_one(struct thread_neper *t, int flags)
 
         ret = tcp_dial(laddr, raddr, &c);
 
-        // connect_or_die(s, ai, t->cb);
         socket_init_established(t, c);
-        // return s;
 
-        // TODO: Return new connection
         return c;
 }
 
@@ -396,9 +351,7 @@ void socket_connect_all(struct thread_neper *t)
         // TODO: look at async connect
         int i, flags = t->opts->async_connect ? SOCK_NONBLOCK : 0;
         for (i = 0; i < t->flow_limit; i++) {
-                // int s = socket_connect_one(t, flags);
                 tcpconn_t *c = socket_connect_one(t, flags);
-                // t->fn->fn_flow_init(t, s);
                 stream_flow_init(t, c);
         }
 }

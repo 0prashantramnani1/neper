@@ -85,10 +85,9 @@ void *loop(struct thread_neper *t)
         //t->rl.next_event = ~0ULL; /* no pending timeouts */
         //t->rl.pending_count = 0; /* no pending flows */
         barrier_wait(t->ready);
-        printf("SERVER_SIDE : 2\n");
         
         poll_trigger_t *last_trigger = NULL;
-        events[0] = NULL;
+        printf("Starting the event Loop for thread_id: %d\n", t->index);        
         while (!t->stop) {      
                 int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
 
@@ -103,6 +102,8 @@ void *loop(struct thread_neper *t)
         }
         thread_flush_stat(t);
         free(events);
+
+        // TODO: Close tcpqueue
         //do_close(t->epfd);
 
         /* TODO: The first flow object is leaking here... */
