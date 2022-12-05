@@ -43,7 +43,8 @@ struct neper_stat *flow_stat(const struct flow *);
 struct thread_neper *flow_thread(const struct flow *);
 
 tcpqueue_t          *flow_queue(const struct flow *);
-tcpconn_t          *flow_connection(const struct flow *);
+tcpconn_t           *flow_connection(const struct flow *);
+poll_trigger_t      *flow_trigger(const struct flow *);
 
 int flow_postpone(struct flow *);
 int flow_serve_pending(struct thread *t);  /* process postponed events */
@@ -56,6 +57,7 @@ struct flow_create_args {
         int fd;                     /* the associated fd for epoll */
         tcpconn_t *c;               /* associated tcp connection*/
         tcpqueue_t *q;               /* associated tcp queue for accepting connections*/
+        poll_trigger_t *trigger;     /* associated trigger for epoll -> can be used to stop the event loop*/
         uint32_t events;            /* the epoll event mask */
         void *opaque;               /* state opaque to the calling layer */
         flow_handler handler;       /* state machine: initial callback */

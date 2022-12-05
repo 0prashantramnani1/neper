@@ -30,7 +30,8 @@
 
 static void handler_stop(struct flow *f, uint32_t events)
 {
-        struct thread *t = flow_thread(f);
+        printf("Handler Stop\n");
+        struct thread_neper *t = flow_thread(f);
         t->stop = 1;
 }
 
@@ -46,13 +47,14 @@ void *loop(struct thread_neper *t)
         // struct epoll_event *events;
 
         //CALADAN
-        poll_trigger_t *events;
+        poll_trigger_t **events;
 
-	/*
+	
         const struct flow_create_args args = {
                 .thread  = t,
-                .fd      = t->stop_efd,
-                .events  = EPOLLIN,
+                // .fd      = t->stop_efd,
+                .trigger = t->stop_trigger,
+                .events  = SEV_READ,
                 .opaque  = NULL,
                 .handler = handler_stop,
                 .mbuf_alloc = NULL,
@@ -60,7 +62,7 @@ void *loop(struct thread_neper *t)
         };
 
         flow_create(&args);
-	*/
+	
         /* Server sockets must be created in order
          * so that the ebpf filter works.
          * Client sockets don't need to be so but we apply this logic anyway.
@@ -76,42 +78,53 @@ void *loop(struct thread_neper *t)
         mutex_unlock(t->loop_init_m);
 	printf("SERVER_SIDE : 1\n");
 
-
-        // events = calloc_or_die(opts->maxevents, sizeof(*events), t->cb);
-
         // CALADAN
         // initialising triggers/events
-        events = calloc(opts->maxevents, sizeof(*events));
-        // for(int i=0;i<opts->maxevents;i++) {
-        //         poll_trigger_init(&events[i]);
-        // }
-
+        events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
+        
         /* support for rate limited flows */
         //t->rl.pending_flows = calloc_or_die(t->flow_limit, sizeof(struct flow *), t->cb);
         //t->rl.next_event = ~0ULL; /* no pending timeouts */
         //t->rl.pending_count = 0; /* no pending flows */
         barrier_wait(t->ready);
         printf("SERVER_SIDE : 2\n");
-
+        
+        poll_trigger_t *last_trigger = NULL;
+        events[0] = NULL;
         while (!t->stop) {      
-               /* Serve pending event, compute timeout to next event */
-        //        int ms = flow_serve_pending(t);
-        //        int nfds = epoll_wait(t->epfd, events, opts->maxevents, ms);
-               int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
-               if(nfds > 0)
-                        printf("SERVER_SIDE: nfds: %d\n", nfds);
-               int i;
+                int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+                // if(nfds == 0) {
+                //         printf("NFDS: %d\n", nfds);
+                //         if(last_trigger != NULL) {
+                //                 struct flow* f = last_trigger->data_poll;
+                //                 if(flow_queue(f) == NULL) {
+                //         //                 tcpconn_check_triggers(flow_connection(f));
+                //                         printf("Last Trigger status: %d\n", last_trigger->triggered);
+                //                         printf("rx empty: %d\n", is_tcp_rx_empty(flow_connection(f)));
+                //                 }
+                //         }
+                // }
+                int i;
 
-               if (nfds == -1) {
-                       if (errno == EINTR)
-                               continue;
-                       PLOG_FATAL(t->cb, "epoll_wait");
-               }
-               for (i = 0; i < nfds && !t->stop; i++)
-                       flow_event(&events[i]);
+                if (nfds == -1) {
+                        if (errno == EINTR)
+                                continue;
+                        PLOG_FATAL(t->cb, "epoll_wait");
+                }
+                for (i = 0; i < nfds && !t->stop; i++) {
+                        flow_event(events[i]);
+                        // last_trigger = events[i];
+                        // struct flow* f = last_trigger->data_poll;
+                        // printf("After flow event\n");
+                        // if(flow_queue(f) == NULL) {
+                        //         printf("Last Trigger status: %d\n", last_trigger->triggered);
+                        //         printf("rx empty: %d\n", is_tcp_rx_empty(flow_connection(f)));
+                        // }
+
+                }
         }
-       // thread_flush_stat(t);
-        //free(events);
+        thread_flush_stat(t);
+        free(events);
         //do_close(t->epfd);
 
         /* TODO: The first flow object is leaking here... */

@@ -73,7 +73,7 @@ fn_enq(struct neper_stat *stat, void *ptr)
 }
 
 void
-thread_resize_flows_or_die(struct thread *ts, int flowid)
+thread_resize_flows_or_die(struct thread_neper *ts, int flowid)
 {
         int new_max = (ts->flow_space + 1) * 2;
         struct flow **new_flows;
@@ -97,7 +97,7 @@ thread_resize_flows_or_die(struct thread *ts, int flowid)
 
 /* Push out any final measurements */
 void
-thread_flush_stat(struct thread *ts) {
+thread_flush_stat(struct thread_neper *ts) {
         int i;
 
         for (i = 0; i < ts->flow_space; i++) {
@@ -132,7 +132,7 @@ thread_clear_flow_or_die(struct thread *ts, struct flow *f)
 
 /* Associate flow with thread */
 void
-thread_store_flow_or_die(struct thread *ts, struct flow *f) {
+thread_store_flow_or_die(struct thread_neper *ts, struct flow *f) {
         int flowid = flow_id(f);
 
         if (flowid >= ts->flow_space) {
@@ -164,7 +164,7 @@ int thread_stats_events(const struct thread *ts)
 
 /* Return the total number of snapshots across all threads. */
 
-int thread_stats_snaps(const struct thread *ts)
+int thread_stats_snaps(const struct thread_neper *ts)
 {
         const struct options *opts = ts[0].opts;
         int i, sum = 0;
@@ -181,7 +181,7 @@ int thread_stats_snaps(const struct thread *ts)
  * across all threads.
  */
 
-static int thread_stats_flows(const struct thread *ts)
+static int thread_stats_flows(const struct thread_neper *ts)
 {
         const struct options *opts = ts[0].opts;
         int i, num_flows = 0;
@@ -196,7 +196,7 @@ static int thread_stats_flows(const struct thread *ts)
  * return it to the caller.
  */
 
-struct neper_pq *thread_stats_pq(struct thread *ts)
+struct neper_pq *thread_stats_pq(struct thread_neper *ts)
 {
         const struct options *opts = ts[0].opts;
         struct callbacks *cb = ts[0].cb;
@@ -307,9 +307,9 @@ static int get_cpuset(cpu_set_t *cpuset, struct callbacks *cb)
         return j;
 }
 
-void thread_time_start(struct thread *t, const struct timespec *now)
+void thread_time_start(struct thread_neper *t, const struct timespec *now)
 {
-        pthread_mutex_lock(t->time_start_mutex);
+        mutex_lock(t->time_start_mutex);
 
         if (timespec_is_zero(t->time_start)) {
                 LOG_INFO(t->cb, "Setting time_start in thread %d", t->index);
@@ -317,7 +317,7 @@ void thread_time_start(struct thread *t, const struct timespec *now)
                 *t->time_start = *now;
         }
 
-        pthread_mutex_unlock(t->time_start_mutex);
+        mutex_unlock(t->time_start_mutex);
 }
 
 #ifndef NO_LIBNUMA
@@ -365,9 +365,9 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         //if (!cpuset)
         //        PLOG_FATAL(cb, "calloc cpuset");
         //s = pthread_barrier_init(ready, NULL, opts->num_threads + 1);
-        printf("0\n");
+
 	barrier_init(ready, opts->num_threads + 1);
-        printf("1\n");
+        
         //if (s != 0)
         //        LOG_FATAL(cb, "pthread_barrier_init: %s", strerror(s));
 
@@ -381,45 +381,38 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         // int percentiles = percentiles_count(&opts->percentiles);
 
         for (i = 0; i < opts->num_threads; i++) {
-                printf("2 + :%d\n",i);
                 t[i].index = i;
                 t[i].fn = fn;
                 //t[i].ai_socktype = fn->fn_type;
                 //t[i].ai = copy_addrinfo(ai);
                 //t[i].epfd = epoll_create1_or_die(cb);
-                printf("3 + :%d\n",i);
                 create_waiter(&t[i].waiter);
                 // TODO: stop_epfd
+                create_trigger(&t[i].stop_trigger);
                 //t[i].stop_efd = eventfd(0, 0);
                 //if (t[i].stop_efd == -1)
                 //        PLOG_FATAL(cb, "eventfd");
                 t[i].opts = opts;
                 t[i].cb = cb;
-                printf("4 + :%d\n",i);
                 t[i].num_local_hosts = count_local_hosts(opts);
-                printf("4.1 + :%d\n",i);
                 t[i].flow_first = first_flow_in_thread(&t[i]);
-                printf("4.2 + :%d\n",i);
                 t[i].flow_limit = flows_in_thread(&t[i]);
-                printf("4.3 + :%d\n",i);
                 t[i].flow_count = 0;
-                //t[i].percentiles = percentiles;
+                // t[i].percentiles = percentiles;
                 // TODO: LOCAL HOSTS
                 //t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
                 //                                     cb);
-                printf("5 + :%d\n",i);
                 t[i].ready = ready;
                 t[i].time_start = time_start;
                 t[i].time_start_mutex = time_start_mutex;
-                //t[i].rusage_start = rusage_start;
-               // t[i].stats = neper_stats_init(cb);
-                //t[i].rusage = neper_rusage(opts->interval);
+                t[i].rusage_start = rusage_start;
+                t[i].stats = neper_stats_init(cb);
+                t[i].rusage = neper_rusage(opts->interval);
                 // TODO: DATA PENDING
                 //t[i].data_pending = data_pending;
-                //t[i].histo_factory = neper_histo_factory(&t[i],
-                //                                         NEPER_HISTO_SIZE,
-                //                                         NEPER_HISTO_GROWTH);
-                printf("6 + :%d\n",i);
+                t[i].histo_factory = neper_histo_factory(&t[i],
+                                                        NEPER_HISTO_SIZE,
+                                                        NEPER_HISTO_GROWTH);
                 t[i].loop_inited = loop_inited;
                 t[i].loop_init_c = loop_init_c;
                 t[i].loop_init_m = loop_init_m;
@@ -475,7 +468,6 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         //if (s != 0)
         //        LOG_FATAL(cb, "pthread_attr_destroy: %s", strerror(s));
         //free(cpuset);
-        printf("7\n",i);
         printf("Waiting for server threads to setup\n");
         barrier_wait(ready);
         printf("worker threads are ready\n");
@@ -484,7 +476,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
 }
 
 void stop_worker_threads(struct callbacks *cb, int num_threads,
-                         struct thread *t, pthread_barrier_t *ready,
+                         struct thread_neper *t, pthread_barrier_t *ready,
                          pthread_cond_t *loop_init_c,
                          pthread_mutex_t *loop_init_m)
 {
@@ -493,38 +485,40 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
 
         /* tell them to stop */
         for (i = 0; i < num_threads; i++) {
-                if (eventfd_write(t[i].stop_efd, 1))
-                        PLOG_FATAL(cb, "eventfd_write");
-                else
-                        LOG_INFO(cb, "told thread %d to stop", i);
+                poll_trigger(t[i].waiter, t[i].stop_trigger);
+                // if (eventfd_write(t[i].stop_efd, 1))
+                //         PLOG_FATAL(cb, "eventfd_write");
+                // else
+                //         LOG_INFO(cb, "told thread %d to stop", i);
         }
 
         /* wait for them to stop */
-        for (i = 0; i < num_threads; i++) {
-                s = pthread_join(t[i].id, NULL);
-                if (s != 0)
-                        LOG_FATAL(cb, "pthread_join: %s", strerror(s));
-                else
-                        LOG_INFO(cb, "joined thread %d", i);
-                total_delay += t[i].rl.delay_count;
-                total_sleep += t[i].rl.sleep_count;
-                total_reschedule += t[i].rl.reschedule_count;
-        }
+        // for (i = 0; i < num_threads; i++) {
+        //         s = pthread_join(t[i].id, NULL);
+        //         if (s != 0)
+        //                 LOG_FATAL(cb, "pthread_join: %s", strerror(s));
+        //         else
+        //                 LOG_INFO(cb, "joined thread %d", i);
+        //         total_delay += t[i].rl.delay_count;
+        //         total_sleep += t[i].rl.sleep_count;
+        //         total_reschedule += t[i].rl.reschedule_count;
+        // }
 
-        LOG_INFO(cb, "reschedule=%lu", total_reschedule);
-        LOG_INFO(cb, "delay=%lu", total_delay);
-        LOG_INFO(cb, "sleep=%lu", total_sleep);
-        s = pthread_barrier_destroy(ready);
-        if (s != 0)
-                LOG_FATAL(cb, "pthread_barrier_destroy: %s", strerror(s));
+        printf("ALl event loops stopped \n");
+        // LOG_INFO(cb, "reschedule=%lu", total_reschedule);
+        // LOG_INFO(cb, "delay=%lu", total_delay);
+        // LOG_INFO(cb, "sleep=%lu", total_sleep);
+        // s = pthread_barrier_destroy(ready);
+        // if (s != 0)
+        //         LOG_FATAL(cb, "pthread_barrier_destroy: %s", strerror(s));
 
-        s = pthread_cond_destroy(loop_init_c);
-        if (s != 0)
-                LOG_FATAL(cb, "pthread_cond_destroy: %s", strerror(s));
+        // s = pthread_cond_destroy(loop_init_c);
+        // if (s != 0)
+        //         LOG_FATAL(cb, "pthread_cond_destroy: %s", strerror(s));
 
-        s = pthread_mutex_destroy(loop_init_m);
-        if (s != 0)
-                LOG_FATAL(cb, "pthread_mutex_destroy: %s", strerror(s));
+        // s = pthread_mutex_destroy(loop_init_m);
+        // if (s != 0)
+        //         LOG_FATAL(cb, "pthread_mutex_destroy: %s", strerror(s));
 }
 
 static void free_worker_threads(int num_threads, struct thread *t)
@@ -545,15 +539,13 @@ static void free_worker_threads(int num_threads, struct thread *t)
 int run_main_thread(struct options *opts, struct callbacks *cb,
                     const struct neper_fn *fn)
 {
-        void *(*thread_func)(void *) = (void *)loop;
-        //pthread_barrier_t ready_barrier; /* shared by threads */
+        void *(*thread_func)(void *) = (void *)loop; /* shared by threads */
 
         //CALADAN
 	barrier_t ready_barrier;
 	tcpqueue_t *control_plane_q;
         
         struct timespec time_start = {0}; /* shared by flows */
-        //pthread_mutex_t time_start_mutex = PTHREAD_MUTEX_INITIALIZER;
 
         //CALADAN
 	mutex_t time_start_mutex;
@@ -561,7 +553,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         // TODO: Check
         struct rusage rusage_start; /* updated when first packet comes */
-        //struct rusage rusage_end; /* local to this function, never pass out */
+        struct rusage rusage_end; /* local to this function, never pass out */
 
         struct addrinfo *ai;
         struct thread_neper *ts; /* worker threads */
@@ -577,9 +569,6 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         if (opts->delay)
                 prctl(PR_SET_TIMERSLACK, 1UL);
-
-        pthread_cond_t loop_init_c = PTHREAD_COND_INITIALIZER;
-        pthread_mutex_t loop_init_m = PTHREAD_MUTEX_INITIALIZER;
 	*/
 
 	condvar_t loop_init_c;
@@ -593,24 +582,15 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         if (opts->test_length > 0) {
                 PRINT(cb, "total_run_time", "%d", opts->test_length);
                 data_pending = NULL;
-        } else {
-                PRINT(cb, "total_transactions", "%d", -(opts->test_length));
-                data_pending = calloc(1, sizeof(*data_pending));
-                countdown_cond_init(data_pending, -(opts->test_length));
-        }
+        } 
+
         if (opts->dry_run)
                 return 0;
-/*
-#ifndef NO_LIBNUMA
-        if (opts->pin_numa && numa_available() == -1)
-                PLOG_FATAL(cb, "libnuma not available");
-#endif
-*/
+
         cp = control_plane_create(opts, cb, data_pending, fn);
         control_plane_start(cp, &ai, control_plane_q);
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
-        //reset_port(ai, atoi(opts->port), cb);
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));
         start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
                              &time_start, &time_start_mutex, &rusage_start, ai,
@@ -619,30 +599,28 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 			     
         // free(ai);
         LOG_INFO(cb, "started worker threads");
-        printf("0!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	//exit(-1);
         // return 0;
         /* rusage_start is now exposed to other threads  */
-        //pthread_mutex_lock(&time_start_mutex);
-        //getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
-        //pthread_mutex_unlock(&time_start_mutex);
+        mutex_lock(&time_start_mutex);
+        getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
+        mutex_unlock(&time_start_mutex);
         control_plane_wait_until_done(cp);
 
-////////////////////////////////////////////////////////////////////////
-
-        //getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
-
-        //stop_worker_threads(cb, opts->num_threads, ts, &ready_barrier,
-        //                    &loop_init_c, &loop_init_m);
+        getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
+        printf("Received Notif from client, going to stop worker threads now\n");
+        
+        stop_worker_threads(cb, opts->num_threads, ts, &ready_barrier,
+                           &loop_init_c, &loop_init_m);
         LOG_INFO(cb, "stopped worker threads");
 
-        //PRINT(cb, "invalid_secret_count", "%d", control_plane_incidents(cp));
+        PRINT(cb, "invalid_secret_count", "%d", control_plane_incidents(cp));
 	
 	
         /* rusage_start and time_start were (are?) visible to other threads */
-        //pthread_mutex_lock(&time_start_mutex);
+        mutex_lock(&time_start_mutex);
         /* begin printing rusage */
-	/*
+	
         PRINT(cb, "time_start", "%ld.%09ld", time_start.tv_sec,
               time_start.tv_nsec);
         PRINT(cb, "utime_start", "%ld.%06ld", rusage_start.ru_utime.tv_sec,
@@ -663,14 +641,13 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         PRINT(cb, "nvcsw_end", "%ld", rusage_end.ru_nvcsw);
         PRINT(cb, "nivcsw_start", "%ld", rusage_start.ru_nivcsw);
         PRINT(cb, "nivcsw_end", "%ld", rusage_end.ru_nivcsw);
-	*/
-        //pthread_mutex_unlock(&time_start_mutex);
+	
+        mutex_unlock(&time_start_mutex);
         /* end printing rusage */
 
-        //int ret = fn->fn_report(ts);
-	int ret = 0;
+        int ret = fn->fn_report(ts);
 	printf("WORKING 2 \n");
-        //control_plane_stop(cp);
+        control_plane_stop(cp);
         //control_plane_destroy(cp);
         PRINT(cb, "local_throughput", "%lld", opts->local_rate);
         PRINT(cb, "remote_throughput", "%lld", opts->remote_rate);

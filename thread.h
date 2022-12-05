@@ -115,6 +115,7 @@ struct thread_neper {
         //int epfd;                     /* The fd used by this thread for epoll */
         poll_waiter_t *waiter;
         //int stop_efd;
+        poll_trigger_t *stop_trigger;
         //int ai_socktype;              /* supplied by the application */
         const struct neper_fn *fn;    /* supplied by the application */
         //struct addrinfo *ai;
@@ -135,10 +136,10 @@ struct thread_neper {
         int *loop_inited;
         struct timespec *time_start;
         mutex_t *time_start_mutex;
-        //struct rusage *rusage_start;
-        //struct neper_histo_factory *histo_factory;
-        //struct neper_stats *stats;
-        //struct neper_rusage *rusage;
+        struct rusage *rusage_start;
+        struct neper_histo_factory *histo_factory;
+        struct neper_stats *stats;
+        struct neper_rusage *rusage;
         struct countdown_cond *data_pending;
         //struct rate_limit rl;
         struct flow **flows;  /* indexed by flow_id(flow) */
@@ -147,15 +148,15 @@ struct thread_neper {
 
 
 int thread_stats_events(const struct thread *);
-int thread_stats_snaps(const struct thread *);
+int thread_stats_snaps(const struct thread_neper *);
 
-struct neper_pq *thread_stats_pq(struct thread *);
+struct neper_pq *thread_stats_pq(struct thread_neper *);
 
 int run_main_thread(struct options *, struct callbacks *,
                     const struct neper_fn *);
-void thread_time_start(struct thread *, const struct timespec *now);
-void thread_store_flow_or_die(struct thread *, struct flow *);
-void thread_flush_stat(struct thread *);
+void thread_time_start(struct thread_neper *, const struct timespec *now);
+void thread_store_flow_or_die(struct thread_neper *, struct flow *);
+void thread_flush_stat(struct thread_neper *);
 void thread_clear_flow_or_die(struct thread*, struct flow *);
 
 #endif

@@ -69,7 +69,7 @@ struct thread;
 struct neper_fn {
         void (*fn_loop_init)(struct thread_neper *);
         void (*fn_flow_init)(struct thread_neper *, int fd);
-        int (*fn_report)(struct thread *);
+        int (*fn_report)(struct thread_neper *);
         void (*fn_ctrl_client)(int ctrl_conn, struct callbacks *cb);
         void (*fn_ctrl_server)(int ctrl_conn, struct callbacks *cb);
         void (*fn_pre_connect)(struct thread *thread, int fd, struct addrinfo *ai);

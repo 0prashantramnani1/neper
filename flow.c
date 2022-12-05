@@ -31,6 +31,7 @@ struct flow {
         void *          f_opaque;   /* state machine: opaque state */
         void *          f_mbuf;     /* send/recv message buffer */
         int             f_fd;       /* open file descriptor */
+        poll_trigger_t *f_trigger;    /* open trigger */
         int             f_id;       /* index of this flow within the thread */
         tcpconn_t *f_c;               /* associated tcp connection*/
         // TODO: Maybe move f_q to neper_thread
@@ -83,6 +84,11 @@ tcpconn_t *flow_connection(const struct flow *f)
         return f->f_c;
 }
 
+poll_trigger_t *flow_trigger(const struct flow *f)
+{
+        return f->f_trigger;
+}
+
 void flow_event(const poll_trigger_t *e)
 {
         // struct flow *f = e->data.ptr;
@@ -98,7 +104,7 @@ void flow_event(const poll_trigger_t *e)
 static void flow_ctl(struct flow *f, int op, flow_handler fh, uint32_t events,
                      bool or_die)
 {
-        if (f->f_q != NULL || f->f_c != NULL) {
+        if (f->f_q != NULL || f->f_c != NULL || f->f_trigger != NULL) {
                 f->f_handler = fh;
 
                 // struct epoll_event ev;
@@ -108,18 +114,22 @@ static void flow_ctl(struct flow *f, int op, flow_handler fh, uint32_t events,
                 struct list_head *h;
                 poll_trigger_t *t;
                 int ret = create_trigger(&t);
+                if(ret < 0) {
+                        printf("ERROR IN CREATING TRIGGER\n");
+                }
 
-                // int err = epoll_ctl(f->f_thread->epfd, op, f->f_fd, &ev);
                 int err;
-                // poll_arm_w_queue(w, h, t, SEV_READ, cb, accept_arg, q, -7);
 
                 //TODO: Make generic
                 if(f->f_q != NULL) {
                         h = tcpqueue_get_triggers(f->f_q);
                         poll_arm_w_queue_neper(f->f_thread->waiter, h, t, events, NULL, NULL, f->f_q, f);
-                } else {
-                        h = tcp_get_triggers(f->f_q);
+                } else if(f->f_c != NULL) {
+                        h = tcp_get_triggers(f->f_c);
                         poll_arm_w_sock_neper(f->f_thread->waiter, h, t, events, NULL, NULL, f->f_c, f);
+                } else if(f->f_trigger != NULL) {
+                        h = NULL;
+                        poll_arm_w_sock_neper(f->f_thread->waiter, h, f->f_trigger, events, NULL, NULL, NULL, f);
                 }
                 if (err) {
                         if (or_die)
@@ -160,10 +170,11 @@ void flow_create(const struct flow_create_args *args)
         f->f_opaque = args->opaque;
         // f->f_fd     = args->fd;
         if(args->q != NULL) {
-                printf("flow_create: ASSIGNING data_plane_q to listening flow\n");
                 f->f_q = args->q;
-        } else {
+        } else if(args->c != NULL) {
                 f->f_c = args->c;
+        } else if(args->trigger != NULL ){
+                f->f_trigger = args->trigger;
         }
 
         if (args->mbuf_alloc) {
@@ -180,6 +191,7 @@ void flow_create(const struct flow_create_args *args)
                         thread_store_flow_or_die(t, f);
                 }
         }
+
         flow_ctl(f, EPOLL_CTL_ADD, args->handler, args->events, true);
 }
 

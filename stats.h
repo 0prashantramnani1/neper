@@ -26,6 +26,7 @@ struct neper_coef;
 struct neper_histo;
 struct neper_snap;
 struct thread;
+struct thread_neper;
 
 /*
  * The neper_stat struct is a glue object used for latency measurements.
@@ -48,8 +49,8 @@ struct neper_stat {
 
 double neper_stat_cmp(void *, void *);
 
-struct neper_coef *neper_stat_print(struct thread *, FILE *,
-        void (*)(struct thread *, int flow_index, const struct neper_snap *,
+struct neper_coef *neper_stat_print(struct thread_neper *, FILE *,
+        void (*)(struct thread_neper *, int flow_index, const struct neper_snap *,
                  FILE *));
 
 struct neper_stat *neper_stat_init(struct flow *, struct neper_histo *,

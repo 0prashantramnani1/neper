@@ -75,8 +75,8 @@ static struct neper_histo *stat_histo(const struct neper_stat *stat)
  * whether it is time to create a new snapshot.
  */
 
-static void stat_event(struct thread *t, struct neper_stat *stat, int things,
-                       bool force, void (*fn)(struct thread *, 
+static void stat_event(struct thread_neper *t, struct neper_stat *stat, int things,
+                       bool force, void (*fn)(struct thread_neper *, 
                                               struct neper_stat *,
                                               struct neper_snap *))
 {
@@ -109,8 +109,8 @@ static void stat_event(struct thread *t, struct neper_stat *stat, int things,
         }
 }
 
-struct neper_coef *neper_stat_print(struct thread *ts, FILE *csv,
-        void (*fn)(struct thread *t, int, const struct neper_snap *, FILE *))
+struct neper_coef *neper_stat_print(struct thread_neper *ts, FILE *csv,
+        void (*fn)(struct thread_neper *t, int, const struct neper_snap *, FILE *))
 {
         struct neper_pq *pq = thread_stats_pq(ts);
         if (!pq)
@@ -130,7 +130,7 @@ struct neper_coef *neper_stat_print(struct thread *ts, FILE *csv,
                 current_total += snap->things - impl->scratch;
                 impl->scratch = snap->things;
                 if (csv) {
-                        struct thread *t = &ts[impl->thread_index];
+                        struct thread_neper *t = &ts[impl->thread_index];
                         double raw_thruput = 0;
 
                         fprintf(csv, "%d,%d,", t->index, impl->flow_index);
@@ -175,7 +175,7 @@ struct neper_coef *neper_stat_print(struct thread *ts, FILE *csv,
 struct neper_stat *neper_stat_init(struct flow *f, struct neper_histo *histo,
                                    int extra)
 {
-        struct thread *t = flow_thread(f);
+        struct thread_neper *t = flow_thread(f);
         const struct options *opts = t->opts;
         const int n = (opts->test_length / opts->interval) + 1;
 

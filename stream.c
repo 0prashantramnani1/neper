@@ -57,11 +57,11 @@ void stream_handler(struct flow *f, uint32_t events)
 {
         static const uint64_t NSEC_PER_SEC = 1000*1000*1000;
 
-        // struct neper_stat *stat = flow_stat(f);
+        struct neper_stat *stat = flow_stat(f);
         struct thread_neper *t = flow_thread(f);
         void *mbuf = flow_mbuf(f);
         // int fd = flow_fd(f);
-        tcpconn_t * c = flow_connection(f);
+        tcpconn_t *c = flow_connection(f);
         const struct options *opts = t->opts;
         /*
          * The actual size can be calculated with CMSG_SPACE(sizeof(struct X)),
@@ -87,27 +87,21 @@ void stream_handler(struct flow *f, uint32_t events)
         // if (events & (EPOLLHUP | EPOLLRDHUP))
         //         return flow_delete(f);
 
-        if (events & EPOLLIN)
-                do {
-                        do {
-                                // n = recv(fd, mbuf, opts->buffer_size,
-                                //          opts->recv_flags);
+        if (events & SEV_READ) {
+                n = tcp_read(c, mbuf, opts->buffer_size);
+                // printf("stream_handler: read %d bytes\n", n);
+                tcpconn_check_triggers(c);
+                // printf("tcp->reqs %lld\n", tcp_get_reqs(c));
+                if (n < 0) {
+                        // if (errno != EAGAIN)
+                        // PLOG_ERROR(t->cb, "read");
+                        // break;
+                }
 
-                                n = tcp_read(c, mbuf, opts->buffer_size);
-                        } while(n == -1 && errno == EINTR);
-                        if (n == -1) {
-                                if (errno != EAGAIN)
-                                        PLOG_ERROR(t->cb, "read");
-                                break;
-                        }
-                        if (n == 0) {
-                                flow_delete(f);
-                                return;
-                        }
-                        // stat->event(t, stat, n, false, NULL);
-                } while (opts->edge_trigger);
+                stat->event(t, stat, n, false, NULL);
+        }
 
-        if (events & EPOLLOUT)
+        if (events & SEV_WRITE)
                 do {
                         // n = send(fd, mbuf, opts->buffer_size, opts->buffer_size);
                         n = tcp_write(c, mbuf, opts->buffer_size);
@@ -145,7 +139,7 @@ void stream_handler(struct flow *f, uint32_t events)
         // }
 }
 
-int stream_report(struct thread *ts)
+int stream_report(struct thread_neper *ts)
 {
         const struct options *opts = ts[0].opts;
         const char *path = opts->all_samples;
@@ -190,16 +184,17 @@ static struct neper_stat *neper_stream_init(struct flow *f)
 }
 
 void stream_flow_init(struct thread_neper *t, tcpconn_t *c)
-{
+{       
         const struct flow_create_args args = {
                 .thread  = t,
                 // .fd      = fd,
+                .q       = NULL,
                 .c       = c,
                 .events  = stream_events(t),
                 .opaque  = NULL,
                 .handler = stream_handler,
                 // TODO: Calculate Stats
-                // .stat    = neper_stream_init,
+                .stat    = neper_stream_init,
                 .mbuf_alloc = stream_alloc
         };
 

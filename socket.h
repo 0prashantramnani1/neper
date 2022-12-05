@@ -17,11 +17,15 @@
 #ifndef THIRD_PARTY_NEPER_SOCKET_H
 #define THIRD_PARTY_NEPER_SOCKET_H
 
+// CALADAN
+#include<runtime/tcp.h>
+
 struct thread;
+struct thread_neper;
 
 void socket_listen(struct thread_neper *);
 
-int  socket_connect_one(struct thread_neper *, int flags);
+tcpconn_t  *socket_connect_one(struct thread_neper *, int flags);
 void socket_connect_all(struct thread_neper *);
 
 #endif

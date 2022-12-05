@@ -18,6 +18,7 @@
 #include "flow.h"
 #include "socket.h"
 #include "thread.h"
+#include "stream.h"
 
 /*
 #ifndef NO_LIBNUMA
@@ -75,7 +76,7 @@ static void socket_init_not_established(struct thread *t, int s)
  */
 
 // static void socket_init_established(struct thread *t, int s)
-static void socket_init_established(struct thread *t,  tcpconn_t *c)
+static void socket_init_established(struct thread_neper *t,  tcpconn_t *c)
 {
         struct callbacks *cb = t->cb;
 
@@ -108,13 +109,15 @@ static void socket_accept(struct flow *f)
         tcpconn_t *c;
         printf("neper socket_accept: goinf into tcp_Accept\n");
         int s = tcp_accept(q, &c);
-        printf("neper socket_accept: coming out of tcp_accept\n");
+        tcpqueue_check_triggers(q);
+
+        printf("neper socket_accept: coming out of tcp_accept s: %d\n", s);
         // if(q != NULL) {
         // Hack to make tcpqueue level triggered
         // tcpqueue_check_triggers(q);
         // }
         printf("neper socket_accept: CONNECTION ACCEPTED\n");
-        if (s <= 0) {
+        if (s < 0) {
                 switch (errno) {
                 case EINTR:
                 case ECONNABORTED:
@@ -128,7 +131,10 @@ static void socket_accept(struct flow *f)
                 // TODO(soheil): we can probably remove this line.
                 // socket_init_not_established(t, s);
                 socket_init_established(t, c);
-                t->fn->fn_flow_init(t, c);
+
+                stream_flow_init(t, c);
+
+                // t->fn->fn_flow_init(t, c);
         }
 }
 
@@ -309,7 +315,7 @@ void socket_listen(struct thread_neper *t)
         // freeaddrinfo(ai);
 }
 
-int socket_connect_one(struct thread_neper *t, int flags)
+tcpconn_t *socket_connect_one(struct thread_neper *t, int flags)
 {
         // struct addrinfo *ai = t->ai;
 
@@ -390,7 +396,9 @@ void socket_connect_all(struct thread_neper *t)
         // TODO: look at async connect
         int i, flags = t->opts->async_connect ? SOCK_NONBLOCK : 0;
         for (i = 0; i < t->flow_limit; i++) {
-                int s = socket_connect_one(t, flags);
+                // int s = socket_connect_one(t, flags);
+                tcpconn_t *c = socket_connect_one(t, flags);
                 // t->fn->fn_flow_init(t, s);
+                stream_flow_init(t, c);
         }
 }
