@@ -357,48 +357,24 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
 	LOG_INFO(cb, "Configuring woker threads \n");
         printf("Configuring woker threads \n");
         
-        //cpu_set_t *cpuset;
-        //pthread_attr_t attr;
         int s, i, allowed_cores;
-
-        //cpuset = calloc(CPU_SETSIZE, sizeof(cpu_set_t));
-        //if (!cpuset)
-        //        PLOG_FATAL(cb, "calloc cpuset");
-        //s = pthread_barrier_init(ready, NULL, opts->num_threads + 1);
 
 	barrier_init(ready, opts->num_threads + 1);
         
-        //if (s != 0)
-        //        LOG_FATAL(cb, "pthread_barrier_init: %s", strerror(s));
-
-        //s = pthread_attr_init(&attr);
-        //if (s != 0)
-        //        LOG_FATAL(cb, "pthread_attr_init: %s", strerror(s));
-
-        //allowed_cores = get_cpuset(cpuset, cb);
-        //LOG_INFO(cb, "Number of allowed_cores = %d", allowed_cores);
-
-        // int percentiles = percentiles_count(&opts->percentiles);
+        int percentiles = percentiles_count(&opts->percentiles);
 
         for (i = 0; i < opts->num_threads; i++) {
                 t[i].index = i;
                 t[i].fn = fn;
-                //t[i].ai_socktype = fn->fn_type;
-                //t[i].ai = copy_addrinfo(ai);
-                //t[i].epfd = epoll_create1_or_die(cb);
                 create_waiter(&t[i].waiter);
-                // TODO: stop_epfd
                 create_trigger(&t[i].stop_trigger);
-                //t[i].stop_efd = eventfd(0, 0);
-                //if (t[i].stop_efd == -1)
-                //        PLOG_FATAL(cb, "eventfd");
                 t[i].opts = opts;
                 t[i].cb = cb;
                 t[i].num_local_hosts = count_local_hosts(opts);
                 t[i].flow_first = first_flow_in_thread(&t[i]);
                 t[i].flow_limit = flows_in_thread(&t[i]);
                 t[i].flow_count = 0;
-                // t[i].percentiles = percentiles;
+                t[i].percentiles = percentiles;
                 // TODO: LOCAL HOSTS
                 //t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
                 //                                     cb);
@@ -428,46 +404,13 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //t[i].rl.pending_count = 0;
                 //t[i].rl.next_event = ~0ULL;
 
-                //s = pthread_create(&t[i].id, &attr, thread_func, &t[i]);
 		s = thread_spawn(thread_func, &t[i]);
                 if (s != 0)
                        LOG_FATAL(cb, "thread_spawn: %s", strerror(s));
 		
-		/*
-                if (opts->pin_cpu) {
-                        s = pthread_setaffinity_np(t[i].id,
-                                                sizeof(cpu_set_t),
-                                                &cpuset[i % allowed_cores]);
-                        if (s != 0) {
-                                LOG_FATAL(cb, "pthread_setaffinity_np: %s",
-                                          strerror(s));
-                        }
-                }
-#ifndef NO_LIBNUMA
-                else if (opts->pin_numa) {
-                        int num_numa = numa_num_configured_nodes();
-                        cpu_set_t numa_allowed_cpus;
-
-                        get_numa_allowed_cpus(cb, i % num_numa,
-                                              &numa_allowed_cpus);
-                        s = pthread_setaffinity_np(t[i].id,
-                                                sizeof(cpu_set_t),
-                                                &numa_allowed_cpus);
-                        if (s != 0) {
-                                LOG_FATAL(cb, "pthread_setaffinity_np: %s",
-                                          strerror(s));
-                        }
-
-                }
-#endif
-	*/
         }
 	
 
-        //s = pthread_attr_destroy(&attr);
-        //if (s != 0)
-        //        LOG_FATAL(cb, "pthread_attr_destroy: %s", strerror(s));
-        //free(cpuset);
         printf("Waiting for server threads to setup\n");
         barrier_wait(ready);
         printf("worker threads are ready\n");
@@ -589,6 +532,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         cp = control_plane_create(opts, cb, data_pending, fn);
         control_plane_start(cp, &ai, control_plane_q);
+        printf("Started control plane\n");
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));

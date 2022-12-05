@@ -200,11 +200,6 @@ static tcpconn_t *ctrl_connect(const char *host, const char *port,
 {
         int ctrl_conn, optval = 1;
         struct hs_msg msg = {};
-
-        // ctrl_conn = connect_any(host, port, ai, opts, cb);
-        // if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
-        //                sizeof(optval)))
-        //         PLOG_ERROR(cb, "setsockopt(TCP_NODELAY)");
         
         msg = (struct hs_msg){ .magic = htonl(opts->magic),
                 .type = htonl(CLI_HELLO),
@@ -225,91 +220,47 @@ static tcpconn_t *ctrl_connect(const char *host, const char *port,
         raddr.ip = addr;
         raddr.port = (uint16_t)atoi(port);
 
-	printf("0\n");
-
         tcpconn_t *c;
         ret = tcp_dial(laddr, raddr, &c);
-	printf("CILENT DIAL: ret: %d \n", ret); 
-        //
-	printf("1\n");
+        
         memcpy(msg.secret, opts->secret, sizeof(msg.secret));
         LOG_INFO(cb, "+++ CLI --> SER   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
-
-	printf("2\n");
+        
         send_msg_caladan(c, &msg, cb, __func__);
-
-	printf("3\n");
-        //return ctrl_conn; // REMOVE
+        printf("Sent control message to Server\n");
 
         /* Wait for the server to respond */
         msg.type = htonl(SER_ACK);
-        //if (recv_msg(ctrl_conn, &msg, cb, __func__))
+        
 	int len = 0;
 	len = tcp_read(c, &msg, sizeof(msg));
-	//if(tcp_read(c, &msg, sizeof(msg)) <= 0)
+        printf("Received control message from Server\n");
+
 	if(len <= 0)
                 LOG_FATAL(cb, "exiting");
-	printf("Client: size of message read from server: %d\n", len);
+	printf("Size of the message read from server: %d\n", len);
         LOG_INFO(cb, "+++ CLI <-- SER   SER_ACK -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
         return c;
 }
 
-// static int ctrl_listen(const char *host, const char *port,
-//                        struct addrinfo **ai, struct options *opts,
-//                        struct callbacks *cb)
-
 // CALADAN
 static int ctrl_listen(const char *host, const char *port,
                        struct addrinfo **ai, struct options *opts,
                        struct callbacks *cb, tcpqueue_t** control_plane_q)
 {
-	/*
-        struct addrinfo *result, *rp;
-        int fd_listen = 0;
-
-        const struct addrinfo hints = {
-                .ai_flags    = AI_PASSIVE,
-                .ai_family   = get_family(opts),
-                .ai_socktype = SOCK_STREAM
-        };
-
-        result = getaddrinfo_or_die(host, port, &hints, cb);
-        for (rp = result; rp != NULL; rp = rp->ai_next) {
-                fd_listen = socket(rp->ai_family, rp->ai_socktype,
-                                   rp->ai_protocol);
-                if (fd_listen == -1) {
-                        PLOG_ERROR(cb, "socket");
-                        continue;
-                }
-                set_reuseport(fd_listen, cb);
-                set_reuseaddr(fd_listen, 1, cb);
-                if (opts->freebind)
-                        set_freebind(fd_listen, cb);
-                if (bind(fd_listen, rp->ai_addr, rp->ai_addrlen) == 0)
-                        break;
-                PLOG_ERROR(cb, "bind");
-                do_close(fd_listen);
-        }
-        if (rp == NULL)
-                LOG_FATAL(cb, "Could not bind");
-        *ai = copy_addrinfo(rp);
-        freeaddrinfo(result);
-        if (listen(fd_listen, opts->listen_backlog))
-                PLOG_FATAL(cb, "listen");
-        return fd_listen;
-	*/
-
 	struct netaddr laddr;
 	laddr.ip = 0;
 	laddr.port = (uint16_t)atoi(port);	
 	int ret = tcp_listen(laddr, 4096, control_plane_q);
 	if(ret != 0) {
 		LOG_ERROR(cb, "Server listen on control_port failed! \n");
-	}
+	} else {
+                printf("Control Plane listening on port: %d\n", laddr.port);
+        }
 	return ret;
 }
 

@@ -44,7 +44,6 @@ void *loop(struct thread_neper *t)
 {
 	printf("In main LOOP with thread_id: %d\n", t->index);
         const struct options *opts = t->opts;
-        // struct epoll_event *events;
 
         //CALADAN
         poll_trigger_t **events;
@@ -76,7 +75,6 @@ void *loop(struct thread_neper *t)
         (*t->loop_inited)++;
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
-	printf("SERVER_SIDE : 1\n");
 
         // CALADAN
         // initialising triggers/events
@@ -93,34 +91,14 @@ void *loop(struct thread_neper *t)
         events[0] = NULL;
         while (!t->stop) {      
                 int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
-                // if(nfds == 0) {
-                //         printf("NFDS: %d\n", nfds);
-                //         if(last_trigger != NULL) {
-                //                 struct flow* f = last_trigger->data_poll;
-                //                 if(flow_queue(f) == NULL) {
-                //         //                 tcpconn_check_triggers(flow_connection(f));
-                //                         printf("Last Trigger status: %d\n", last_trigger->triggered);
-                //                         printf("rx empty: %d\n", is_tcp_rx_empty(flow_connection(f)));
-                //                 }
-                //         }
-                // }
-                int i;
 
                 if (nfds == -1) {
                         if (errno == EINTR)
                                 continue;
                         PLOG_FATAL(t->cb, "epoll_wait");
                 }
-                for (i = 0; i < nfds && !t->stop; i++) {
+                for (int i = 0; i < nfds && !t->stop; i++) {
                         flow_event(events[i]);
-                        // last_trigger = events[i];
-                        // struct flow* f = last_trigger->data_poll;
-                        // printf("After flow event\n");
-                        // if(flow_queue(f) == NULL) {
-                        //         printf("Last Trigger status: %d\n", last_trigger->triggered);
-                        //         printf("rx empty: %d\n", is_tcp_rx_empty(flow_connection(f)));
-                        // }
-
                 }
         }
         thread_flush_stat(t);

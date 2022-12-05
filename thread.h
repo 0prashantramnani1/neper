@@ -111,14 +111,9 @@ struct thread {
 
 struct thread_neper {
         int index;
-        //pthread_t id;
-        //int epfd;                     /* The fd used by this thread for epoll */
-        poll_waiter_t *waiter;
-        //int stop_efd;
+        poll_waiter_t *waiter;          /* The waiter used by this thread for epoll */
         poll_trigger_t *stop_trigger;
-        //int ai_socktype;              /* supplied by the application */
         const struct neper_fn *fn;    /* supplied by the application */
-        //struct addrinfo *ai;
         //uint64_t transactions;
         const struct options *opts;
         struct callbacks *cb;
@@ -127,7 +122,7 @@ struct thread_neper {
         int flow_first;               /* global index of thread's first flow */
         int flow_limit;               /* number of flows to create on thread */
         int flow_count;               /* number of flows created on thread */
-        //int percentiles;              /* number of requested percentiles */
+        int percentiles;              /* number of requested percentiles */
         int stop;
         void *f_mbuf;                 /* replaces per-flow buffers */
         barrier_t *ready;
