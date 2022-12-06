@@ -340,6 +340,10 @@ tcpconn_t *socket_connect_one(struct thread_neper *t, int flags)
         raddr.port = (uint16_t)port;
 
         ret = tcp_dial(laddr, raddr, &c);
+        if(ret) {
+                printf("Cannot connet\n"); // possibly because ports have exhausted
+                return NULL;
+        }
 
         socket_init_established(t, c);
 
@@ -352,6 +356,7 @@ void socket_connect_all(struct thread_neper *t)
         int i, flags = t->opts->async_connect ? SOCK_NONBLOCK : 0;
         for (i = 0; i < t->flow_limit; i++) {
                 tcpconn_t *c = socket_connect_one(t, flags);
-                stream_flow_init(t, c);
+                if(c != NULL)
+                        stream_flow_init(t, c);
         }
 }
