@@ -151,6 +151,9 @@ int stream_report(struct thread_neper *ts)
         if (path)
                 csv = print_header(path, "bytes_read,bytes_read/s", "\n", cb);
 
+        printf("thread_stats_snaps4: %d\n", thread_stats_snaps(ts));
+        printf("thread_stats_flows4: %d\n", thread_stats_flows(ts));
+
         struct neper_coef *coef = neper_stat_print(ts, csv, NULL);
         if (!coef) {
                 LOG_ERROR(ts->cb, "%s: not able to find coef", __func__);

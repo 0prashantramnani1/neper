@@ -142,8 +142,9 @@ struct thread_neper {
 };
 
 
-int thread_stats_events(const struct thread *);
+int thread_stats_events(const struct thread_neper *);
 int thread_stats_snaps(const struct thread_neper *);
+static int thread_stats_flows(const struct thread_neper *);
 
 struct neper_pq *thread_stats_pq(struct thread_neper *);
 
