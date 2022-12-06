@@ -41,7 +41,7 @@ struct thread_neper;
 struct neper_stat {
         struct neper_histo *(*histo)(const struct neper_stat *);
         const struct neper_snaps *(*snaps)(const struct neper_stat *);
-        void (*event)(struct thread *, struct neper_stat *, int things,
+        void (*event)(struct thread_neper *, struct neper_stat *, int things,
                 bool force,
                 void (*fn)(struct thread *, struct neper_stat *,
                            struct neper_snap *));

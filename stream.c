@@ -91,7 +91,7 @@ void stream_handler(struct flow *f, uint32_t events)
                 n = tcp_read(c, mbuf, opts->buffer_size);
                 // printf("stream_handler: read %d bytes\n", n);
                 tcpconn_check_triggers(c);
-                // printf("tcp->reqs %lld\n", tcp_get_reqs(c));
+                // printf("Thread ID: %d - tcp->reqs %lld\n", t->index, tcp_get_reqs(c));
                 if (n < 0) {
                         // if (errno != EAGAIN)
                         // PLOG_ERROR(t->cb, "read");

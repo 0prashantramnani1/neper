@@ -92,6 +92,7 @@ static void stat_event(struct thread_neper *t, struct neper_stat *stat, int thin
         double elapsed = seconds_between(t->time_start, &now);
 
         impl->things += things;
+        // printf("Thread ID: %d - impl->thing %lld\n", t->index, (long long int)impl->things);
 
         int i = snaps->count(snaps);
 
@@ -126,6 +127,8 @@ struct neper_coef *neper_stat_print(struct thread_neper *ts, FILE *csv,
                 struct stat_impl *impl = (void *)stat;
                 struct neper_snaps *snaps = impl->snaps;
                 const struct neper_snap *snap = snaps->iter_next(snaps);
+                
+                printf("Stat-> Thread Index: %d - Flow Inde:x %d - things: %lld\n", impl->thread_index, impl->flow_index, (long long int)impl->things);
 
                 current_total += snap->things - impl->scratch;
                 impl->scratch = snap->things;
