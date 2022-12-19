@@ -100,6 +100,8 @@ void *loop(struct thread_neper *t)
                         flow_event(events[i]);
                 }
         }
+        printf("Event Loop completed for thread_id: %d\n", t->index);
+        
         thread_flush_stat(t);
         free(events);
 
@@ -109,5 +111,7 @@ void *loop(struct thread_neper *t)
         /* TODO: The first flow object is leaking here... */
 
         /* This is technically a thread callback so it must return a (void *) */
-        return NULL;
+
+        thread_exit();
+        // return NULL;
 }
