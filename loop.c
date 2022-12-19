@@ -76,6 +76,7 @@ void *loop(struct thread_neper *t)
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
 
+        t->total_reqs=0;
         // CALADAN
         // initialising triggers/events
         events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
@@ -101,7 +102,7 @@ void *loop(struct thread_neper *t)
                 }
         }
         printf("Event Loop completed for thread_id: %d\n", t->index);
-
+        printf("Total events recorded by the thread_id: %d - %lld\n", t->index, t->total_reqs);
         thread_flush_stat(t);
         free(events);
         // printf("thread_stats_snaps1: %d\n", thread_stats_snaps(t));

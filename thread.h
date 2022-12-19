@@ -139,6 +139,8 @@ struct thread_neper {
         //struct rate_limit rl;
         struct flow **flows;  /* indexed by flow_id(flow) */
         int flow_space;  /* space allocated in *flows */
+
+        long long int total_reqs;
 };
 
 

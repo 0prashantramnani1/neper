@@ -99,6 +99,7 @@ void stream_handler(struct flow *f, uint32_t events)
                 }
 
                 stat->event(t, stat, n, false, NULL);
+                // t->total_reqs += n;
         }
 
         if (events & SEV_WRITE)
@@ -150,9 +151,6 @@ int stream_report(struct thread_neper *ts)
 
         if (path)
                 csv = print_header(path, "bytes_read,bytes_read/s", "\n", cb);
-
-        printf("thread_stats_snaps4: %d\n", thread_stats_snaps(ts));
-        printf("thread_stats_flows4: %d\n", thread_stats_flows(ts));
 
         struct neper_coef *coef = neper_stat_print(ts, csv, NULL);
         if (!coef) {
