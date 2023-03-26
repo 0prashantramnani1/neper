@@ -42,6 +42,10 @@ struct flow {
         uint32_t        f_events;   /* pending epoll events */
 
         struct neper_stat *f_stat;
+
+        struct rusage *flow_start;
+
+        int time_buckets[100];
 };
 
 int flow_fd(const struct flow *f)

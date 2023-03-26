@@ -99,7 +99,14 @@ void stream_handler(struct flow *f, uint32_t events)
                 }
 
                 stat->event(t, stat, n, false, NULL);
-                // t->total_reqs += n;
+                t->total_reqs += n;
+
+                ///////// CHECK ///////////
+                // struct timespec now;
+                // common_gettime(&now);
+                // t->time_buckets[(int)seconds_between(t->time_start, &now)] += n;
+                // t->time_buckets[t->total_reqs/10000000] += n;
+
         }
 
         if (events & SEV_WRITE)

@@ -141,6 +141,10 @@ struct thread_neper {
         int flow_space;  /* space allocated in *flows */
 
         long long int total_reqs;
+        
+
+        ///// CHECK ////////
+        long long int time_buckets[100];
 };
 
 

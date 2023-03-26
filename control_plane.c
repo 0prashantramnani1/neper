@@ -264,6 +264,46 @@ static int ctrl_listen(const char *host, const char *port,
 	return ret;
 }
 
+////////////////////////////////////////////////////
+static int ctrl_listen_linux(const char *host, const char *port,
+                       struct addrinfo **ai, struct options *opts,
+                       struct callbacks *cb)
+{
+        struct addrinfo *result, *rp;
+        int fd_listen = 0;
+        
+        const struct addrinfo hints = {
+                .ai_flags    = AI_PASSIVE,
+                .ai_family   = get_family(opts),
+                .ai_socktype = SOCK_STREAM
+        };
+
+        result = getaddrinfo_or_die(host, port, &hints, cb);
+        for (rp = result; rp != NULL; rp = rp->ai_next) {
+                fd_listen = socket(rp->ai_family, rp->ai_socktype,
+                                   rp->ai_protocol);
+                if (fd_listen == -1) {
+                        PLOG_ERROR(cb, "socket");
+                        continue;
+                }
+                set_reuseport(fd_listen, cb);
+                set_reuseaddr(fd_listen, 1, cb);
+                if (opts->freebind)
+                        set_freebind(fd_listen, cb);
+                if (bind(fd_listen, rp->ai_addr, rp->ai_addrlen) == 0)
+                        break;
+                PLOG_ERROR(cb, "bind");
+                do_close(fd_listen);
+        }
+        if (rp == NULL)
+                LOG_FATAL(cb, "Could not bind");
+        *ai = copy_addrinfo(rp);
+        freeaddrinfo(result);
+        if (listen(fd_listen, opts->listen_backlog))
+                PLOG_FATAL(cb, "listen");
+        return fd_listen;
+}
+
 static tcpconn_t *ctrl_accept(int ctrl_port, int *num_incidents, struct callbacks *cb,
                        struct options *opts, tcpqueue_t *ctrl_queue)
 {
@@ -342,6 +382,73 @@ retry:
         LOG_INFO(cb, "Control connection established with %s:%s", host, port);
         return ctrl_conn_caladan;
 }
+////////////////////////////////////////////////////////////////
+static int ctrl_accept_linux(int ctrl_port, int *num_incidents, struct callbacks *cb,
+                       struct options *opts)
+{
+        char dump[8192], host[NI_MAXHOST], port[NI_MAXSERV];
+        struct sockaddr_storage cli_addr;
+        socklen_t cli_len;
+        int ctrl_conn, s;
+        ssize_t len;
+        struct hs_msg msg = {};
+
+retry:
+        cli_len = sizeof(cli_addr);
+        while ((ctrl_conn = accept(ctrl_port, (struct sockaddr *)&cli_addr,
+                                   &cli_len)) == -1) {
+                if (errno == EINTR || errno == ECONNABORTED)
+                        continue;
+                PLOG_FATAL(cb, "accept");
+        }
+        s = getnameinfo((struct sockaddr *)&cli_addr, cli_len,
+                        host, sizeof(host), port, sizeof(port),
+                        NI_NUMERICHOST | NI_NUMERICSERV);
+        if (s) {
+                LOG_ERROR(cb, "getnameinfo: %s", gai_strerror(s));
+                strcpy(host, "(unknown)");
+                strcpy(port, "(unknown)");
+        }
+        memset(&msg, 0, sizeof(msg));
+        LOG_INFO(cb, "+++ SER <-- CLI ? CLI_HELLO");
+        while ((len = read(ctrl_conn, &msg, sizeof(msg))) == -1) {
+                if (errno == EINTR)
+                        continue;
+                PLOG_ERROR(cb, "read");
+                do_close(ctrl_conn);
+                goto retry;
+        }
+        if (memcmp(msg.secret, opts->secret, sizeof(msg.secret)) != 0 ||
+            ntohl(msg.type) != CLI_HELLO) {
+                if (num_incidents)
+                        (*num_incidents)++;
+                if (hexdump((void *)&msg, len, dump, sizeof(dump))) {
+                        LOG_WARN(cb, "Invalid secret from %s:%s\n%s", host,
+                                 port, dump);
+                } else
+                        LOG_WARN(cb, "Invalid secret from %s:%s", host, port);
+                do_close(ctrl_conn);
+                goto retry;
+        }
+        LOG_INFO(cb, "+++ SER <-- CLI   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
+                 ntohl(msg.num_threads), ntohl(msg.num_flows),
+                 ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
+        /* tell client that authentication passes */
+        msg = (struct hs_msg){ .magic = htonl(opts->magic),
+                .type = htonl(SER_ACK),
+                .num_threads = htonl(opts->num_threads),
+                .num_flows = htonl(opts->num_flows),
+                .test_length = htonl(opts->test_length),
+        };
+
+        LOG_INFO(cb, "+++ SER --> CLI   SER_ACK -T %d -F %d -l %d",
+                        ntohl(msg.num_threads), ntohl(msg.num_flows),
+                        ntohl(msg.test_length));
+        send_msg(ctrl_conn, &msg, cb, __func__);
+        LOG_INFO(cb, "Control connection established with %s:%s", host, port);
+        return ctrl_conn;
+}
+
 
 // static void ctrl_wait_client(int ctrl_conn, struct options *opts,
 //                              struct callbacks *cb)
@@ -353,6 +460,20 @@ static void ctrl_wait_client(tcpconn_t *ctrl_conn_caladan, struct options *opts,
         // if (recv_msg(ctrl_conn, &msg, cb, __func__)) {
         
         if (tcp_read(ctrl_conn_caladan, &msg, sizeof(msg)) <= 0) {                
+                LOG_WARN(cb, "Abandoning client");
+                return;
+        }
+        LOG_INFO(cb, "+++ SER <-- CLI   CLI_DONE rate %" PRIu64,
+                be64toh(msg.remote_rate));
+        opts->remote_rate = be64toh(msg.remote_rate);
+}
+
+static void ctrl_wait_client_linux(int ctrl_conn, struct options *opts,
+                             struct callbacks *cb)
+{
+        struct hs_msg msg = {.magic = htonl(opts->magic), .type = htonl(CLI_DONE)};
+
+        if (recv_msg(ctrl_conn, &msg, cb, __func__)) {
                 LOG_WARN(cb, "Abandoning client");
                 return;
         }
@@ -414,11 +535,16 @@ void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueu
                         cp->fn->fn_ctrl_client(cp->ctrl_conn, cp->cb);
                 }
         } else {
-                cp->ctrl_port = ctrl_listen(cp->opts->host,
-                                            cp->opts->control_port, ai,
-                                            cp->opts, cp->cb, &control_plane_q);
+                // cp->ctrl_port = ctrl_listen(cp->opts->host,
+                //                             cp->opts->control_port, ai,
+                //                             cp->opts, cp->cb, &control_plane_q);
                 // TODO: Refactor                                            
-                cp->ctrl_queue = control_plane_q;                                            
+                // cp->ctrl_queue = control_plane_q;                               
+
+                cp->ctrl_port = ctrl_listen_linux(cp->opts->host,
+                                            cp->opts->control_port, ai,
+                                            cp->opts, cp->cb);   
+
                 LOG_INFO(cp->cb, "opened control port");
                 if (cp-> fn->fn_ctrl_server) {
                         cp->fn->fn_ctrl_server(cp->ctrl_conn, cp->cb);
@@ -494,10 +620,59 @@ void control_plane_wait_until_done(struct control_plane *cp)
                 for (i = 0; i < n; i++) {
                         ctrl_wait_client(client_caladan[i], (struct options *)cp->opts,
                                          cp->cb);
+                        printf("Stop notification from client: %d\n", i);
                         LOG_INFO(cp->cb, "received notification %d", i);
                 }
         }
 }
+
+//////////////////////////////////////////////////////////
+void control_plane_wait_until_done_linux(struct control_plane *cp)
+{
+        if (cp->opts->client) {
+                if (cp->opts->test_length > 0) {
+                        signal(SIGALRM, sig_alarm_handler);
+                        signal(SIGTERM, sig_alarm_handler);
+                        alarm(cp->opts->test_length);
+                        while (!termination_requested) {
+                                sleep(1);
+                        }
+                        LOG_INFO(cp->cb, "finished sleep");
+                } else if (cp->opts->test_length < 0) {
+                        countdown_cond_wait(cp->data_pending);
+                        LOG_INFO(cp->cb, "finished data wait");
+                }
+        } else {
+                const int n = cp->opts->num_clients;
+                int* client_fds = calloc(n, sizeof(int));
+                int i;
+
+                if (!client_fds)
+                        PLOG_FATAL(cp->cb, "calloc client_fds");
+                cp->client_fds = client_fds;
+
+                LOG_INFO(cp->cb, "expecting %d clients", n);
+                for (i = 0; i < n; i++) {
+                        printf("Waiting for control_plane connections \n");
+                        client_fds[i] = ctrl_accept_linux(cp->ctrl_port,
+                                                    &cp->num_incidents, cp->cb,
+                                                    cp->opts);
+                        LOG_INFO(cp->cb, "client %d connected", i);
+                }
+                do_close(cp->ctrl_port);  /* disallow further connections */
+                if (cp->opts->nonblocking) {
+                        for (i = 0; i < n; i++)
+                                set_nonblocking(client_fds[i], cp->cb);
+                }
+                LOG_INFO(cp->cb, "expecting %d notifications", n);
+                for (i = 0; i < n; i++) {
+                        ctrl_wait_client_linux(client_fds[i], (struct options *)cp->opts,
+                                         cp->cb);
+                        LOG_INFO(cp->cb, "received notification %d", i);
+                }
+        }
+}
+
 
 void control_plane_stop(struct control_plane *cp)
 {
@@ -533,6 +708,38 @@ void control_plane_stop(struct control_plane *cp)
                         // do_close(client_fds[i]);
                 }
                 // free(client_fds);
+        }
+}
+
+///////////////////////////////////////
+void control_plane_stop_linux(struct control_plane *cp)
+{
+        if (cp->opts->client) {
+                struct hs_msg msg = {.magic = htonl(cp->opts->magic), .type = htonl(SER_BYE)};
+
+                ctrl_notify_server(cp->ctrl_conn, cp->opts->magic, cp->opts->local_rate, cp->cb);
+                LOG_INFO(cp->cb, "notified server to exit");
+                if (recv_msg(cp->ctrl_conn, &msg, cp->cb, __func__))
+                        LOG_FATAL(cp->cb, "Final handshake mismatch");
+                LOG_INFO(cp->cb, "+++ CLI <-- SER   SER_BYE rate %" PRIu64,
+			 be64toh(msg.remote_rate));
+                ((struct options *)cp->opts)->remote_rate = be64toh(msg.remote_rate);
+                do_close(cp->ctrl_conn);
+        } else {
+                const int n = cp->opts->num_clients;
+                int *client_fds = cp->client_fds;
+                int i;
+
+                for (i = 0; i < n; i++) {
+                        struct hs_msg msg = { .magic = htonl(cp->opts->magic),
+                                .type = htonl(SER_BYE),
+                                .remote_rate = htobe64(cp->opts->local_rate) };
+                        LOG_INFO(cp->cb, "+++ SER --> CLI SER_BYE rate %" PRIu64,
+                                 be64toh(msg.remote_rate));
+                        send_msg(client_fds[i], &msg, cp->cb, __func__);
+                        do_close(client_fds[i]);
+                }
+                free(client_fds);
         }
 }
 
