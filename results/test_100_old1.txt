@@ -1,0 +1,22 @@
+kthreads 4 server_threads 5 client_threads 5 Throughput 6.336590328
+kthreads 4 server_threads 5 client_threads 10 Throughput 5.883514795666667
+kthreads 4 server_threads 5 client_threads 20 Throughput 3.0826164506666665
+kthreads 4 server_threads 5 client_threads 25 Throughput 4.129525259
+kthreads 4 server_threads 5 client_threads 50 Throughput 4.977622369666666
+kthreads 4 server_threads 5 client_threads 100 Throughput 4.087190886333333
+kthreads 4 server_threads 10 client_threads 5 Throughput 7.171871594999999
+kthreads 4 server_threads 10 client_threads 10 Throughput 7.792672586666666
+kthreads 4 server_threads 10 client_threads 20 Throughput 6.017985751999999
+kthreads 4 server_threads 10 client_threads 25 Throughput 6.487687636333334
+kthreads 4 server_threads 10 client_threads 50 Throughput 6.538688608666667
+kthreads 4 server_threads 10 client_threads 100 Throughput 6.144884326666667
+kthreads 4 server_threads 20 client_threads 5 Throughput 8.827912926333333
+kthreads 4 server_threads 20 client_threads 10 Throughput 9.498786688333334
+kthreads 4 server_threads 20 client_threads 20 Throughput 6.685502366666667
+kthreads 4 server_threads 20 client_threads 25 Throughput 9.234016561999999
+kthreads 4 server_threads 20 client_threads 50 Throughput 8.962946352333333
+kthreads 4 server_threads 20 client_threads 100 Throughput 8.471107503
+kthreads 4 server_threads 25 client_threads 5 Throughput 9.484977682999999
+kthreads 4 server_threads 25 client_threads 10 Throughput 9.592594376000001
+kthreads 4 server_threads 25 client_threads 20 Throughput 7.821693862
+SEG FAULT!!!!!!!!!!

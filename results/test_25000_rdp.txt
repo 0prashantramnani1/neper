@@ -1,0 +1,3 @@
+kthreads 10 server_threads 5 client_threads 5 avg_throughput 27.031867777666665 standard_deviation 3.6011456974607343 Max 31.87693384 Min 23.250520322
+kthreads 10 server_threads 5 client_threads 10 avg_throughput 13.553937908333333 standard_deviation 1.1181877249145937 Max 15.135114654 Min 12.742715669
+kthreads 10 server_threads 5 client_threads 20 avg_throughput 16.729717548666667 standard_deviation 1.9542927352911146 Max 18.40728337 Min 13.988772755
