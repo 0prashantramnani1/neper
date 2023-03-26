@@ -110,7 +110,40 @@ static void send_msg_caladan(tcpconn_t *c, struct hs_msg *msg, struct callbacks 
                         continue;
                 PLOG_FATAL(cb, "%s: write", fn);
         }
+
+        // if(n == 0) {
+        //         while(n = tcp_write(c, msg, sizeof(*msg)) == 0);
+        // }
 	printf("2.3\n");
+        printf("n: %d\n", n);
+        //if (n != sizeof(*msg))
+        //        LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
+}
+
+static void send_msg_caladan_terminate(tcpconn_t *c, struct hs_msg *msg, struct callbacks *cb,
+                     const char *fn)
+{
+        int n;
+        printf("in terminate\n");
+	printf("2.1\n");
+        // while ((n = write(fd, msg, sizeof(*msg))) == -1) {
+	printf("SIZE OF MSG: %d\n", sizeof(*msg));
+        // while (n = tcp_write(c, msg, sizeof(*msg)) == -1) {                
+	// 	printf("2.2\n");
+        //         if (errno == EINTR || errno == EAGAIN)
+        //                 continue;
+        //         PLOG_FATAL(cb, "%s: write", fn);
+        // }
+
+        // if(n == 0) {
+        while(1) {
+                n = tcp_write(c, msg, sizeof(*msg));
+                printf("in send while loop - %d \n", n);
+                if(n > 0) break;
+        }
+        // }
+	printf("2.3\n");
+        printf("n: %d\n", n);
         //if (n != sizeof(*msg))
         //        LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
 }
@@ -247,6 +280,42 @@ static tcpconn_t *ctrl_connect(const char *host, const char *port,
         return c;
 }
 
+/////////////////////////////////////////////////////////////
+
+static int ctrl_connect_linux(const char *host, const char *port,
+                        struct addrinfo **ai, struct options *opts,
+                        struct callbacks *cb)
+{
+        int ctrl_conn, optval = 1;
+        struct hs_msg msg = {};
+        const char* host_linux = "128.110.219.182";
+        ctrl_conn = connect_any(host_linux, port, ai, opts, cb);
+        if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
+                       sizeof(optval)))
+                PLOG_ERROR(cb, "setsockopt(TCP_NODELAY)");
+        msg = (struct hs_msg){ .magic = htonl(opts->magic),
+                .type = htonl(CLI_HELLO),
+                .num_threads = htonl(opts->num_threads),
+                .num_flows = htonl(opts->num_flows),
+                .test_length = htonl(opts->test_length),
+                .max_pacing_rate = htobe64(opts->max_pacing_rate),
+        };
+        memcpy(msg.secret, opts->secret, sizeof(msg.secret));
+        LOG_INFO(cb, "+++ CLI --> SER   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
+                 ntohl(msg.num_threads), ntohl(msg.num_flows),
+                 ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
+        send_msg(ctrl_conn, &msg, cb, __func__);
+
+        /* Wait for the server to respond */
+        msg.type = htonl(SER_ACK);
+        if (recv_msg(ctrl_conn, &msg, cb, __func__))
+                LOG_FATAL(cb, "exiting");
+        LOG_INFO(cb, "+++ CLI <-- SER   SER_ACK -T %d -F %d -l %d -m %" PRIu64,
+                 ntohl(msg.num_threads), ntohl(msg.num_flows),
+                 ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
+        return ctrl_conn;
+}
+
 // CALADAN
 static int ctrl_listen(const char *host, const char *port,
                        struct addrinfo **ai, struct options *opts,
@@ -368,7 +437,20 @@ static void ctrl_notify_server(tcpconn_t *ctrl_connection, int magic, uint64_t r
                                 .remote_rate = htobe64(result) };
         LOG_INFO(cb, "+++ CLI --> SER   CLI_DONE rate %" PRIu64,
 		 be64toh(msg.remote_rate));
-        send_msg_caladan(ctrl_connection, &msg, cb, __func__);
+        send_msg_caladan_terminate(ctrl_connection, &msg, cb, __func__);
+        // send_msg(ctrl_conn, &msg, cb, __func__);
+        // if (shutdown(ctrl_conn, SHUT_WR))
+        //         PLOG_ERROR(cb, "shutdown");
+}
+
+static void ctrl_notify_server_linux(int ctrl_conn, int magic, uint64_t result,
+                               struct callbacks *cb)
+{
+        struct hs_msg msg = { .magic = htonl(magic), .type = htonl(CLI_DONE),
+                                .remote_rate = htobe64(result) };
+        LOG_INFO(cb, "+++ CLI --> SER   CLI_DONE rate %" PRIu64,
+		 be64toh(msg.remote_rate));
+        send_msg(ctrl_conn, &msg, cb, __func__);
         // if (shutdown(ctrl_conn, SHUT_WR))
         //         PLOG_ERROR(cb, "shutdown");
 }
@@ -406,7 +488,11 @@ struct control_plane* control_plane_create(struct options *opts,
 void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueue_t *control_plane_q)
 {
         if (cp->opts->client) {
-                cp->ctrl_connection = ctrl_connect(cp->opts->host,
+                // cp->ctrl_connection = ctrl_connect(cp->opts->host,
+                //                              cp->opts->control_port, ai,
+                //                              cp->opts, cp->cb);
+
+                cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
                                              cp->opts->control_port, ai,
                                              cp->opts, cp->cb);
                 LOG_INFO(cp->cb, "connected to control port");
@@ -504,7 +590,9 @@ void control_plane_stop(struct control_plane *cp)
         if (cp->opts->client) {
                 struct hs_msg msg = {.magic = htonl(cp->opts->magic), .type = htonl(SER_BYE)};
 
+                printf("Notifying server to exit\n");
                 ctrl_notify_server(cp->ctrl_connection, cp->opts->magic, cp->opts->local_rate, cp->cb);
+                printf("Notified server to exit\n");
                 LOG_INFO(cp->cb, "notified server to exit");
 
                 int len = 0;
@@ -533,6 +621,38 @@ void control_plane_stop(struct control_plane *cp)
                         // do_close(client_fds[i]);
                 }
                 // free(client_fds);
+        }
+}
+
+////////////////////////////////////////
+void control_plane_stop_linux(struct control_plane *cp)
+{
+        if (cp->opts->client) {
+                struct hs_msg msg = {.magic = htonl(cp->opts->magic), .type = htonl(SER_BYE)};
+
+                ctrl_notify_server_linux(cp->ctrl_conn, cp->opts->magic, cp->opts->local_rate, cp->cb);
+                LOG_INFO(cp->cb, "notified server to exit");
+                if (recv_msg(cp->ctrl_conn, &msg, cp->cb, __func__))
+                        LOG_FATAL(cp->cb, "Final handshake mismatch");
+                LOG_INFO(cp->cb, "+++ CLI <-- SER   SER_BYE rate %" PRIu64,
+			 be64toh(msg.remote_rate));
+                ((struct options *)cp->opts)->remote_rate = be64toh(msg.remote_rate);
+                do_close(cp->ctrl_conn);
+        } else {
+                const int n = cp->opts->num_clients;
+                int *client_fds = cp->client_fds;
+                int i;
+
+                for (i = 0; i < n; i++) {
+                        struct hs_msg msg = { .magic = htonl(cp->opts->magic),
+                                .type = htonl(SER_BYE),
+                                .remote_rate = htobe64(cp->opts->local_rate) };
+                        LOG_INFO(cp->cb, "+++ SER --> CLI SER_BYE rate %" PRIu64,
+                                 be64toh(msg.remote_rate));
+                        send_msg(client_fds[i], &msg, cp->cb, __func__);
+                        do_close(client_fds[i]);
+                }
+                free(client_fds);
         }
 }
 

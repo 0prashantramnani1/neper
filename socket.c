@@ -355,6 +355,7 @@ void socket_connect_all(struct thread_neper *t)
         // TODO: look at async connect
         int i, flags = t->opts->async_connect ? SOCK_NONBLOCK : 0;
         for (i = 0; i < t->flow_limit; i++) {
+                usleep(500);
                 tcpconn_t *c = socket_connect_one(t, flags);
                 if(c != NULL)
                         stream_flow_init(t, c);

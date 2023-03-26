@@ -589,7 +589,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         int ret = fn->fn_report(ts);
 	printf("WORKING 2 \n");
-        control_plane_stop(cp);
+        control_plane_stop_linux(cp);
         //control_plane_destroy(cp);
         PRINT(cb, "local_throughput", "%lld", opts->local_rate);
         PRINT(cb, "remote_throughput", "%lld", opts->remote_rate);

@@ -115,6 +115,9 @@ void stream_handler(struct flow *f, uint32_t events)
                                 ts.tv_nsec = opts->delay % NSEC_PER_SEC;
                                 nanosleep(&ts, NULL);
                         }
+                        // if(n == -105) {
+                        //         printf("Failed to write for flow: %d\n", flow_id(f));
+                        // }
                 } while (opts->edge_trigger);
 
         //TODO: Look at error
