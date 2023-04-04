@@ -26,15 +26,15 @@ host_ip   = "10.10.1.1"
 f_command = "-F"
 t_command = "-T"
 numports_command = "--num-ports"
-nflows     = [1000, 5000, 10000, 15000, 20000, 30000, 40000, 50000, 75000, 100000]
+nflows     = [1000, 5000, 10000, 15000, 20000, 30000, 40000, 75000, 100000]
 # nthreads  = "1"
-nthreads  = [5, 10, 20, 25, 50, 75]
+nthreads  = [5, 10, 25, 50, 75]
 # nthreads  = [25, 50, 75]
 # nthreads = [50, 75]
 # kthreads  = [20, 30, 40]
 kthreads = [10, 20, 30, 40]
 # sthreads  = [25, 50, 75 , 100]
-sthreads = [5, 10, 20, 25, 50, 75, 100]
+sthreads = [5, 10, 20, 25, 50]
 encoding = 'utf-8'
 
 a = '''# an example runtime config file
@@ -54,10 +54,10 @@ enable_directpath 1
 # fi.write(a)
 # exit()
 
-ckpt_flows = 30000
+ckpt_flows = 40000
 ckpt_kthreads = 30
-ckpt_sthreads = 0
-ckpt_cthreads = 0
+ckpt_sthreads = 25
+ckpt_cthreads = 75
 
 for flows in nflows:
     file1 = open("results/test_{}_rdp.txt".format(flows), "a")
@@ -74,6 +74,8 @@ for flows in nflows:
                     break
                 if flows == ckpt_flows and  kt == ckpt_kthreads and threads == ckpt_sthreads and client_threads <= ckpt_cthreads:
                     continue
+                while client_threads < flows/16384:
+                    client_threads = client_threads + 1
                 avg = []
                 i = 0
                 timeout = 5
