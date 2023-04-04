@@ -27,13 +27,13 @@ t_command = "-T"
 # nflows    = [10, 50]
 nflows     = [1000, 5000, 10000, 15000, 20000, 30000, 40000, 50000, 75000, 100000]
 # nthreads  = "1"
-nthreads  = [5, 10, 20, 25, 50, 75]
+nthreads  = [5, 10, 25, 50, 75]
 # nthreads  = [25, 50, 75]
 # nthreads = [50, 75]
 # kthreads  = [20, 30, 40]
 kthreads = [10, 20, 30, 40]
 # sthreads  = [25, 50, 75 , 100]
-sthreads = [5, 10, 20, 25, 50, 75, 100]
+sthreads = [5, 10, 20, 25, 50]
 encoding = 'utf-8'
 
 # command      = "tests/netperf_server"
@@ -51,16 +51,16 @@ runtime_kthreads {}
 runtime_priority lc
 #preferred_socket 0
 #disable_watchdog 1
-enable_directpath 1
+#enable_directpath 1
 #host_mtu 8000'''
 
 # fi.write(a)
 
 
-ckpt_flows = 30000
+ckpt_flows = 40000
 ckpt_kthreads = 30
-ckpt_sthreads = 0
-ckpt_cthreads = 0
+ckpt_sthreads = 25
+ckpt_cthreads = 75
 
 for flows in nflows:
     if flows < ckpt_flows:
@@ -81,6 +81,8 @@ for flows in nflows:
                     continue
                 if threads > flows or client_threads > flows:
                     break
+                while client_threads < flows/16384:
+                    client_threads = client_threads + 1
                 i = 0
                 timeout = 5
                 while i < 3:
