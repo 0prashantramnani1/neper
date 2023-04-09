@@ -1,0 +1,255 @@
+Error
+Error
+Error
+Error
+Error
+Error
+Error
+Error
+skthreads 5 ckthreads 5 server_threads 5 client_threads 5 avg_throughput 11.668648368 standard_deviation 0.15542034412054728 Max 11.864899394 Min 11.484806018
+Error
+Error
+Error
+Error
+skthreads 5 ckthreads 10 server_threads 5 client_threads 5 avg_throughput 58.103278575 standard_deviation 0.9418690148168637 Max 59.40458049 Min 57.206384128
+skthreads 5 ckthreads 10 server_threads 5 client_threads 10 avg_throughput 11.677001592666665 standard_deviation 10.034109037858158 Max 25.329939395 Min 1.500460558
+skthreads 5 ckthreads 10 server_threads 5 client_threads 25 avg_throughput 21.097290510666667 standard_deviation 6.098752121114187 Max 25.442487379 Min 12.47243555
+skthreads 5 ckthreads 10 server_threads 5 client_threads 50 avg_throughput 25.624217159 standard_deviation 1.491560441062453 Max 26.971531515 Min 23.544968702
+skthreads 5 ckthreads 10 server_threads 10 client_threads 5 avg_throughput 45.257607981 standard_deviation 9.20326188098746 Max 55.688641499 Min 33.300785808
+skthreads 5 ckthreads 10 server_threads 10 client_threads 10 avg_throughput 24.184279877999998 standard_deviation 0.0725768017225826 Max 24.28633596 Min 24.123791112
+skthreads 5 ckthreads 10 server_threads 10 client_threads 25 avg_throughput 9.827287707666667 standard_deviation 11.907861177591625 Max 26.664539716 Min 1.133079877
+skthreads 5 ckthreads 10 server_threads 10 client_threads 50 avg_throughput 14.124180841 standard_deviation 9.778276804538008 Max 27.443399862 Min 4.244191011
+skthreads 5 ckthreads 10 server_threads 25 client_threads 5 avg_throughput 12.295126006333334 standard_deviation 2.1825367774005344 Max 15.315424209 Min 10.234023865
+skthreads 5 ckthreads 10 server_threads 25 client_threads 10 avg_throughput 17.859597807666667 standard_deviation 4.018354979584937 Max 22.867673443 Min 13.029587304
+skthreads 5 ckthreads 10 server_threads 25 client_threads 25 avg_throughput 22.017504935999998 standard_deviation 7.836158128513977 Max 28.188256362 Min 10.960339496
+skthreads 5 ckthreads 10 server_threads 25 client_threads 50 avg_throughput 23.378692928333333 standard_deviation 2.4328825220069987 Max 25.55633846 Min 19.982973762
+skthreads 5 ckthreads 10 server_threads 50 client_threads 5 avg_throughput 7.406154311000001 standard_deviation 2.6718646232838146 Max 11.154833912 Min 5.120910891
+skthreads 5 ckthreads 10 server_threads 50 client_threads 10 avg_throughput 9.629983542 standard_deviation 2.645183128203661 Max 13.329503058 Min 7.299955957
+skthreads 5 ckthreads 10 server_threads 50 client_threads 25 avg_throughput 5.724040445666667 standard_deviation 1.1256493427550416 Max 7.27010801 Min 4.622546652
+skthreads 5 ckthreads 10 server_threads 50 client_threads 50 avg_throughput 6.068938698999999 standard_deviation 4.381445460518986 Max 11.862595906 Min 1.269283616
+skthreads 5 ckthreads 20 server_threads 5 client_threads 5 avg_throughput 57.77296046066667 standard_deviation 1.3883224335457063 Max 59.556685221 Min 56.170532634
+skthreads 5 ckthreads 20 server_threads 5 client_threads 10 avg_throughput 55.54631535633333 standard_deviation 1.2373922829521895 Max 57.081269784 Min 54.051070548
+skthreads 5 ckthreads 20 server_threads 5 client_threads 25 avg_throughput 46.89500108566667 standard_deviation 0.4665538037845167 Max 47.434006076 Min 46.295932371
+Error
+skthreads 5 ckthreads 20 server_threads 5 client_threads 50 avg_throughput 47.322525473000006 standard_deviation 2.166626447264763 Max 49.722011642 Min 44.472553666
+skthreads 5 ckthreads 20 server_threads 10 client_threads 5 avg_throughput 49.68511272666667 standard_deviation 4.782867416400405 Max 55.862277507 Min 44.209962185
+skthreads 5 ckthreads 20 server_threads 10 client_threads 10 avg_throughput 37.63138421833333 standard_deviation 9.123389903665602 Max 49.113712774 Min 26.793999458
+skthreads 5 ckthreads 20 server_threads 10 client_threads 25 avg_throughput 37.72879819166666 standard_deviation 7.468613128513794 Max 45.265181733 Min 27.551826082
+Error
+skthreads 5 ckthreads 20 server_threads 10 client_threads 50 avg_throughput 33.64854249966667 standard_deviation 6.393765455095938 Max 42.682110782 Min 28.790674632
+skthreads 5 ckthreads 20 server_threads 25 client_threads 5 avg_throughput 15.110191516333336 standard_deviation 1.314900467951912 Max 16.512693345 Min 13.351497305
+skthreads 5 ckthreads 20 server_threads 25 client_threads 10 avg_throughput 15.403111476666666 standard_deviation 3.435530865901127 Max 19.366453298 Min 10.987667836
+skthreads 5 ckthreads 20 server_threads 25 client_threads 25 avg_throughput 26.320522295666667 standard_deviation 9.538648920529537 Max 36.365077989 Min 13.500237618
+Error
+skthreads 5 ckthreads 20 server_threads 25 client_threads 50 avg_throughput 24.889997984333334 standard_deviation 9.590496867075748 Max 34.550718854 Min 11.815288003
+skthreads 5 ckthreads 20 server_threads 50 client_threads 5 avg_throughput 9.027973213000001 standard_deviation 0.8302094451226415 Max 10.187487847 Min 8.288478786
+skthreads 5 ckthreads 20 server_threads 50 client_threads 10 avg_throughput 13.364817819333332 standard_deviation 8.623403684170379 Max 25.172149354 Min 4.818269502
+skthreads 5 ckthreads 20 server_threads 50 client_threads 25 avg_throughput 6.742329148333334 standard_deviation 1.6106205715436255 Max 9.0171241 Min 5.504289315
+skthreads 5 ckthreads 20 server_threads 50 client_threads 50 avg_throughput 9.671911092333334 standard_deviation 2.2831003027065555 Max 12.789987316 Min 7.38691087
+skthreads 5 ckthreads 30 server_threads 5 client_threads 5 avg_throughput 56.65752566133333 standard_deviation 1.3704070454479256 Max 58.578391019 Min 55.474089813
+skthreads 5 ckthreads 30 server_threads 5 client_threads 10 avg_throughput 55.23918057266667 standard_deviation 1.6122374994640412 Max 56.779941443 Min 53.01329109
+skthreads 5 ckthreads 30 server_threads 5 client_threads 25 avg_throughput 59.738509338 standard_deviation 1.7619009974607471 Max 62.105337841 Min 57.880532402
+Error
+skthreads 5 ckthreads 30 server_threads 5 client_threads 50 avg_throughput 54.06276748133333 standard_deviation 2.9576432716257144 Max 57.841468707 Min 50.620180451
+skthreads 5 ckthreads 30 server_threads 10 client_threads 5 avg_throughput 51.36320918233333 standard_deviation 1.845612347296858 Max 53.281715218 Min 48.871334767
+skthreads 5 ckthreads 30 server_threads 10 client_threads 10 avg_throughput 44.839725042 standard_deviation 7.00800795651047 Max 52.443911767 Min 35.533040735
+skthreads 5 ckthreads 30 server_threads 10 client_threads 25 avg_throughput 48.23042944099999 standard_deviation 6.470653410084633 Max 55.344421143 Min 39.688719468
+skthreads 5 ckthreads 30 server_threads 10 client_threads 50 avg_throughput 50.03260472 standard_deviation 6.592980860890409 Max 58.425262502 Min 42.318667769
+skthreads 5 ckthreads 30 server_threads 25 client_threads 5 avg_throughput 17.335545658666664 standard_deviation 3.2696424142064293 Max 21.862456962 Min 14.255911219
+skthreads 5 ckthreads 30 server_threads 25 client_threads 10 avg_throughput 18.028361782333334 standard_deviation 3.749302135177631 Max 22.758886101 Min 13.588851686
+skthreads 5 ckthreads 30 server_threads 25 client_threads 25 avg_throughput 19.860969971666666 standard_deviation 3.0438992060711123 Max 23.836981744 Min 16.444159916
+skthreads 5 ckthreads 30 server_threads 25 client_threads 50 avg_throughput 26.377413916333335 standard_deviation 6.10301637251155 Max 34.942676719 Min 21.174229363
+skthreads 5 ckthreads 30 server_threads 50 client_threads 5 avg_throughput 14.211900188666668 standard_deviation 5.025455867724125 Max 21.312131255 Min 10.391878892
+skthreads 5 ckthreads 30 server_threads 50 client_threads 10 avg_throughput 9.609944714666668 standard_deviation 1.5543852398190616 Max 10.713767963 Min 7.411718756
+skthreads 5 ckthreads 30 server_threads 50 client_threads 25 avg_throughput 15.999638930000001 standard_deviation 8.91330563030956 Max 27.265101281 Min 5.469199678
+skthreads 5 ckthreads 30 server_threads 50 client_threads 50 avg_throughput 10.251550899666666 standard_deviation 1.6532366789876896 Max 11.936579551 Min 8.005364209
+skthreads 5 ckthreads 40 server_threads 5 client_threads 5 avg_throughput 59.319625357999996 standard_deviation 1.4415098989005146 Max 60.47633518 Min 57.287501905
+skthreads 5 ckthreads 40 server_threads 5 client_threads 10 avg_throughput 50.93622144266667 standard_deviation 2.7733146460854106 Max 54.007310964 Min 47.288043715
+skthreads 5 ckthreads 40 server_threads 5 client_threads 25 avg_throughput 57.674610084666675 standard_deviation 1.1262638191094547 Max 58.696683879 Min 56.105636916
+skthreads 5 ckthreads 40 server_threads 5 client_threads 50 avg_throughput 54.10643312533333 standard_deviation 1.304378848827715 Max 55.89360311 Min 52.817090813
+skthreads 5 ckthreads 40 server_threads 10 client_threads 5 avg_throughput 41.48019911433333 standard_deviation 8.489487477950398 Max 51.241577579 Min 30.546104699
+skthreads 5 ckthreads 40 server_threads 10 client_threads 10 avg_throughput 42.49763970033333 standard_deviation 6.794187359061811 Max 51.159192877 Min 34.564836567
+skthreads 5 ckthreads 40 server_threads 10 client_threads 25 avg_throughput 49.04069197366667 standard_deviation 4.301160639040503 Max 55.029019875 Min 45.121908656
+skthreads 5 ckthreads 40 server_threads 10 client_threads 50 avg_throughput 50.55578590166667 standard_deviation 2.4060535288326497 Max 53.866180033 Min 48.218966949
+skthreads 5 ckthreads 40 server_threads 25 client_threads 5 avg_throughput 20.846499984999998 standard_deviation 2.722683849446847 Max 23.716363136 Min 17.188411839
+skthreads 5 ckthreads 40 server_threads 25 client_threads 10 avg_throughput 23.157618065666668 standard_deviation 4.041195126507039 Max 28.360517435 Min 18.508177734
+skthreads 5 ckthreads 40 server_threads 25 client_threads 25 avg_throughput 17.408538454666665 standard_deviation 4.4066695033833625 Max 22.294539587 Min 11.615411194
+skthreads 5 ckthreads 40 server_threads 25 client_threads 50 avg_throughput 21.446176639666664 standard_deviation 1.95479198804171 Max 23.761263708 Min 18.980162061
+skthreads 5 ckthreads 40 server_threads 50 client_threads 5 avg_throughput 8.82757638 standard_deviation 2.599917899657808 Max 12.440166112 Min 6.428612805
+skthreads 5 ckthreads 40 server_threads 50 client_threads 10 avg_throughput 9.662386050666667 standard_deviation 1.0952869911768799 Max 11.204895277 Min 8.768741264
+skthreads 5 ckthreads 40 server_threads 50 client_threads 25 avg_throughput 8.618441715333333 standard_deviation 1.9278800213421625 Max 10.809208236 Min 6.117537696
+skthreads 5 ckthreads 40 server_threads 50 client_threads 50 avg_throughput 6.4520258 standard_deviation 0.9889259126650809 Max 7.668944509 Min 5.246663327
+skthreads 10 ckthreads 10 server_threads 5 client_threads 5 avg_throughput 54.817858308000005 standard_deviation 0.13496568865534395 Max 54.984717719 Min 54.654166168
+skthreads 10 ckthreads 10 server_threads 5 client_threads 10 avg_throughput 23.877416955 standard_deviation 1.303651322853325 Max 25.440071097 Min 22.248833027
+skthreads 10 ckthreads 10 server_threads 5 client_threads 25 avg_throughput 26.11862534966667 standard_deviation 2.244643594099577 Max 28.067205914 Min 22.974101754
+skthreads 10 ckthreads 10 server_threads 5 client_threads 50 avg_throughput 26.549167748 standard_deviation 0.7584757922587104 Max 27.618067841 Min 25.937143643
+skthreads 10 ckthreads 10 server_threads 10 client_threads 5 avg_throughput 53.132357062666664 standard_deviation 1.088301870336977 Max 54.520558436 Min 51.862692173
+skthreads 10 ckthreads 10 server_threads 10 client_threads 10 avg_throughput 10.230228335 standard_deviation 11.825406147427728 Max 26.953379134 Min 1.756776473
+skthreads 10 ckthreads 10 server_threads 10 client_threads 25 avg_throughput 21.431102103 standard_deviation 6.5160590457643135 Max 28.468529778 Min 12.760253075
+skthreads 10 ckthreads 10 server_threads 10 client_threads 50 avg_throughput 20.719204790333333 standard_deviation 5.543361057856523 Max 24.713508682 Min 12.880184133
+skthreads 10 ckthreads 10 server_threads 25 client_threads 5 avg_throughput 54.36269753666667 standard_deviation 0.030776780537315078 Max 54.398000488 Min 54.322998577
+skthreads 10 ckthreads 10 server_threads 25 client_threads 10 avg_throughput 9.320181219333334 standard_deviation 7.689683227398157 Max 20.087885482 Min 2.617522472
+skthreads 10 ckthreads 10 server_threads 25 client_threads 25 avg_throughput 27.698585508333334 standard_deviation 0.3352784060755707 Max 28.152144756 Min 27.352096148
+Error
+skthreads 10 ckthreads 10 server_threads 25 client_threads 50 avg_throughput 18.661765717333335 standard_deviation 11.00845921139244 Max 26.748509853 Min 3.097426317
+skthreads 10 ckthreads 10 server_threads 50 client_threads 5 avg_throughput 41.826693207 standard_deviation 17.33715997462117 Max 56.411825316 Min 17.465995591
+skthreads 10 ckthreads 10 server_threads 50 client_threads 10 avg_throughput 8.50453468 standard_deviation 8.806108556768393 Max 20.957823674 Min 2.18835363
+skthreads 10 ckthreads 10 server_threads 50 client_threads 25 avg_throughput 17.888700902999997 standard_deviation 9.482442617010445 Max 26.580384343 Min 4.698875001
+skthreads 10 ckthreads 10 server_threads 50 client_threads 50 avg_throughput 18.279175358666667 standard_deviation 8.105319631069245 Max 26.294374631 Min 7.174974779
+skthreads 10 ckthreads 20 server_threads 5 client_threads 5 avg_throughput 54.653074522333334 standard_deviation 0.17929882697220073 Max 54.906598429 Min 54.522272075
+skthreads 10 ckthreads 20 server_threads 5 client_threads 10 avg_throughput 54.715739189333334 standard_deviation 0.09641805725118666 Max 54.852094101 Min 54.647154064
+skthreads 10 ckthreads 20 server_threads 5 client_threads 25 avg_throughput 43.14293531633333 standard_deviation 1.8429657221249935 Max 44.960545606 Min 40.61641462
+Error
+Error
+Error
+Error
+skthreads 10 ckthreads 20 server_threads 5 client_threads 50 avg_throughput 45.250740772 standard_deviation 1.1154537045598507 Max 46.153837945 Min 43.679072963
+skthreads 10 ckthreads 20 server_threads 10 client_threads 5 avg_throughput 54.052066339 standard_deviation 1.4693739073950314 Max 55.430374092 Min 52.016142132
+skthreads 10 ckthreads 20 server_threads 10 client_threads 10 avg_throughput 52.574739216000005 standard_deviation 0.3503226378904349 Max 53.025050015 Min 52.170687019
+skthreads 10 ckthreads 20 server_threads 10 client_threads 25 avg_throughput 45.54019608033334 standard_deviation 1.851930698026406 Max 47.995786737 Min 43.523713957
+skthreads 10 ckthreads 20 server_threads 10 client_threads 50 avg_throughput 51.306159875 standard_deviation 2.4605341721658207 Max 53.658964317 Min 47.909492791
+skthreads 10 ckthreads 20 server_threads 25 client_threads 5 avg_throughput 54.55879178133333 standard_deviation 1.057557231894397 Max 55.934352687 Min 53.362567532
+skthreads 10 ckthreads 20 server_threads 25 client_threads 10 avg_throughput 41.63974101433333 standard_deviation 2.416123959387812 Max 45.056620973 Min 39.917847718
+skthreads 10 ckthreads 20 server_threads 25 client_threads 25 avg_throughput 49.91012925066667 standard_deviation 0.9724136862818962 Max 50.861059164 Min 48.57432611
+Error
+skthreads 10 ckthreads 20 server_threads 25 client_threads 50 avg_throughput 48.769835872333324 standard_deviation 2.3434860886887314 Max 51.470721479 Min 45.756022011
+skthreads 10 ckthreads 20 server_threads 50 client_threads 5 avg_throughput 43.02603135866667 standard_deviation 14.148097920499515 Max 55.531108143 Min 23.246841381
+skthreads 10 ckthreads 20 server_threads 50 client_threads 10 avg_throughput 37.010555341 standard_deviation 3.47499397301838 Max 40.299605555 Min 32.203754758
+skthreads 10 ckthreads 20 server_threads 50 client_threads 25 avg_throughput 32.971858016 standard_deviation 12.241789539771332 Max 50.012622131 Min 21.805462828
+skthreads 10 ckthreads 20 server_threads 50 client_threads 50 avg_throughput 32.78793231633333 standard_deviation 13.95190273356426 Max 45.848872764 Min 13.449563717
+skthreads 10 ckthreads 30 server_threads 5 client_threads 5 avg_throughput 54.30809864633333 standard_deviation 0.04689979362471434 Max 54.365791125 Min 54.250913928
+skthreads 10 ckthreads 30 server_threads 5 client_threads 10 avg_throughput 54.49841930833333 standard_deviation 0.20116374925314734 Max 54.777109827 Min 54.309586908
+skthreads 10 ckthreads 30 server_threads 5 client_threads 25 avg_throughput 54.72426490233334 standard_deviation 0.1534341516029242 Max 54.941230919 Min 54.613067299
+skthreads 10 ckthreads 30 server_threads 5 client_threads 50 avg_throughput 55.08959495733333 standard_deviation 0.1346490065557297 Max 55.279935496 Min 54.989588165
+skthreads 10 ckthreads 30 server_threads 10 client_threads 5 avg_throughput 54.225168200000006 standard_deviation 1.7198325801083791 Max 55.971893386 Min 51.886046589
+skthreads 10 ckthreads 30 server_threads 10 client_threads 10 avg_throughput 52.158043617666664 standard_deviation 1.2162080664417012 Max 53.160614019 Min 50.446435099
+skthreads 10 ckthreads 30 server_threads 10 client_threads 25 avg_throughput 53.88966685833333 standard_deviation 1.1202010816945553 Max 55.468358396 Min 52.985973082
+skthreads 10 ckthreads 30 server_threads 10 client_threads 50 avg_throughput 52.761472663 standard_deviation 0.9308680765518484 Max 53.432006366 Min 51.445103636
+skthreads 10 ckthreads 30 server_threads 25 client_threads 5 avg_throughput 52.77121612066666 standard_deviation 1.5107873635492826 Max 54.649423051 Min 50.950085597
+skthreads 10 ckthreads 30 server_threads 25 client_threads 10 avg_throughput 43.108946264 standard_deviation 4.47453863761828 Max 49.215200118 Min 38.617941758
+skthreads 10 ckthreads 30 server_threads 25 client_threads 25 avg_throughput 54.36359820166666 standard_deviation 0.8710353021559911 Max 55.267013792 Min 53.186677369
+skthreads 10 ckthreads 30 server_threads 25 client_threads 50 avg_throughput 49.56368750966667 standard_deviation 5.582472164058801 Max 56.963797078 Min 43.481453686
+skthreads 10 ckthreads 30 server_threads 50 client_threads 5 avg_throughput 45.70953655933334 standard_deviation 13.551424334310731 Max 55.465339145 Min 26.545982003
+skthreads 10 ckthreads 30 server_threads 50 client_threads 10 avg_throughput 29.216423356666667 standard_deviation 5.855252745515786 Max 36.428271751 Min 22.08659378
+skthreads 10 ckthreads 30 server_threads 50 client_threads 25 avg_throughput 38.21394301233333 standard_deviation 11.645657441036047 Max 53.31771462 Min 24.975312246
+skthreads 10 ckthreads 30 server_threads 50 client_threads 50 avg_throughput 26.933543897666667 standard_deviation 10.084252937488952 Max 40.538064335 Min 16.426421507
+skthreads 10 ckthreads 40 server_threads 5 client_threads 5 avg_throughput 54.27838270866667 standard_deviation 0.06050498807173383 Max 54.340462966 Min 54.196344427
+skthreads 10 ckthreads 40 server_threads 5 client_threads 10 avg_throughput 54.540539767999995 standard_deviation 0.2577044099971983 Max 54.900733071 Min 54.312350157
+skthreads 10 ckthreads 40 server_threads 5 client_threads 25 avg_throughput 54.20453131633334 standard_deviation 0.1625743651409099 Max 54.433998301 Min 54.077375525
+skthreads 10 ckthreads 40 server_threads 5 client_threads 50 avg_throughput 55.48900143333333 standard_deviation 0.0760423147878969 Max 55.560629793 Min 55.38372011
+skthreads 10 ckthreads 40 server_threads 10 client_threads 5 avg_throughput 54.68854888366667 standard_deviation 0.4916155588579718 Max 55.334100977 Min 54.142220477
+skthreads 10 ckthreads 40 server_threads 10 client_threads 10 avg_throughput 52.478871338666664 standard_deviation 0.24467565416721532 Max 52.824891245 Min 52.304471447
+skthreads 10 ckthreads 40 server_threads 10 client_threads 25 avg_throughput 54.045768340333325 standard_deviation 0.9768128119675353 Max 55.209225978 Min 52.81904367
+skthreads 10 ckthreads 40 server_threads 10 client_threads 50 avg_throughput 51.09881238333333 standard_deviation 2.1615623276371636 Max 52.746562032 Min 48.045090397
+skthreads 10 ckthreads 40 server_threads 25 client_threads 5 avg_throughput 55.62188840666666 standard_deviation 0.5148501136539985 Max 56.335652287 Min 55.140460083
+skthreads 10 ckthreads 40 server_threads 25 client_threads 10 avg_throughput 44.568116118 standard_deviation 1.4633308432722791 Max 46.226194335 Min 42.666655355
+skthreads 10 ckthreads 40 server_threads 25 client_threads 25 avg_throughput 55.406268809000004 standard_deviation 0.5480098022738846 Max 56.180540458 Min 54.989983795
+skthreads 10 ckthreads 40 server_threads 25 client_threads 50 avg_throughput 47.74035147133333 standard_deviation 0.7930010203625821 Max 48.861448638 Min 47.154667562
+skthreads 10 ckthreads 40 server_threads 50 client_threads 5 avg_throughput 36.88253804166667 standard_deviation 13.881754812740702 Max 54.978500402 Min 21.242380839
+skthreads 10 ckthreads 40 server_threads 50 client_threads 10 avg_throughput 29.748225721666667 standard_deviation 3.891351703612544 Max 35.207894825 Min 26.420112737
+skthreads 10 ckthreads 40 server_threads 50 client_threads 25 avg_throughput 29.83974706933333 standard_deviation 14.388025833072508 Max 49.887176005 Min 16.799681186
+skthreads 10 ckthreads 40 server_threads 50 client_threads 50 avg_throughput 22.400332151333334 standard_deviation 8.078467284132072 Max 33.785390825 Min 15.884529021
+skthreads 20 ckthreads 10 server_threads 5 client_threads 5 avg_throughput 54.81424321266667 standard_deviation 0.5335814312722791 Max 55.252562331 Min 54.063133488
+skthreads 20 ckthreads 10 server_threads 5 client_threads 10 avg_throughput 25.93942487433333 standard_deviation 1.1358294429412237 Max 27.085337067 Min 24.391621754
+skthreads 20 ckthreads 10 server_threads 5 client_threads 25 avg_throughput 26.55263751133333 standard_deviation 0.5134659187400347 Max 27.109499596 Min 25.870598567
+skthreads 20 ckthreads 10 server_threads 5 client_threads 50 avg_throughput 25.622908292666665 standard_deviation 0.4943744897238961 Max 26.028325905 Min 24.926907865
+skthreads 20 ckthreads 10 server_threads 10 client_threads 5 avg_throughput 51.73001113666667 standard_deviation 0.07986690925360512 Max 51.794858463 Min 51.617498754
+skthreads 20 ckthreads 10 server_threads 10 client_threads 10 avg_throughput 24.082593636333332 standard_deviation 1.0167129114348472 Max 25.306793103 Min 22.817378702
+skthreads 20 ckthreads 10 server_threads 10 client_threads 25 avg_throughput 27.087980016333333 standard_deviation 0.4624528418798816 Max 27.731874744 Min 26.666817577
+skthreads 20 ckthreads 10 server_threads 10 client_threads 50 avg_throughput 26.528168123666664 standard_deviation 0.540837636896042 Max 27.119516662 Min 25.812388863
+skthreads 20 ckthreads 10 server_threads 25 client_threads 5 avg_throughput 44.630469291 standard_deviation 0.49896129876019507 Max 45.083836687 Min 43.93550462
+skthreads 20 ckthreads 10 server_threads 25 client_threads 10 avg_throughput 17.874072866000002 standard_deviation 10.53495811161437 Max 25.367300784 Min 2.975478583
+skthreads 20 ckthreads 10 server_threads 25 client_threads 25 avg_throughput 27.512358695 standard_deviation 1.0940360353477117 Max 28.302806845 Min 25.965281304
+skthreads 20 ckthreads 10 server_threads 25 client_threads 50 avg_throughput 26.378459636666665 standard_deviation 2.341737339378285 Max 28.046169164 Min 23.066771273
+skthreads 20 ckthreads 10 server_threads 50 client_threads 5 avg_throughput 42.58218733499999 standard_deviation 0.08316822019959093 Max 42.661953459 Min 42.467448055
+skthreads 20 ckthreads 10 server_threads 50 client_threads 10 avg_throughput 12.838243533000002 standard_deviation 7.9246634769738415 Max 23.150878711 Min 3.882241273
+skthreads 20 ckthreads 10 server_threads 50 client_threads 25 avg_throughput 27.135346299666665 standard_deviation 0.22873697930986878 Max 27.359278174 Min 26.821212622
+skthreads 20 ckthreads 10 server_threads 50 client_threads 50 avg_throughput 21.874769679666667 standard_deviation 7.4081156312021825 Max 28.704581302 Min 11.579782422
+skthreads 20 ckthreads 20 server_threads 5 client_threads 5 avg_throughput 54.452463693 standard_deviation 0.7776502705225595 Max 55.148921212 Min 53.367132425
+skthreads 20 ckthreads 20 server_threads 5 client_threads 10 avg_throughput 54.66917884966667 standard_deviation 0.41300907410779514 Max 55.105476982 Min 54.114729772
+skthreads 20 ckthreads 20 server_threads 5 client_threads 25 avg_throughput 41.242193345333334 standard_deviation 1.5648787874695245 Max 42.707669203 Min 39.07329602
+Error
+Error
+skthreads 20 ckthreads 20 server_threads 5 client_skthreads 20 ckthreads 20 server_threads 5 client_threads 50 avg_throughput 41.77184528433333 standard_deviation 0.45696674800226655 Max 42.41796429 Min 41.437579263
+skthreads 20 ckthreads 20 server_threads 10 client_threads 5 avg_throughput 51.648279478666666 standard_deviation 0.14126165216260178 Max 51.80457545 Min 51.462377335
+skthreads 20 ckthreads 20 server_threads 10 client_threads 10 avg_throughput 51.646313924333334 standard_deviation 0.14807753505868446 Max 51.787383695 Min 51.441745743
+skthreads 20 ckthreads 20 server_threads 10 client_threads 25 avg_throughput 50.14095193066667 standard_deviation 1.8000325783031788 Max 51.581278918 Min 47.603023449
+Error
+skthreads 20 ckthreads 20 server_threads 10 client_threads 50 avg_throughput 51.56782019533333 standard_deviation 0.06924384625874849 Max 51.659574219 Min 51.492312714
+skthreads 20 ckthreads 20 server_threads 25 client_threads 5 avg_throughput 45.17339605033333 standard_deviation 0.14347646770531294 Max 45.360867328 Min 45.012435898
+skthreads 20 ckthreads 20 server_threads 25 client_threads 10 avg_throughput 44.43067886166667 standard_deviation 1.487402247490773 Max 45.653560884 Min 42.337020647
+skthreads 20 ckthreads 20 server_threads 25 client_threads 25 avg_throughput 43.30393772633334 standard_deviation 1.952547924358524 Max 45.683183185 Min 40.900618832
+Error
+skthreads 20 ckthreads 20 server_threads 25 client_threads 50 avg_throughput 45.960803397333336 standard_deviation 0.15580389994585858 Max 46.076818319 Min 45.740568669
+skthreads 20 ckthreads 20 server_threads 50 client_threads 5 avg_throughput 34.25111372533333 standard_deviation 4.738935213568079 Max 40.934565216 Min 30.479425695
+skthreads 20 ckthreads 20 server_threads 50 client_threads 10 avg_throughput 43.30442855333333 standard_deviation 0.10692506971704081 Max 43.446909135 Min 43.189325765
+skthreads 20 ckthreads 20 server_threads 50 client_threads 25 avg_throughput 42.45167303633334 standard_deviation 1.0433601687725962 Max 43.651270426 Min 41.107814371
+skthreads 20 ckthreads 20 server_threads 50 client_threads 50 avg_throughput 43.51100221033334 standard_deviation 0.16455745046909112 Max 43.730097979 Min 43.333509386
+skthreads 20 ckthreads 30 server_threads 5 client_threads 5 avg_throughput 54.206313421999994 standard_deviation 0.12981978983170728 Max 54.382182646 Min 54.072746817
+skthreads 20 ckthreads 30 server_threads 5 client_threads 10 avg_throughput 55.039077936333335 standard_deviation 0.08328482525622814 Max 55.104643653 Min 54.921557862
+skthreads 20 ckthreads 30 server_threads 5 client_threads 25 avg_throughput 54.04019997366667 standard_deviation 0.08383137515945542 Max 54.119106947 Min 53.924118709
+Error
+skthreads 20 ckthreads 30 server_threads 5 client_threads 50 avg_throughput 55.45721313633333 standard_deviation 0.22093918342541968 Max 55.701819511 Min 55.166544349
+skthreads 20 ckthreads 30 server_threads 10 client_threads 5 avg_throughput 51.38794632333333 standard_deviation 0.06953960421607207 Max 51.469962054 Min 51.299941652
+skthreads 20 ckthreads 30 server_threads 10 client_threads 10 avg_throughput 51.53589571466667 standard_deviation 0.10419838918896254 Max 51.680336241 Min 51.438403783
+skthreads 20 ckthreads 30 server_threads 10 client_threads 25 avg_throughput 51.707203318666664 standard_deviation 0.08279870814831784 Max 51.803823694 Min 51.601605991
+skthreads 20 ckthreads 30 server_threads 10 client_threads 50 avg_throughput 51.54340524966667 standard_deviation 0.19821901424301433 Max 51.786895097 Min 51.301366157
+skthreads 20 ckthreads 30 server_threads 25 client_threads 5 avg_throughput 44.681822606999994 standard_deviation 0.17521426869480344 Max 44.845402863 Min 44.438845678
+skthreads 20 ckthreads 30 server_threads 25 client_threads 10 avg_throughput 43.93527504466666 standard_deviation 0.27677243473416824 Max 44.296613914 Min 43.624297755
+skthreads 20 ckthreads 30 server_threads 25 client_threads 25 avg_throughput 45.040938215000004 standard_deviation 0.5406036399242544 Max 45.761581598 Min 44.45952089
+skthreads 20 ckthreads 30 server_threads 25 client_threads 50 avg_throughput 45.03314754566666 standard_deviation 0.5739469776759343 Max 45.574225242 Min 44.238634562
+skthreads 20 ckthreads 30 server_threads 50 client_threads 5 avg_throughput 40.594834764333335 standard_deviation 1.4867205183766887 Max 42.485029462 Min 38.852316665
+skthreads 20 ckthreads 30 server_threads 50 client_threads 10 avg_throughput 42.443573300333334 standard_deviation 0.7991639896778896 Max 43.073776493 Min 41.31598935
+skthreads 20 ckthreads 30 server_threads 50 client_threads 25 avg_throughput 41.183057684666664 standard_deviation 1.6353093970401618 Max 43.081794097 Min 39.090249378
+skthreads 20 ckthreads 30 server_threads 50 client_threads 50 avg_throughput 42.816854556 standard_deviation 0.8452764923288759 Max 43.581244853 Min 41.638720259
+skthreads 20 ckthreads 40 server_threads 5 client_threads 5 avg_throughput 54.16035755433334 standard_deviation 0.8785835108583508 Max 54.812350635 Min 52.918368522
+skthreads 20 ckthreads 40 server_threads 5 client_threads 10 avg_throughput 54.032467089 standard_deviation 0.9425769200774256 Max 54.804879566 Min 52.705404273
+skthreads 20 ckthreads 40 server_threads 5 client_threads 25 avg_throughput 54.335148129333334 standard_deviation 0.15911428517661852 Max 54.46922931 Min 54.111606065
+skthreads 20 ckthreads 40 server_threads 5 client_threads 50 avg_throughput 55.806337334666665 standard_deviation 0.43758261291408274 Max 56.398221077 Min 55.353956845
+skthreads 20 ckthreads 40 server_threads 10 client_threads 5 avg_throughput 51.369060198999996 standard_deviation 0.13548454948524416 Max 51.505065272 Min 51.184177126
+skthreads 20 ckthreads 40 server_threads 10 client_threads 10 avg_throughput 51.42151130833333 standard_deviation 0.10222769390089509 Max 51.523065832 Min 51.281623098
+skthreads 20 ckthreads 40 server_threads 10 client_threads 25 avg_throughput 51.51236485799999 standard_deviation 0.048168612985941085 Max 51.573225314 Min 51.455433185
+skthreads 20 ckthreads 40 server_threads 10 client_threads 50 avg_throughput 51.824579871333334 standard_deviation 0.04688834531292344 Max 51.889920913 Min 51.782127398
+skthreads 20 ckthreads 40 server_threads 25 client_threads 5 avg_throughput 44.11592922533333 standard_deviation 0.2497898039043164 Max 44.307240511 Min 43.763091909
+skthreads 20 ckthreads 40 server_threads 25 client_threads 10 avg_throughput 43.403473561333335 standard_deviation 0.43129737121057554 Max 43.893675497 Min 42.844043657
+skthreads 20 ckthreads 40 server_threads 25 client_threads 25 avg_throughput 44.21294901466667 standard_deviation 0.3223292715308586 Max 44.65528317 Min 43.89639006
+skthreads 20 ckthreads 40 server_threads 25 client_threads 50 avg_throughput 41.725978555000005 standard_deviation 1.3682246985443058 Max 43.658087551 Min 40.668960552
+skthreads 20 ckthreads 40 server_threads 50 client_threads 5 avg_throughput 39.88742820233333 standard_deviation 2.4298701362741526 Max 42.41516394 Min 36.607545118
+skthreads 20 ckthreads 40 server_threads 50 client_threads 10 avg_throughput 41.419826025 standard_deviation 0.7048232902189613 Max 42.414070585 Min 40.861286143
+skthreads 20 ckthreads 40 server_threads 50 client_threads 25 avg_throughput 42.210510250999995 standard_deviation 0.36226722630868413 Max 42.669621004 Min 41.784055656
+skthreads 20 ckthreads 40 server_threads 50 client_threads 50 avg_throughput 43.424156759666666 standard_deviation 0.09719491847595194 Max 43.514245117 Min 43.289205161
+skthreads 30 ckthreads 10 server_threads 5 client_threads 5 avg_throughput 52.316507992333335 standard_deviation 2.879853809318811 Max 54.714221539 Min 48.266587513
+skthreads 30 ckthreads 10 server_threads 5 client_threads 10 avg_throughput 24.402871548999997 standard_deviation 0.1562937615312761 Max 24.592384683 Min 24.209600065
+skthreads 30 ckthreads 10 server_threads 5 client_threads 25 avg_throughput 26.053571281333333 standard_deviation 1.218757682963493 Max 27.742659231 Min 24.911887847
+skthreads 30 ckthreads 10 server_threads 5 client_threads 50 avg_throughput 26.407101835333336 standard_deviation 1.2115538424035284 Max 28.112698839 Min 25.412888287
+skthreads 30 ckthreads 10 server_threads 10 client_threads 5 avg_throughput 51.15501462766667 standard_deviation 0.25728767784220663 Max 51.505215335 Min 50.894386371
+skthreads 30 ckthreads 10 server_threads 10 client_threads 10 avg_throughput 23.37793123333333 standard_deviation 0.9867505631810358 Max 24.254055962 Min 21.999220632
+skthreads 30 ckthreads 10 server_threads 10 client_threads 25 avg_throughput 26.147516933000002 standard_deviation 1.0568312129558042 Max 27.484071684 Min 24.89996901
+skthreads 30 ckthreads 10 server_threads 10 client_threads 50 avg_throughput 25.844267420333335 standard_deviation 0.4712473958457787 Max 26.221846927 Min 25.179887035
+skthreads 30 ckthreads 10 server_threads 25 client_threads 5 avg_throughput 43.88186797433334 standard_deviation 0.06334167272450325 Max 43.937390905 Min 43.793228316
+skthreads 30 ckthreads 10 server_threads 25 client_threads 10 avg_throughput 25.819306242 standard_deviation 0.16665478297730868 Max 25.995570874 Min 25.595679241
+skthreads 30 ckthreads 10 server_threads 25 client_threads 25 avg_throughput 27.123657143666662 standard_deviation 0.2823670729674874 Max 27.396456846 Min 26.734706332
+skthreads 30 ckthreads 10 server_threads 25 client_threads 50 avg_throughput 26.750941566333335 standard_deviation 0.5840649652026142 Max 27.176893818 Min 25.925085897
+skthreads 30 ckthreads 10 server_threads 50 client_threads 5 avg_throughput 38.10897484166667 standard_deviation 3.5994541382739698 Max 42.619099665 Min 33.80985135
+skthreads 30 ckthreads 10 server_threads 50 client_threads 10 avg_throughput 11.791362633666665 standard_deviation 7.013147903642706 Max 20.005509112 Min 2.870536856
+skthreads 30 ckthreads 10 server_threads 50 client_threads 25 avg_throughput 23.516462269 standard_deviation 4.622703007827411 Max 29.2298844 Min 17.908082562
+skthreads 30 ckthreads 10 server_threads 50 client_threads 50 avg_throughput 24.735799427333333 standard_deviation 4.648006987264783 Max 28.498554147 Min 18.186744795
+skthreads 30 ckthreads 20 server_threads 5 client_threads 5 avg_throughput 47.02600819133334 standard_deviation 4.7675759786327285 Max 52.547909887 Min 40.914516743
+skthreads 30 ckthreads 20 server_threads 5 client_threads 10 avg_throughput 54.47512201233334 standard_deviation 0.09688527329706291 Max 54.611862318 Min 54.399221861
+skthreads 30 ckthreads 20 server_threads 5 client_threads 25 avg_throughput 39.671980592666664 standard_deviation 0.744670111353551 Max 40.574030772 Min 38.750286333
+skthreads 30 ckthreads 20 server_threads 5 client_threads 50 avg_throughput 45.02007090266667 standard_deviation 1.1854177158132675 Max 46.493349625 Min 43.590676104
+skthreads 30 ckthreads 20 server_threads 10 client_threads 5 avg_throughput 50.937811098 standard_deviation 1.5921236443306304 Max 52.092321697 Min 48.686454396
+skthreads 30 ckthreads 20 server_threads 10 client_threads 10 avg_throughput 51.852726288999996 standard_deviation 0.18724054051137504 Max 52.040227886 Min 51.597046823
+skthreads 30 ckthreads 20 server_threads 10 client_threads 25 avg_throughput 41.251422111000004 standard_deviation 1.186157909215058 Max 42.556737295 Min 39.686311736
+Error
+Error
+Error
+skthreads 30 ckthreads 20 server_threads 10 client_threads 50 avg_throughput 50.50061926466666 standard_deviation 1.589520146826 Max 51.911208491 Min 48.279560827
+skthreads 30 ckthreads 20 server_threads 25 client_threads 5 avg_throughput 44.137748136333336 standard_deviation 0.0691575214055945 Max 44.23427487 Min 44.07584342
+skthreads 30 ckthreads 20 server_threads 25 client_threads 10 avg_throughput 43.851471228 standard_deviation 0.030044747982848032 Max 43.884704524 Min 43.81192662
+skthreads 30 ckthreads 20 server_threads 25 client_threads 25 avg_throughput 43.93026028366668 standard_deviation 0.14687329156750165 Max 44.058050985 Min 43.724555913
+Error
+Error
+skthreads 30 ckthreads 20 server_threads 25 client_threads 50 avg_throughput 44.106335156 standard_deviation 0.21304126956536504 Max 44.273908836 Min 43.805709274
+skthreads 30 ckthreads 20 server_threads 50 client_threads 5 avg_throughput 37.51322540966667 standard_deviation 0.463982193431202 Max 38.111999138 Min 36.981412793
+skthreads 30 ckthreads 20 server_threads 50 client_threads 10 avg_throughput 40.663722187666664 standard_deviation 0.0993356222722235 Max 40.795744902 Min 40.556131377
