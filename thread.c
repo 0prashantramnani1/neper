@@ -43,6 +43,8 @@
 //#include <runtime/runtime.h>
 //#include <runtime/sync.h>
 
+#include <papi.h>
+
 // max value = 1.0025^8192 = 764278329
 // If TIME_RESOLUTION is 0.01 us, max latency in histogram = 7.642783298s
 #define NEPER_HISTO_SIZE   8192  /* # of buckets in the histogram */
@@ -346,7 +348,7 @@ static void get_numa_allowed_cpus(struct callbacks *cb, int numa_idx,
 void start_worker_threads(struct options *opts, struct callbacks *cb,
                           struct thread_neper *t, void *(*thread_func)(void *),
                           const struct neper_fn *fn,
-                          barrier_t *ready, struct timespec *time_start,
+                          barrier_t *ready, barrier_t* papi_start, barrier_t* papi_end, struct timespec *time_start,
                           pthread_mutex_t *time_start_mutex,
                           struct rusage *rusage_start, struct addrinfo *ai,
                           struct countdown_cond *data_pending,
@@ -360,6 +362,10 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         int s, i, allowed_cores;
 
 	barrier_init(ready, opts->num_threads + 1);
+
+        /// PAPI
+        barrier_init(papi_start, opts->num_threads);
+        barrier_init(papi_end, opts->num_threads);
         
         int percentiles = percentiles_count(&opts->percentiles);
 
@@ -379,6 +385,11 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
                 //                                     cb);
                 t[i].ready = ready;
+                
+                // PAPI
+                t[i].papi_start = papi_start;
+                t[i].papi_end = papi_end;
+
                 t[i].time_start = time_start;
                 t[i].time_start_mutex = time_start_mutex;
                 t[i].rusage_start = rusage_start;
@@ -448,6 +459,8 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         // }
 
         printf("ALl event loops stopped \n");
+        uint64_t stop_us = microtime() + 5 * ONE_SECOND;
+        while (microtime() < stop_us);
         // LOG_INFO(cb, "reschedule=%lu", total_reschedule);
         // LOG_INFO(cb, "delay=%lu", total_delay);
         // LOG_INFO(cb, "sleep=%lu", total_sleep);
@@ -487,6 +500,9 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         //CALADAN
 	barrier_t ready_barrier;
 	tcpqueue_t *control_plane_q;
+
+        barrier_t papi_start_barrier;
+        barrier_t papi_end_barrier;
         
         struct timespec time_start = {0}; /* shared by flows */
 
@@ -513,7 +529,30 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         if (opts->delay)
                 prctl(PR_SET_TIMERSLACK, 1UL);
 	*/
-
+        
+        
+        int retval;
+	
+	if ((retval = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
+		printf("PAPI Library initialization error! - retval %d \n", retval);
+		// exit(1);
+	}
+       /*
+        if ((retval = PAPI_thread_init(pthread_self)) != PAPI_OK) {
+		printf("PAPI thread init error! \n");
+		// exit(1);
+	}
+        
+        if ((retval = PAPI_set_cmp_granularity(PAPI_GRN_SYS, 0)) != PAPI_OK) {
+		printf("PAPI setting granularity error! - retval: %d \n", retval);
+		// exit(1);
+	} else {
+                printf("PAP GRAN Success\n");
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+        }
+        */
 	condvar_t loop_init_c;
 	condvar_init(&loop_init_c);
 
@@ -536,7 +575,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));
-        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
+        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier, &papi_start_barrier, &papi_end_barrier, 
                              &time_start, &time_start_mutex, &rusage_start, ai,
                              data_pending, &loop_init_c,
                              &loop_init_m, &loop_inited);

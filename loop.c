@@ -14,11 +14,28 @@
  * limitations under the License.
  */
 
+#define _GNU_SOURCE
+
 #include "common.h"
 #include "flow.h"
 #include "loop.h"
 #include "socket.h"
 #include "thread.h"
+
+#include <papi.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <papi.h>
+#include <pthread.h>
+#include <time.h>
+#include <linux/perf_event.h>
+#include <sched.h>
+#include <linux/hw_breakpoint.h>
+#include <sys/ioctl.h>
+#include <asm/unistd.h>
+#include <unistd.h>
+#include <string.h>
 
 // CALADAN
 // #include <runtime/sync.h>
@@ -27,6 +44,24 @@
 
 #define NETPERF_PORT	8000
 #define BUF_SIZE	32768
+
+#define NUM_EVENTS 2
+
+static long
+perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
+                int cpu, int group_fd, unsigned long flags)
+{
+        int ret;
+
+        ret = syscall(__NR_perf_event_open, hw_event, pid, cpu,
+                        group_fd, flags);
+        return ret;
+}
+
+unsigned long thread_index() {
+	printf("THREAD INDEX: %d\n", Idx);
+        return Idx;
+}
 
 static void handler_stop(struct flow *f, uint32_t events)
 {
@@ -40,9 +75,12 @@ static void handler_stop(struct flow *f, uint32_t events)
  * functions and then processes events until the thread is marked as stopped.
  */
 
+
 void *loop(struct thread_neper *t)
 {
 	printf("In main LOOP with thread_id: %d\n", t->index);
+
+
         const struct options *opts = t->opts;
 
         //CALADAN
@@ -84,10 +122,146 @@ void *loop(struct thread_neper *t)
         //t->rl.pending_flows = calloc_or_die(t->flow_limit, sizeof(struct flow *), t->cb);
         //t->rl.next_event = ~0ULL; /* no pending timeouts */
         //t->rl.pending_count = 0; /* no pending flows */
+        // barrier_wait(t->ready);
+        
+        // poll_trigger_t *last_trigger = NULL;
+
+//////////////////////////// PAPI //////////////////////////////////////////////
+
+
+        /*
+        // Initialising PAPI
+        int retval;
+	
+	int EventSet = PAPI_NULL;
+	unsigned long long values[NUM_EVENTS];
+	retval = PAPI_create_eventset(&EventSet);
+        
+	if (retval != PAPI_OK) {
+		printf("PAPI create event set failed\n");
+                printf("Error: %d\n", retval);
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+	} else {
+                printf("PAP create event Success\n");
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+        }
+        
+	int Events[NUM_EVENTS]={ PAPI_TOT_CYC, PAPI_TOT_INS};
+        //, PAPI_L3_DCM, PAPI_L3_ICM};
+        retval = PAPI_add_events (EventSet, Events, NUM_EVENTS);
+        
+        
+	if (retval != PAPI_OK) {
+		printf("PAPI add events failed\n");
+                printf("Error: %d\n", retval);
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+	}  else {
+                printf("PAP add Success\n");
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+        }
+       	for(int i=0;i<100000000;i++); 
+       	retval = PAPI_start (EventSet);
+
+        
+	if (retval != PAPI_OK) {
+		printf("PAP start failed\n");
+                printf("Error: %d\n", retval);
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+	} else {
+                printf("PAP start Success\n");
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+        }
+        */
+        int fd_cyc1, fd_cyc2, fd_instr1, fd_instr2;
+        if(t->index == 0) {
+                int retval;
+                unsigned long int tid;
+
+                struct perf_event_attr pe_cyc1, pe_cyc2, pe_instr1, pe_instr2;
+
+                memset(&pe_cyc1, 0, sizeof(pe_cyc1));
+                memset(&pe_cyc2, 0, sizeof(pe_cyc2));
+                memset(&pe_instr1, 0, sizeof(pe_instr1));
+                memset(&pe_instr2, 0, sizeof(pe_instr2));
+
+
+                ////// CORE 1 ////////////////
+                pe_cyc1.type = PERF_TYPE_HARDWARE;
+                pe_cyc1.size = sizeof(pe_cyc1);
+                pe_cyc1.config = PERF_COUNT_HW_CPU_CYCLES;
+                pe_cyc1.disabled = 1;
+
+                pe_instr1.type = PERF_TYPE_HARDWARE;
+                pe_instr1.size = sizeof(pe_instr2);
+                pe_instr1.config = PERF_COUNT_HW_INSTRUCTIONS;
+                pe_instr1.disabled = 1;
+
+                fd_cyc1 = perf_event_open(&pe_cyc1, -1, 1, -1, 0);
+                if (fd_cyc1 == -1) {
+                        fprintf(stderr, "Error opening fd_cyc1 %llx\n", pe_cyc1.config);
+                }
+
+                fd_instr1 = perf_event_open(&pe_instr1, -1, 1, -1, 0);
+                if (fd_instr1 == -1) {
+                        fprintf(stderr, "Error opening fd_instr1 %llx\n", pe_cyc1.config);
+                }
+
+                ////// CORE 2 ////////////////
+                pe_cyc2.type = PERF_TYPE_HARDWARE;
+                pe_cyc2.size = sizeof(pe_cyc2);
+                pe_cyc2.config = PERF_COUNT_HW_CPU_CYCLES;
+                pe_cyc2.disabled = 1;
+
+                pe_instr2.type = PERF_TYPE_HARDWARE;
+                pe_instr2.size = sizeof(pe_instr2);
+                pe_instr2.config = PERF_COUNT_HW_INSTRUCTIONS;
+                pe_instr2.disabled = 1;
+
+                fd_cyc2 = perf_event_open(&pe_cyc2, -1, 25, -1, 0);
+                if (fd_cyc2 == -1) {
+                        fprintf(stderr, "Error opening fd_cyc2 %llx\n", pe_cyc1.config);
+                }
+
+                fd_instr2 = perf_event_open(&pe_instr2, -1, 25, -1, 0);
+                if (fd_instr2 == -1) {
+                        fprintf(stderr, "Error opening fd_instr2 %llx\n", pe_cyc1.config);
+                }
+        }
+	
+
         barrier_wait(t->ready);
         
         poll_trigger_t *last_trigger = NULL;
-        printf("Starting the event Loop for thread_id: %d\n", t->index);        
+
+        if(t->index == 0) {
+                ioctl(fd_cyc1, PERF_EVENT_IOC_RESET, 0);
+                ioctl(fd_cyc1, PERF_EVENT_IOC_ENABLE, 0);
+
+                ioctl(fd_instr1, PERF_EVENT_IOC_RESET, 0);
+                ioctl(fd_instr1, PERF_EVENT_IOC_ENABLE, 0);
+
+                ioctl(fd_cyc2, PERF_EVENT_IOC_RESET, 0);
+                ioctl(fd_cyc2, PERF_EVENT_IOC_ENABLE, 0);
+
+                ioctl(fd_instr2, PERF_EVENT_IOC_RESET, 0);
+                ioctl(fd_instr2, PERF_EVENT_IOC_ENABLE, 0);
+        }
+
+/////////////////////////////////////////////////////////////////////////////
+        printf("Starting the event Loop for thread_id: %d\n", t->index);      
+
         while (!t->stop) {      
                 int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
 
@@ -100,6 +274,63 @@ void *loop(struct thread_neper *t)
                         flow_event(events[i]);
                 }
         }
+	 
+        barrier_wait(t->papi_end);
+
+        ////////////////////////////////////////////
+        /*
+        retval = PAPI_stop (EventSet, values);
+        
+        
+	if (retval != PAPI_OK) {
+		printf("PAP stop failed\n");
+		printf("Error: %d\n", retval);
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+	} else {
+                printf("PAP stop Success\n");
+                printf("pthread: %lu\n", pthread_self());
+                int c = sched_getcpu();
+                printf("CPU: %d\n", c);
+        }
+        
+	if(values[0] > 0 || values[1] > 0) {
+		printf("PAPI STATS - pthreadid: %lu\n", pthread_self());
+		printf("Total number of CPU cycles %llu \n", values[0]);
+		printf("Total number Instructions completed %llu \n", values[1]);
+		// printf("Total number L3 data cache misses %lld \n", values[2]);
+		// printf("Total number L3 instruction cache misses %lld \n", values[3]);
+	}
+        */
+
+        if(t->index == 0) {
+                long long count;
+
+                ioctl(fd_cyc1, PERF_EVENT_IOC_DISABLE, 0);
+                read(fd_cyc1, &count, sizeof(count));
+                printf("Used %lld cycles on core 1\n", count);
+                
+
+                ioctl(fd_instr1, PERF_EVENT_IOC_DISABLE, 0);
+                read(fd_instr1, &count, sizeof(count));
+                printf("Used %lld instructions on core 1\n", count);
+
+                ioctl(fd_cyc2, PERF_EVENT_IOC_DISABLE, 0);
+                read(fd_cyc2, &count, sizeof(count));
+                printf("Used %lld cycles on core 2\n", count);
+                
+
+                ioctl(fd_instr2, PERF_EVENT_IOC_DISABLE, 0);
+                read(fd_instr2, &count, sizeof(count));
+                printf("Used %lld instructions on core 2\n", count);
+
+                close(fd_cyc1);
+                close(fd_instr1);
+                close(fd_cyc2);
+                close(fd_instr2);
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
         printf("Event Loop completed for thread_id: %d\n", t->index);
         
         thread_flush_stat(t);

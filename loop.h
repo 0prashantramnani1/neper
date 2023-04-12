@@ -21,4 +21,8 @@ struct thread_neper;
 
 void *loop(struct thread_neper *);
 
+inline int Idx;
+
+inline unsigned long thread_index();
+
 #endif
