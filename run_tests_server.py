@@ -23,7 +23,7 @@ def restart_iokernel():
         subprocess.run("sudo pkill -9 tcp_stream", shell=True)
 
         tm.sleep(timeout)
-        timeout = timeout*2
+        timeout = timeout+5
         subprocess.Popen("sudo ../iokerneld", shell=True)
         tm.sleep(5)
 
@@ -31,7 +31,7 @@ def restart_iokernel():
         conn.send(data.encode())
 
         tm.sleep(3)
-        subprocess.run("sudo ./tcp_stream -F 1000 -T 25", shell=True)
+        subprocess.run("sudo ./tcp_stream -F 1000 -T 10", shell=True)
 
         data_from_client = conn.recv(4)
         print("DATA FROMCLIENT: ", data_from_client)
@@ -89,11 +89,12 @@ host_ip   = "128.110.219.182"
 f_command = "-F"
 t_command = "-T"
 
-nflows            = [1000, 5000, 20000, 50000, 75000, 100000]
-cthreads          = [5, 10, 25, 50]
-server_kthreads   = [5, 10, 20, 30, 40]
-client_kthreads   = [10, 20, 30, 40]
-sthreads          = [5, 10, 25, 50]
+nflows            = [10000, 20000, 50000, 75000, 90000, 100000, 110000, 120000, 130000, 150000]
+cthreads          = [5, 10, 25]
+#server_kthreads   = [5, 10, 20, 30, 40]
+server_kthreads   = [2]
+client_kthreads   = [10, 20, 30]
+sthreads          = [5, 10, 25]
 encoding          = 'utf-8'
 
 # command      = "tests/netperf_server"
@@ -157,7 +158,7 @@ for flows in nflows:
                             #if client_threads >= 50:
                             #    time.sleep(timeout)
 
-                            process = subprocess.run([su, command, f_command, str(flows), t_command, str(client_threads)], check=True, timeout=400)
+                            process = subprocess.run([su, command, f_command, str(flows), t_command, str(client_threads)], check=True, timeout=1000)
 
                             print("waiting to receive")
                             data_from_client = conn.recv(4)
@@ -180,7 +181,7 @@ for flows in nflows:
                             i = i + 1
 
                         except:
-                            timeout = timeout*2
+                            timeout = timeout+5
                             print("ERROR!!!!!!")
                             dummy = conn.recv(4)
                             data = "don1"
