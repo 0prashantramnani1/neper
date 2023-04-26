@@ -43,7 +43,6 @@
 //#include <runtime/runtime.h>
 //#include <runtime/sync.h>
 
-#include <papi.h>
 
 // max value = 1.0025^8192 = 764278329
 // If TIME_RESOLUTION is 0.01 us, max latency in histogram = 7.642783298s
@@ -461,6 +460,9 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         printf("ALl event loops stopped \n");
         uint64_t stop_us = microtime() + 5 * ONE_SECOND;
         while (microtime() < stop_us);
+        int a = -1;
+        while(a == -1)
+                a = system("sudo kill -SIGINT `pgrep perf`");
         // LOG_INFO(cb, "reschedule=%lu", total_reschedule);
         // LOG_INFO(cb, "delay=%lu", total_delay);
         // LOG_INFO(cb, "sleep=%lu", total_sleep);
@@ -531,28 +533,6 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 	*/
         
         
-        int retval;
-	
-	if ((retval = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
-		printf("PAPI Library initialization error! - retval %d \n", retval);
-		// exit(1);
-	}
-       /*
-        if ((retval = PAPI_thread_init(pthread_self)) != PAPI_OK) {
-		printf("PAPI thread init error! \n");
-		// exit(1);
-	}
-        
-        if ((retval = PAPI_set_cmp_granularity(PAPI_GRN_SYS, 0)) != PAPI_OK) {
-		printf("PAPI setting granularity error! - retval: %d \n", retval);
-		// exit(1);
-	} else {
-                printf("PAP GRAN Success\n");
-                printf("pthread: %lu\n", pthread_self());
-                int c = sched_getcpu();
-                printf("CPU: %d\n", c);
-        }
-        */
 	condvar_t loop_init_c;
 	condvar_init(&loop_init_c);
 

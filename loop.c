@@ -22,11 +22,9 @@
 #include "socket.h"
 #include "thread.h"
 
-#include <papi.h>
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <papi.h>
+//#include <papi.h>
 #include <pthread.h>
 #include <time.h>
 #include <linux/perf_event.h>
@@ -185,7 +183,8 @@ void *loop(struct thread_neper *t)
         }
         */
         int fd_cyc1, fd_cyc2, fd_instr1, fd_instr2;
-        if(t->index == 0) {
+        // if(t->index == 0) {
+                /*
                 int retval;
                 unsigned long int tid;
 
@@ -238,14 +237,17 @@ void *loop(struct thread_neper *t)
                 if (fd_instr2 == -1) {
                         fprintf(stderr, "Error opening fd_instr2 %llx\n", pe_cyc1.config);
                 }
-        }
+                */
+        // }
 	
 
         barrier_wait(t->ready);
         
-        poll_trigger_t *last_trigger = NULL;
 
         if(t->index == 0) {
+                system("perf stat -e cycles,instructions,l3_comb_clstr_state.request_miss -C 1,25 -o perf_output.txt&");
+
+                /*
                 ioctl(fd_cyc1, PERF_EVENT_IOC_RESET, 0);
                 ioctl(fd_cyc1, PERF_EVENT_IOC_ENABLE, 0);
 
@@ -257,6 +259,7 @@ void *loop(struct thread_neper *t)
 
                 ioctl(fd_instr2, PERF_EVENT_IOC_RESET, 0);
                 ioctl(fd_instr2, PERF_EVENT_IOC_ENABLE, 0);
+                */
         }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -305,6 +308,7 @@ void *loop(struct thread_neper *t)
         */
 
         if(t->index == 0) {
+                /*
                 long long count;
 
                 ioctl(fd_cyc1, PERF_EVENT_IOC_DISABLE, 0);
@@ -329,6 +333,7 @@ void *loop(struct thread_neper *t)
                 close(fd_instr1);
                 close(fd_cyc2);
                 close(fd_instr2);
+                */
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////////
         printf("Event Loop completed for thread_id: %d\n", t->index);

@@ -1,0 +1,131 @@
+round 0 skthreads 2 ckthreads 10 server_threads 5 client_threads 5 throughput 25.635590974 CPU_Cyc 270739392128 CPU_Instr 178281124058 cyc/instr 1.5186094072411203 l3_misses 6641891760
+round 1 skthreads 2 ckthreads 10 server_threads 5 client_threads 5 throughput 25.429928731 CPU_Cyc 276921238989 CPU_Instr 179453889975 cyc/instr 1.543133108051201 l3_misses 6740218700
+round 2 skthreads 2 ckthreads 10 server_threads 5 client_threads 5 throughput 26.613464104 CPU_Cyc 274565654811 CPU_Instr 183147372446 cyc/instr 1.499151481913584 l3_misses 6644116394
+round 0 skthreads 2 ckthreads 10 server_threads 5 client_threads 10 throughput 9.671682122 CPU_Cyc 287672670939 CPU_Instr 193892972536 cyc/instr 1.4836673406798586 l3_misses 3219273406
+round 1 skthreads 2 ckthreads 10 server_threads 5 client_threads 10 throughput 11.465925025 CPU_Cyc 294353210565 CPU_Instr 196116898662 cyc/instr 1.5009069211945194 l3_misses 3720260485
+round 2 skthreads 2 ckthreads 10 server_threads 5 client_threads 10 throughput 11.925017148 CPU_Cyc 295876195291 CPU_Instr 189754557733 cyc/instr 1.559257383990332 l3_misses 3823790281
+round 0 skthreads 2 ckthreads 10 server_threads 5 client_threads 25 throughput 22.015239156 CPU_Cyc 331591982918 CPU_Instr 186227917384 cyc/instr 1.7805707520976075 l3_misses 6878318660
+round 1 skthreads 2 ckthreads 10 server_threads 5 client_threads 25 throughput 21.55597292 CPU_Cyc 339330555662 CPU_Instr 189041253418 cyc/instr 1.795007965333824 l3_misses 6735666640
+round 2 skthreads 2 ckthreads 10 server_threads 5 client_threads 25 throughput 18.868977931 CPU_Cyc 350033805071 CPU_Instr 194311918854 cyc/instr 1.801401618261022 l3_misses 6170721005
+round 0 skthreads 2 ckthreads 10 server_threads 5 client_threads 50 throughput 18.141122792 CPU_Cyc 308437284593 CPU_Instr 190425295355 cyc/instr 1.6197285345835823 l3_misses 4620804518
+round 1 skthreads 2 ckthreads 10 server_threads 5 client_threads 50 throughput 20.985724395 CPU_Cyc 343690288582 CPU_Instr 195367940827 cyc/instr 1.759194917687855 l3_misses 6004636184
+round 2 skthreads 2 ckthreads 10 server_threads 5 client_threads 50 throughput 20.725945362 CPU_Cyc 352270708458 CPU_Instr 196610846351 cyc/instr 1.7917155385675307 l3_misses 6228616917
+round 0 skthreads 2 ckthreads 10 server_threads 10 client_threads 5 throughput 18.316324355 CPU_Cyc 265201483358 CPU_Instr 183548853679 cyc/instr 1.4448550238390399 l3_misses 6412156610
+round 1 skthreads 2 ckthreads 10 server_threads 10 client_threads 5 throughput 19.066607029 CPU_Cyc 261676798926 CPU_Instr 181392402683 cyc/instr 1.4426006550191874 l3_misses 6274460799
+round 2 skthreads 2 ckthreads 10 server_threads 10 client_threads 5 throughput 18.639849934 CPU_Cyc 261648163058 CPU_Instr 186381609364 cyc/instr 1.4038303669060275 l3_misses 6010919260
+round 0 skthreads 2 ckthreads 10 server_threads 10 client_threads 10 throughput 14.633572774 CPU_Cyc 303464727384 CPU_Instr 193681913953 cyc/instr 1.5668201598712028 l3_misses 4893149129
+round 1 skthreads 2 ckthreads 10 server_threads 10 client_threads 10 throughput 15.369634315 CPU_Cyc 285003849396 CPU_Instr 191958791569 cyc/instr 1.4847137089501563 l3_misses 5535114808
+round 2 skthreads 2 ckthreads 10 server_threads 10 client_threads 10 throughput 11.98557102 CPU_Cyc 298944803605 CPU_Instr 196572438295 cyc/instr 1.5207869739925992 l3_misses 3842727261
+round 0 skthreads 2 ckthreads 10 server_threads 10 client_threads 25 throughput 15.353271823 CPU_Cyc 353904129703 CPU_Instr 203739947172 cyc/instr 1.7370384876178915 l3_misses 6326721060
+round 1 skthreads 2 ckthreads 10 server_threads 10 client_threads 25 throughput 16.31164087 CPU_Cyc 322878149942 CPU_Instr 194345766127 cyc/instr 1.6613593204341142 l3_misses 6140860349
+round 2 skthreads 2 ckthreads 10 server_threads 10 client_threads 25 throughput 16.195969945 CPU_Cyc 268024686681 CPU_Instr 186800720721 cyc/instr 1.4348161272959632 l3_misses 5893369747
+round 0 skthreads 2 ckthreads 10 server_threads 10 client_threads 50 throughput 16.628028244 CPU_Cyc 286696564659 CPU_Instr 189211702494 cyc/instr 1.515215818472387 l3_misses 6332889156
+round 1 skthreads 2 ckthreads 10 server_threads 10 client_threads 50 throughput 16.468828357 CPU_Cyc 294494601405 CPU_Instr 192888092154 cyc/instr 1.526764032534877 l3_misses 5729960944
+round 2 skthreads 2 ckthreads 10 server_threads 10 client_threads 50 throughput 14.139572347 CPU_Cyc 303446906525 CPU_Instr 193402944377 cyc/instr 1.568988039465891 l3_misses 4023311505
+round 0 skthreads 2 ckthreads 10 server_threads 25 client_threads 5 throughput 7.954118222 CPU_Cyc 244452855579 CPU_Instr 265930990047 cyc/instr 0.9192341800246597 l3_misses 3272355995
+round 1 skthreads 2 ckthreads 10 server_threads 25 client_threads 5 throughput 9.540850936 CPU_Cyc 290868465365 CPU_Instr 283462780132 cyc/instr 1.0261257764760205 l3_misses 3987985435
+round 2 skthreads 2 ckthreads 10 server_threads 25 client_threads 5 throughput 10.549905373 CPU_Cyc 254644683129 CPU_Instr 260879875101 cyc/instr 0.9760993753558567 l3_misses 3993841563
+round 0 skthreads 2 ckthreads 10 server_threads 25 client_threads 10 throughput 11.643190372 CPU_Cyc 318168915353 CPU_Instr 255075412124 cyc/instr 1.2473523524028585 l3_misses 4027550323
+round 1 skthreads 2 ckthreads 10 server_threads 25 client_threads 10 throughput 11.324976385 CPU_Cyc 304747110285 CPU_Instr 256386200937 cyc/instr 1.1886252425881665 l3_misses 4259174443
+round 2 skthreads 2 ckthreads 10 server_threads 25 client_threads 10 throughput 6.830258805 CPU_Cyc 391217339879 CPU_Instr 272846586263 cyc/instr 1.4338363006011776 l3_misses 3159046803
+round 0 skthreads 2 ckthreads 10 server_threads 25 client_threads 25 throughput 9.651510983 CPU_Cyc 255553811760 CPU_Instr 268377279597 cyc/instr 0.952218504277799 l3_misses 3849290061
+round 1 skthreads 2 ckthreads 10 server_threads 25 client_threads 25 throughput 9.516713335 CPU_Cyc 253271855317 CPU_Instr 264309275123 cyc/instr 0.9582405127445354 l3_misses 3902919311
+round 2 skthreads 2 ckthreads 10 server_threads 25 client_threads 25 throughput 8.473279021 CPU_Cyc 345114675433 CPU_Instr 283001452372 cyc/instr 1.2194802271875034 l3_misses 3784766024
+round 0 skthreads 2 ckthreads 10 server_threads 25 client_threads 50 throughput 8.450538469 CPU_Cyc 251447246431 CPU_Instr 274919653633 cyc/instr 0.9146208468844714 l3_misses 3613673558
+round 1 skthreads 2 ckthreads 10 server_threads 25 client_threads 50 throughput 7.301841205 CPU_Cyc 403876638519 CPU_Instr 274946578820 cyc/instr 1.4689276740679396 l3_misses 3255162835
+round 2 skthreads 2 ckthreads 10 server_threads 25 client_threads 50 throughput 8.928311505 CPU_Cyc 277750332056 CPU_Instr 271820811254 cyc/instr 1.0218140795572095 l3_misses 4103833919
+round 0 skthreads 2 ckthreads 10 server_threads 50 client_threads 5 throughput 9.02614442 CPU_Cyc 242349807976 CPU_Instr 299119015236 cyc/instr 0.810211974604122 l3_misses 2506865939
+round 1 skthreads 2 ckthreads 10 server_threads 50 client_threads 5 throughput 3.97770211 CPU_Cyc 414463447514 CPU_Instr 368515076578 cyc/instr 1.124685186187422 l3_misses 3248990924
+round 2 skthreads 2 ckthreads 10 server_threads 50 client_threads 5 throughput 4.760058438 CPU_Cyc 413979130120 CPU_Instr 350600809739 cyc/instr 1.1807706046890796 l3_misses 4033155392
+round 0 skthreads 2 ckthreads 10 server_threads 50 client_threads 10 throughput 3.194430851 CPU_Cyc 238275260859 CPU_Instr 326083629546 cyc/instr 0.7307182552854495 l3_misses 2114977546
+round 1 skthreads 2 ckthreads 10 server_threads 50 client_threads 10 throughput 4.010741997 CPU_Cyc 240569460136 CPU_Instr 333739524101 cyc/instr 0.7208299969385591 l3_misses 2084228539
+round 2 skthreads 2 ckthreads 10 server_threads 50 client_threads 10 throughput 4.664394688 CPU_Cyc 245859479857 CPU_Instr 335754969703 cyc/instr 0.7322586470558599 l3_misses 1881145637
+round 0 skthreads 2 ckthreads 10 server_threads 50 client_threads 25 throughput 3.318238162 CPU_Cyc 238388944713 CPU_Instr 327452676946 cyc/instr 0.7280103706475808 l3_misses 2081843125
+round 1 skthreads 2 ckthreads 10 server_threads 50 client_threads 25 throughput 3.044641981 CPU_Cyc 233562270072 CPU_Instr 178985085671 cyc/instr 1.3049258780215947 l3_misses 969173993
+round 2 skthreads 2 ckthreads 10 server_threads 50 client_threads 25 throughput 2.830534985 CPU_Cyc 287771193770 CPU_Instr 366868385689 cyc/instr 0.7843989970123729 l3_misses 1638577878
+round 0 skthreads 2 ckthreads 10 server_threads 50 client_threads 50 throughput 2.912877629 CPU_Cyc 237325241657 CPU_Instr 319497449072 cyc/instr 0.7428079389877001 l3_misses 2159494139
+round 1 skthreads 2 ckthreads 10 server_threads 50 client_threads 50 throughput 4.010218209 CPU_Cyc 252500889570 CPU_Instr 329562048140 cyc/instr 0.7661710169453009 l3_misses 2267810459
+round 2 skthreads 2 ckthreads 10 server_threads 50 client_threads 50 throughput 4.396874345 CPU_Cyc 241478091900 CPU_Instr 332807375459 cyc/instr 0.7255791478988685 l3_misses 2210593746
+round 0 skthreads 2 ckthreads 20 server_threads 5 client_threads 5 throughput 25.532447765 CPU_Cyc 275205986836 CPU_Instr 180380116126 cyc/instr 1.525700242058619 l3_misses 6866679470
+round 1 skthreads 2 ckthreads 20 server_threads 5 client_threads 5 throughput 24.261393177 CPU_Cyc 269647952351 CPU_Instr 173249110675 cyc/instr 1.5564175267648888 l3_misses 6899600190
+round 2 skthreads 2 ckthreads 20 server_threads 5 client_threads 5 throughput 25.049654851 CPU_Cyc 269977802879 CPU_Instr 177363289766 cyc/instr 1.5221740825578323 l3_misses 6846963152
+round 0 skthreads 2 ckthreads 20 server_threads 5 client_threads 10 throughput 24.687148304 CPU_Cyc 268829790050 CPU_Instr 174349398726 cyc/instr 1.5419025933807853 l3_misses 6730978697
+round 1 skthreads 2 ckthreads 20 server_threads 5 client_threads 10 throughput 25.276422016 CPU_Cyc 272151937934 CPU_Instr 175833815463 cyc/instr 1.5477792893100693 l3_misses 6895552169
+round 2 skthreads 2 ckthreads 20 server_threads 5 client_threads 10 throughput 23.944213828 CPU_Cyc 274012785599 CPU_Instr 172886660454 cyc/instr 1.5849272863472694 l3_misses 6967667632
+round 0 skthreads 2 ckthreads 20 server_threads 5 client_threads 25 throughput 37.08673677 CPU_Cyc 289141258149 CPU_Instr 237425369835 cyc/instr 1.2178195546244288 l3_misses 4492242424
+round 1 skthreads 2 ckthreads 20 server_threads 5 client_threads 25 throughput 31.943249924 CPU_Cyc 280897685750 CPU_Instr 212226673419 cyc/instr 1.3235738996644524 l3_misses 5607448837
+round 2 skthreads 2 ckthreads 20 server_threads 5 client_threads 25 throughput 29.340245451 CPU_Cyc 283687562223 CPU_Instr 201311977938 cyc/instr 1.4091936561786205 l3_misses 6222316101
+Error
+Error
+Error
+Error
+Error
+round 0 skthreads 2 ckthreads 20 server_threads 5 client_threads 50 throughput 36.799366722 CPU_Cyc 285497007485 CPU_Instr 241190099422 cyc/instr 1.1837011891001301 l3_misses 4882607739
+round 1 skthreads 2 ckthreads 20 server_threads 5 client_threads 50 throughput 34.707113192 CPU_Cyc 290784965478 CPU_Instr 225771147305 cyc/instr 1.287963360017705 l3_misses 5326756418
+round 2 skthreads 2 ckthreads 20 server_threads 5 client_threads 50 throughput 38.05591373 CPU_Cyc 284700373219 CPU_Instr 240675171732 cyc/instr 1.1829237356316238 l3_misses 4395513257
+round 0 skthreads 2 ckthreads 20 server_threads 10 client_threads 5 throughput 19.04835487 CPU_Cyc 265268847896 CPU_Instr 182528266735 cyc/instr 1.453302837094954 l3_misses 6426218437
+round 1 skthreads 2 ckthreads 20 server_threads 10 client_threads 5 throughput 18.787037261 CPU_Cyc 264404566044 CPU_Instr 182388681401 cyc/instr 1.4496763944615607 l3_misses 6350075610
+round 2 skthreads 2 ckthreads 20 server_threads 10 client_threads 5 throughput 18.991840658 CPU_Cyc 263069169410 CPU_Instr 180597712076 cyc/instr 1.456658372833062 l3_misses 6322343138
+round 0 skthreads 2 ckthreads 20 server_threads 10 client_threads 10 throughput 18.117180626 CPU_Cyc 268437688021 CPU_Instr 186638328642 cyc/instr 1.4382773890774778 l3_misses 6363674185
+round 1 skthreads 2 ckthreads 20 server_threads 10 client_threads 10 throughput 17.264502742 CPU_Cyc 264939480406 CPU_Instr 187388256329 cyc/instr 1.4138531709310658 l3_misses 6125919651
+round 2 skthreads 2 ckthreads 20 server_threads 10 client_threads 10 throughput 18.302185522 CPU_Cyc 260891756174 CPU_Instr 181190200555 cyc/instr 1.4398778486632708 l3_misses 6226411346
+round 0 skthreads 2 ckthreads 20 server_threads 10 client_threads 25 throughput 18.244867046 CPU_Cyc 261137476362 CPU_Instr 186762661010 cyc/instr 1.3982317179985868 l3_misses 5938607077
+round 1 skthreads 2 ckthreads 20 server_threads 10 client_threads 25 throughput 34.804292553 CPU_Cyc 310375392762 CPU_Instr 237937950613 cyc/instr 1.3044383712744405 l3_misses 5156987958
+round 2 skthreads 2 ckthreads 20 server_threads 10 client_threads 25 throughput 20.625788508 CPU_Cyc 264388938042 CPU_Instr 190746267150 cyc/instr 1.3860766031876708 l3_misses 5950046101
+Error
+Error
+Error
+Error
+Error
+Error
+Error
+Error
+round 0 skthreads 2 ckthreads 20 server_threads 10 client_threads 50 throughput 18.611230357 CPU_Cyc 262215400128 CPU_Instr 184220479031 cyc/instr 1.4233781255333469 l3_misses 6026392850
+round 1 skthreads 2 ckthreads 20 server_threads 10 client_threads 50 throughput 19.887806116 CPU_Cyc 274702653299 CPU_Instr 192799537638 cyc/instr 1.4248097099422568 l3_misses 6189032093
+round 2 skthreads 2 ckthreads 20 server_threads 10 client_threads 50 throughput 17.684565638 CPU_Cyc 260174587920 CPU_Instr 186639955396 cyc/instr 1.3939919100815215 l3_misses 5913246910
+round 0 skthreads 2 ckthreads 20 server_threads 25 client_threads 5 throughput 10.733845739 CPU_Cyc 249401597931 CPU_Instr 269324374561 cyc/instr 0.926026834138298 l3_misses 3528441690
+round 1 skthreads 2 ckthreads 20 server_threads 25 client_threads 5 throughput 7.163847646 CPU_Cyc 404389539582 CPU_Instr 353562514677 cyc/instr 1.1437568260069466 l3_misses 3916999298
+round 2 skthreads 2 ckthreads 20 server_threads 25 client_threads 5 throughput 6.812498629 CPU_Cyc 360066124631 CPU_Instr 324867861186 cyc/instr 1.1083464006457924 l3_misses 3489592648
+round 0 skthreads 2 ckthreads 20 server_threads 25 client_threads 10 throughput 6.053573759 CPU_Cyc 402214608166 CPU_Instr 346361188655 cyc/instr 1.1612577313523251 l3_misses 3844074621
+round 1 skthreads 2 ckthreads 20 server_threads 25 client_threads 10 throughput 10.722210989 CPU_Cyc 254482854103 CPU_Instr 259259707521 cyc/instr 0.9815750258160996 l3_misses 4076198856
+round 2 skthreads 2 ckthreads 20 server_threads 25 client_threads 10 throughput 10.686335006 CPU_Cyc 273254396421 CPU_Instr 273992150329 cyc/instr 0.9973073903500004 l3_misses 3764968296
+round 0 skthreads 2 ckthreads 20 server_threads 25 client_threads 25 throughput 7.887417802 CPU_Cyc 354903846100 CPU_Instr 290075371825 cyc/instr 1.2234883777520777 l3_misses 3902185972
+round 1 skthreads 2 ckthreads 20 server_threads 25 client_threads 25 throughput 10.47348775 CPU_Cyc 252437949733 CPU_Instr 264087561006 cyc/instr 0.9558873154471091 l3_misses 3973754643
+round 2 skthreads 2 ckthreads 20 server_threads 25 client_threads 25 throughput 9.238380526 CPU_Cyc 250001428265 CPU_Instr 261708156970 cyc/instr 0.9552680021878647 l3_misses 3756849065
+Error
+round 0 skthreads 2 ckthreads 20 server_threads 25 client_threads 5 throughput 10.085555673 CPU_Cyc 249299278603 CPU_Instr 270186082722 cyc/instr 0.9226947446420071 l3_misses 3529251363
+round 1 skthreads 2 ckthreads 20 server_threads 25 client_threads 5 throughput 8.239400571 CPU_Cyc 245704862024 CPU_Instr 271398821120 cyc/instr 0.9053276687423807 l3_misses 3221875701
+round 2 skthreads 2 ckthreads 20 server_threads 25 client_threads 5 throughput 9.024203883 CPU_Cyc 251048088633 CPU_Instr 270266805680 cyc/instr 0.9288898353660373 l3_misses 3789275851
+round 0 skthreads 2 ckthreads 20 server_threads 25 client_threads 10 throughput 7.348938752 CPU_Cyc 246677810903 CPU_Instr 282516760127 cyc/instr 0.8731439890224945 l3_misses 3122374150
+round 1 skthreads 2 ckthreads 20 server_threads 25 client_threads 10 throughput 7.814446193 CPU_Cyc 279209243531 CPU_Instr 293416413905 cyc/instr 0.9515801785424319 l3_misses 3444531920
+round 2 skthreads 2 ckthreads 20 server_threads 25 client_threads 10 throughput 6.476126668 CPU_Cyc 242487985957 CPU_Instr 258340976263 cyc/instr 0.9386354014166878 l3_misses 3349686378
+round 0 skthreads 2 ckthreads 20 server_threads 25 client_threads 25 throughput 8.275002852 CPU_Cyc 364544340245 CPU_Instr 287693007524 cyc/instr 1.267129651090282 l3_misses 3809675076
+round 1 skthreads 2 ckthreads 20 server_threads 25 client_threads 25 throughput 7.041501617 CPU_Cyc 245614742903 CPU_Instr 277847248077 cyc/instr 0.8839919941727572 l3_misses 3311071164
+round 2 skthreads 2 ckthreads 20 server_threads 25 client_threads 25 throughput 8.89232069 CPU_Cyc 262825243647 CPU_Instr 275717981868 cyc/instr 0.9532394001521004 l3_misses 3707201277
+round 0 skthreads 2 ckthreads 30 server_threads 5 client_threads 5 throughput 25.36305404 CPU_Cyc 272252063550 CPU_Instr 177781246840 cyc/instr 1.531387974767789 l3_misses 6774926478
+round 1 skthreads 2 ckthreads 30 server_threads 5 client_threads 5 throughput 25.142338074 CPU_Cyc 270794642346 CPU_Instr 175794244877 cyc/instr 1.5404067552693208 l3_misses 6797611031
+round 2 skthreads 2 ckthreads 30 server_threads 5 client_threads 5 throughput 25.15579094 CPU_Cyc 272443020443 CPU_Instr 176941014173 cyc/instr 1.5397392273146187 l3_misses 6846749000
+round 0 skthreads 2 ckthreads 30 server_threads 5 client_threads 10 throughput 24.18146535 CPU_Cyc 269409935127 CPU_Instr 172634293139 cyc/instr 1.5605817953567263 l3_misses 6762278757
+round 1 skthreads 2 ckthreads 30 server_threads 5 client_threads 10 throughput 24.353823972 CPU_Cyc 268702810118 CPU_Instr 174742378601 cyc/instr 1.5377083239295124 l3_misses 6649504734
+round 2 skthreads 2 ckthreads 30 server_threads 5 client_threads 10 throughput 25.012837209 CPU_Cyc 269677551065 CPU_Instr 176087974317 cyc/instr 1.531493289709362 l3_misses 6729542720
+round 0 skthreads 2 ckthreads 30 server_threads 5 client_threads 25 throughput 25.262827298 CPU_Cyc 270520088433 CPU_Instr 174707078609 cyc/instr 1.5484208801775718 l3_misses 6744952596
+round 1 skthreads 2 ckthreads 30 server_threads 5 client_threads 25 throughput 25.323133359 CPU_Cyc 267903649042 CPU_Instr 174252998491 cyc/instr 1.5374406831560892 l3_misses 6561434814
+round 2 skthreads 2 ckthreads 30 server_threads 5 client_threads 25 throughput 25.241900615 CPU_Cyc 269588886828 CPU_Instr 175470698873 cyc/instr 1.53637552343209 l3_misses 6674812602
+round 0 skthreads 2 ckthreads 30 server_threads 10 client_threads 5 throughput 19.247622053 CPU_Cyc 263491045648 CPU_Instr 179222805871 cyc/instr 1.470187035447119 l3_misses 6422339460
+round 1 skthreads 2 ckthreads 30 server_threads 10 client_threads 5 throughput 18.681236164 CPU_Cyc 265441081998 CPU_Instr 180792163432 cyc/instr 1.468211215348603 l3_misses 6463062299
+round 2 skthreads 2 ckthreads 30 server_threads 10 client_threads 5 throughput 18.403379969 CPU_Cyc 264731011117 CPU_Instr 182975752717 cyc/instr 1.446809247597123 l3_misses 6309756584
+round 0 skthreads 2 ckthreads 30 server_threads 10 client_threads 10 throughput 18.709453933 CPU_Cyc 261604082344 CPU_Instr 178506769934 cyc/instr 1.4655135065226035 l3_misses 6409717443
+round 1 skthreads 2 ckthreads 30 server_threads 10 client_threads 10 throughput 19.06697905 CPU_Cyc 262306925541 CPU_Instr 180130606383 cyc/instr 1.456204088844701 l3_misses 6438326186
+round 2 skthreads 2 ckthreads 30 server_threads 10 client_threads 10 throughput 18.829692631 CPU_Cyc 269105249585 CPU_Instr 182490824617 cyc/instr 1.4746234510681882 l3_misses 6448883190
+round 0 skthreads 2 ckthreads 30 server_threads 10 client_threads 25 throughput 18.106663608 CPU_Cyc 260706188967 CPU_Instr 184949920919 cyc/instr 1.409604219734584 l3_misses 6018695359
+round 1 skthreads 2 ckthreads 30 server_threads 10 client_threads 25 throughput 18.611040853 CPU_Cyc 262270522459 CPU_Instr 184743888401 cyc/instr 1.4196438362806505 l3_misses 6170740371
+round 2 skthreads 2 ckthreads 30 server_threads 10 client_threads 25 throughput 17.168648798 CPU_Cyc 258874443995 CPU_Instr 185159543993 cyc/instr 1.3981155840650958 l3_misses 5952957219
+round 0 skthreads 2 ckthreads 30 server_threads 25 client_threads 5 throughput 11.265409333 CPU_Cyc 253711979973 CPU_Instr 252455797773 cyc/instr 1.0049758500738792 l3_misses 4258906498
+round 1 skthreads 2 ckthreads 30 server_threads 25 client_threads 5 throughput 7.20567944 CPU_Cyc 244581307325 CPU_Instr 279309900480 cyc/instr 0.8756628637391006 l3_misses 3167249454
+round 2 skthreads 2 ckthreads 30 server_threads 25 client_threads 5 throughput 10.237687282 CPU_Cyc 252199201206 CPU_Instr 267011043458 cyc/instr 0.9445272298097668 l3_misses 3907299146
+round 0 skthreads 2 ckthreads 30 server_threads 25 client_threads 10 throughput 10.183398471 CPU_Cyc 250273132396 CPU_Instr 269112140918 cyc/instr 0.929995694517029 l3_misses 3595971598
+round 1 skthreads 2 ckthreads 30 server_threads 25 client_threads 10 throughput 9.307850797 CPU_Cyc 352624517087 CPU_Instr 309635515383 cyc/instr 1.138837438111146 l3_misses 4314131153
+round 2 skthreads 2 ckthreads 30 server_threads 25 client_threads 10 throughput 9.418702448 CPU_Cyc 250611618854 CPU_Instr 269562701905 cyc/instr 0.929696939090339 l3_misses 3758717884
+round 0 skthreads 2 ckthreads 30 server_threads 25 client_threads 25 throughput 5.691493232 CPU_Cyc 240186703936 CPU_Instr 223878222425 cyc/instr 1.0728453233831772 l3_misses 3679268815
+round 1 skthreads 2 ckthreads 30 server_threads 25 client_threads 25 throughput 8.817215693 CPU_Cyc 390342059976 CPU_Instr 311430594268 cyc/instr 1.2533837945288482 l3_misses 4473235034
+round 2 skthreads 2 ckthreads 30 server_threads 25 client_threads 25 throughput 6.984869572 CPU_Cyc 249024213855 CPU_Instr 284864342549 cyc/instr 0.8741852757937401 l3_misses 2658381772

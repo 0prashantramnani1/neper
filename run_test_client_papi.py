@@ -24,12 +24,12 @@ def restart_iokernel():
         subprocess.run("sudo pkill -9 tcp_stream", shell=True)
 
         tm.sleep(timeout)
-        timeout = timeout*2
+        timeout = timeout + 5
         subprocess.Popen("sudo ../iokerneld", shell=True)
         tm.sleep(5)
         start_signal = sock.recv(4)
         tm.sleep(5)
-        a = subprocess.check_output("sudo LD_LIBRARY_PATH=/users/ramnani/papi/src/install/lib ./tcp_stream -c -H 10.10.1.1 -F 1000 -T 25 --num-ports 25", shell=True)
+        a = subprocess.check_output("sudo ./tcp_stream -c -H 10.10.1.1 -F 1000 -T 10 --num-ports 10", shell=True)
         tmp = get_throughput(a)
         if tmp > 1:
             data = "don0"
@@ -68,12 +68,12 @@ t_command = "-T"
 LD_comand = "LD_LIBRARY_PATH=/users/ramnani/papi/src/install/lib"
 numports_command = "--num-ports"
 
-nflows            = [1000, 5000, 20000, 50000, 75000, 100000]
-cthreads          = [5, 10, 25, 50, 75, 100]
-# server_kthreads   = [5, 10, 20, 30, 40]
+nflows            = [10000, 20000, 50000, 75000, 90000, 100000, 110000, 120000, 130000, 150000]
+cthreads          = [5, 10, 25]
+#server_kthreads   = [5, 10, 20, 30, 40]
 server_kthreads   = [2]
-client_kthreads   = [5, 10, 20, 30, 40]
-sthreads          = [5, 10, 25, 50, 75, 100]
+client_kthreads   = [10, 20, 30]
+sthreads          = [5, 10, 25]
 encoding          = 'utf-8'
 
 config = '''# an example runtime config file
@@ -99,7 +99,7 @@ for flows in nflows:
     if flows < ckpt_flows:
         continue
 
-    file1 = open("results_guaranteed/test_{}_rdp.txt".format(flows), "a")
+    file1 = open("perf/test_{}_rdp.txt".format(flows), "a")
     
     for skt in server_kthreads:    
         if flows == ckpt_flows and skt < ckpt_s_kthreads:
@@ -128,10 +128,11 @@ for flows in nflows:
 
                     avg = []
                     cyc = []
-                    instr = []
+                    ins = []
+                    l3 = []
                     i = 0
                     timeout = 5
-                    while i < 1:
+                    while i < 3:
                         print("Flows: {} SKthreads: {} CKthreads: {} Server_Threads: {} Client_Threads: {} Iteration round: {}\n".format(flows, skt, ckt, server_threads, client_threads, i))
                         try:
                             data = "don0"
@@ -140,12 +141,12 @@ for flows in nflows:
                             #if client_threads >= 50:
                             #    tm.sleep(
                             tm.sleep(timeout)
-                            process = subprocess.check_output([su, LD_comand, command, client, host, host_ip, f_command, str(flows), t_command, str(server_threads), numports_command, str(client_threads)], timeout=250)
+                            process = subprocess.check_output([su, LD_comand, command, client, host, host_ip, f_command, str(flows), t_command, str(server_threads), numports_command, str(client_threads)], timeout=1000)
                             output = process.decode(encoding)
 
                             data = "don0"
                         except:
-                            timeout = timeout*2
+                            timeout = timeout + 5
                             print("ERROR!")
                             file1.write("Error\n")
                             output = ""
@@ -174,19 +175,32 @@ for flows in nflows:
                                 avg.append(a/1000000000)
                                 i += 1
 
-                            if "CPU cycles" in line:
-                                print(line)
-                                print(int(line.split(' ')[-2]))
-                                cyc.append(line.split(' ')[-2])
+            
+                        
+                        with open("perf_output.txt") as perf_file:
+                            lines = perf_file.readlines()
+                            for line in lines:
+                                if "cycles" in line:
+                                    print(line)
+                                    a = line.replace(' ', '')
+                                    print(a)
+                                    index = a.find('c')
+                                    cyc.append(int(a[:index]))
 
-                            if "Instructions completed" in line:
-                                instr.append(line.split(' ')[-2])
-                                print(int(line.split(' ')[-2]))
+                                if "instructions" in line:
+                                    a = line.replace(' ', '')
+                                    index = a.find('i')
+                                    ins.append(int(a[:index]))
+
+                                if "l3_comb_clstr_state" in line:
+                                    a = line.replace(' ', '')
+                                    index = a.find('l')
+                                    l3.append(int(a[:index]))
 
                     
-
-                    for i in range(1):
+                    print(cyc)
+                    for i in range(3):
                         # mean = sum(avg) / len(avg)
                         # variance = sum([((x - mean) ** 2) for x in avg]) / len(avg)
-                        file1.write("round {} skthreads {} ckthreads {} server_threads {} client_threads {} throughput {} CPU_Cyc {} CPU_Instr {} cyc/instr {}\n".format(i, skt, ckt, server_threads, client_threads, avg[i], cyc[i], instr[i], float(cyc[i])/float(instr[i])))
+                        file1.write("round {} skthreads {} ckthreads {} server_threads {} client_threads {} throughput {} CPU_Cyc {} CPU_Instr {} cyc/instr {} l3_misses {}\n".format(i, skt, ckt, server_threads, client_threads, avg[i], cyc[i], ins[i], float(cyc[i])/float(ins[i]), l3[i]))
                         file1.flush()
