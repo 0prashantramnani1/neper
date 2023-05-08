@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 
         thread_fn_t fn;
 	fn = tcp_stream;
-	char *config = "delete.config";
+	char *config = "receiver.config";
 	exit_code = runtime_init(config, fn, &arg);
         // exit_code = tcp_stream(&opts, &cb);
 exit:
