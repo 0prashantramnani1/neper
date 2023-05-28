@@ -142,6 +142,7 @@ struct thread_neper {
 
         long long int total_reqs;
         
+        int num_connections;
 
         ///// CHECK ////////
         long long int time_buckets[100];

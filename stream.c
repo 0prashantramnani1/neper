@@ -100,6 +100,7 @@ void stream_handler(struct flow *f, uint32_t events)
 
                 stat->event(t, stat, n, false, NULL);
                 t->total_reqs += n;
+		//c->data_recv  += n;
 
                 ///////// CHECK ///////////
                 // struct timespec now;

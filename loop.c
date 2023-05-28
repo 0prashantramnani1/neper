@@ -19,6 +19,7 @@
 #include "loop.h"
 #include "socket.h"
 #include "thread.h"
+#include <base/assert.h>
 
 // CALADAN
 // #include <runtime/sync.h>
@@ -53,7 +54,7 @@ void *loop(struct thread_neper *t)
                 .thread  = t,
                 // .fd      = t->stop_efd,
                 .trigger = t->stop_trigger,
-                .events  = SEV_READ,
+                .events  = SEV_SIGNAL,
                 .opaque  = NULL,
                 .handler = handler_stop,
                 .mbuf_alloc = NULL,
@@ -77,25 +78,51 @@ void *loop(struct thread_neper *t)
         mutex_unlock(t->loop_init_m);
 
         t->total_reqs=0;
+        t->num_connections = 0;
         //////CHECK//////////
-        for(int i=0;i<100;i++) {
+        // for(int i=0;i<100;i++) {
                 // printf("TIME BUCKET\n");
-                t->time_buckets[i] = 0;
-        }
+                // t->time_buckets[i] = 0;
+        // }
         // CALADAN
         // initialising triggers/events
+
+        // events = calloc(1, sizeof(poll_trigger_t *));
+        // int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+        // assert(nfds == 1);
+        // for(int i=0;i<2000;i++) {
+                // flow_event(events[0]);
+        // }
+
+        barrier_wait(t->ready);
         events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
+        int nfds;
+
+        while(1) {
+                nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+                // printf("NFDS1: %d\n", nfds);
+                for (int i = 0; i < nfds && !t->stop; i++) {
+                        flow_event(events[i]);
+                }
+                if(t->num_connections == 2000)
+                        break;
+        }
+        printf("W COUNTER: %d\n", t->waiter->counter);
+
+        nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+        printf("NFDS0: %d\n", nfds);
+        // assert(nfds == opts->maxevents);
         
         /* support for rate limited flows */
         //t->rl.pending_flows = calloc_or_die(t->flow_limit, sizeof(struct flow *), t->cb);
         //t->rl.next_event = ~0ULL; /* no pending timeouts */
         //t->rl.pending_count = 0; /* no pending flows */
-        barrier_wait(t->ready);
+        // barrier_wait(t->ready);
         
         poll_trigger_t *last_trigger = NULL;
         printf("Starting the event Loop for thread_id: %d\n", t->index);        
         while (!t->stop) {      
-                int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+                // int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
 
                 if (nfds == -1) {
                         if (errno == EINTR)

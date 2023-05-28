@@ -90,11 +90,11 @@ f_command = "-F"
 t_command = "-T"
 
 nflows            = [10000, 20000, 50000, 75000, 90000, 100000, 110000, 120000, 130000, 150000]
-cthreads          = [5, 10, 25]
+cthreads          = [5, 10, 25, 50]
 #server_kthreads   = [5, 10, 20, 30, 40]
 server_kthreads   = [2]
-client_kthreads   = [10, 20, 30]
-sthreads          = [5, 10, 25]
+client_kthreads   = [10, 20, 30, 40]
+sthreads          = [5, 10, 25, 50]
 encoding          = 'utf-8'
 
 # command      = "tests/netperf_server"

@@ -103,12 +103,14 @@ static void socket_accept(struct flow *f)
         //CALADAN
         tcpconn_t *c;
         int s = tcp_accept(q, &c);
+        if(s == -123)
+                return;
 
         // Hack to make queue epoll level triggered
         tcpqueue_check_triggers(q);
 
-        // printf("Thread ID: %d - %d connetions accpted\n", t->index, tcpqueue_get_num_connections_accepted(q));
-
+         printf("Thread ID: %d - %d connetions accpted\n", t->index, tcpqueue_get_num_connections_accepted(q));
+        t->num_connections++;
         if (s < 0) {
                 switch (errno) {
                 case EINTR:
@@ -116,7 +118,7 @@ static void socket_accept(struct flow *f)
                         break;
 
                 default:
-                        PLOG_ERROR(t->cb, "accept");
+                        //PLOG_ERROR(t->cb, "accept");
                         break;
                 }
         } else {

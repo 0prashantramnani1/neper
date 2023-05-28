@@ -135,6 +135,7 @@ static void flow_ctl(struct flow *f, int op, flow_handler fh, uint32_t events,
                         h = NULL;
                         poll_arm_w_sock_neper(f->f_thread->waiter, h, f->f_trigger, events, NULL, NULL, NULL, f);
                 }
+		/*
                 if (err) {
                         if (or_die)
                                 PLOG_FATAL(f->f_thread->cb, "epoll_ctl()");
@@ -143,6 +144,7 @@ static void flow_ctl(struct flow *f, int op, flow_handler fh, uint32_t events,
                         // f->f_fd = -1;
                         // flow_delete(f);
                 }
+		*/
         }
 }
 

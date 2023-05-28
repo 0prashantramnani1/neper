@@ -659,6 +659,7 @@ void control_plane_wait_until_done_linux(struct control_plane *cp)
                                                     cp->opts);
                         LOG_INFO(cp->cb, "client %d connected", i);
                 }
+                printf("CONTROL PLANE CONNECRION RECEIVED\n");
                 do_close(cp->ctrl_port);  /* disallow further connections */
                 if (cp->opts->nonblocking) {
                         for (i = 0; i < n; i++)
