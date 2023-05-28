@@ -41,7 +41,7 @@ def restart_iokernel():
 
 
 
-serv_ip            = "128.110.219.180"
+serv_ip            = "128.110.219.166"
 control_plane_port = int(sys.argv[1])
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -69,11 +69,11 @@ LD_comand = "LD_LIBRARY_PATH=/users/ramnani/papi/src/install/lib"
 numports_command = "--num-ports"
 
 nflows            = [10000, 20000, 50000, 75000, 90000, 100000, 110000, 120000, 130000, 150000]
-cthreads          = [5, 10, 25]
+cthreads          = [5, 10, 25, 50]
 #server_kthreads   = [5, 10, 20, 30, 40]
 server_kthreads   = [2]
-client_kthreads   = [10, 20, 30]
-sthreads          = [5, 10, 25]
+client_kthreads   = [10, 20, 30, 40]
+sthreads          = [5, 10, 25, 50]
 encoding          = 'utf-8'
 
 config = '''# an example runtime config file
@@ -99,7 +99,7 @@ for flows in nflows:
     if flows < ckpt_flows:
         continue
 
-    file1 = open("perf/test_{}_rdp.txt".format(flows), "a")
+    file1 = open("perf_DP_S_R/test_{}_rdp.txt".format(flows), "a")
     
     for skt in server_kthreads:    
         if flows == ckpt_flows and skt < ckpt_s_kthreads:
@@ -202,5 +202,5 @@ for flows in nflows:
                     for i in range(3):
                         # mean = sum(avg) / len(avg)
                         # variance = sum([((x - mean) ** 2) for x in avg]) / len(avg)
-                        file1.write("round {} skthreads {} ckthreads {} server_threads {} client_threads {} throughput {} CPU_Cyc {} CPU_Instr {} cyc/instr {} l3_misses {}\n".format(i, skt, ckt, server_threads, client_threads, avg[i], cyc[i], ins[i], float(cyc[i])/float(ins[i]), l3[i]))
+                        file1.write("round {} skthreads {} ckthreads {} server_threads {} client_threads {} throughput {} CPU_Cyc {} CPU_Instr {} instr/cyc {} l3_misses {}\n".format(i, skt, ckt, server_threads, client_threads, avg[i], cyc[i], ins[i], float(ins[i])/float(cyc[i]), l3[i]))
                         file1.flush()

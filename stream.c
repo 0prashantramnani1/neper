@@ -103,7 +103,10 @@ void stream_handler(struct flow *f, uint32_t events)
 
         if (events & SEV_WRITE)
                 do {
+			// printf("going into tcp write\n");
                         n = tcp_write(c, mbuf, opts->buffer_size);
+                        t->total_reqs += n;
+			// printf("tcp write done\n");
                         if (n == -1) {
                                 if (errno != EAGAIN)
                                         PLOG_ERROR(t->cb, "send");
