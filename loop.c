@@ -111,10 +111,13 @@ void *loop(struct thread_neper *t)
         (*t->loop_inited)++;
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
-
+        t->total_reqs = 0;
         // CALADAN
         // initialising triggers/events
         events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
+
+        int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+        assert(nfds == opts->maxevents);
         
         /* support for rate limited flows */
         //t->rl.pending_flows = calloc_or_die(t->flow_limit, sizeof(struct flow *), t->cb);
@@ -245,7 +248,9 @@ void *loop(struct thread_neper *t)
         
 
         if(t->index == 0) {
-                system("perf stat -e cycles,instructions,l3_comb_clstr_state.request_miss -C 1,25 -o perf_output.txt&");
+                //system("perf stat -e cycles,instructions,l3_comb_clstr_state.request_miss -C 1,25 -o perf_output.txt&");
+
+		system("perf record -F 2000 --call-graph dwarf,32385 -C 1,25 &");
 
                 /*
                 ioctl(fd_cyc1, PERF_EVENT_IOC_RESET, 0);
@@ -266,7 +271,7 @@ void *loop(struct thread_neper *t)
         printf("Starting the event Loop for thread_id: %d\n", t->index);      
 
         while (!t->stop) {      
-                int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
+                // int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
 
                 if (nfds == -1) {
                         if (errno == EINTR)
@@ -279,6 +284,7 @@ void *loop(struct thread_neper *t)
         }
 	 
         barrier_wait(t->papi_end);
+        printf("Total events recorded by the thread_id: %d - %lld\n", t->index, t->total_reqs);
 
         ////////////////////////////////////////////
         /*
