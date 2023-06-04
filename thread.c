@@ -450,6 +450,13 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
 
         printf("ALl event loops stopped \n");
         sleep(5);
+
+	unsigned long long int total_data_sent = 0;
+        for (i = 0; i < num_threads; i++) {
+                total_data_sent += t[i].total_reqs;
+        }
+
+        printf("Total data send: %llu\n", total_data_sent);
         // LOG_INFO(cb, "reschedule=%lu", total_reschedule);
         // LOG_INFO(cb, "delay=%lu", total_delay);
         // LOG_INFO(cb, "sleep=%lu", total_sleep);
