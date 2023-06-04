@@ -456,9 +456,9 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         //         total_sleep += t[i].rl.sleep_count;
         //         total_reschedule += t[i].rl.reschedule_count;
         // }
-        int a = -1;
-        while(a == -1)
-                a = system("sudo kill -SIGINT `pgrep perf`");
+       int a = -1;
+       while(a == -1)
+               a = system("sudo kill -SIGINT `pgrep perf`");
 
         printf("ALl event loops stopped \n");
         uint64_t stop_us = microtime() + 5 * ONE_SECOND;

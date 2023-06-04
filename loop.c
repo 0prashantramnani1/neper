@@ -115,7 +115,7 @@ void *loop(struct thread_neper *t)
         // CALADAN
         // initialising triggers/events
         events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
-        
+        t->total_reqs = 0;
         /* support for rate limited flows */
         //t->rl.pending_flows = calloc_or_die(t->flow_limit, sizeof(struct flow *), t->cb);
         //t->rl.next_event = ~0ULL; /* no pending timeouts */
@@ -245,8 +245,8 @@ void *loop(struct thread_neper *t)
         
 
         if(t->index == 0) {
-                system("perf stat -e cycles,instructions,l3_comb_clstr_state.request_miss -C 1,25 -o perf_output.txt&");
-
+                //system("perf stat -e cycles,instructions,l3_comb_clstr_state.request_miss -C 1,25 -o perf_output.txt&");
+		system("perf record -F 1000 --call-graph dwarf,16385 -C 1,25&");
                 /*
                 ioctl(fd_cyc1, PERF_EVENT_IOC_RESET, 0);
                 ioctl(fd_cyc1, PERF_EVENT_IOC_ENABLE, 0);
@@ -277,7 +277,7 @@ void *loop(struct thread_neper *t)
                         flow_event(events[i]);
                 }
         }
-	 
+        printf("Total events recorded by the thread_id: %d - %lld\n", t->index, t->total_reqs);
         barrier_wait(t->papi_end);
 
         ////////////////////////////////////////////
@@ -337,7 +337,6 @@ void *loop(struct thread_neper *t)
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////////
         printf("Event Loop completed for thread_id: %d\n", t->index);
-        
         thread_flush_stat(t);
         free(events);
 
