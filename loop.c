@@ -36,7 +36,7 @@
 #include <string.h>
 
 // CALADAN
-// #include <runtime/sync.h>
+#include <runtime/thread.h>
 // #include <runtime/tcp.h>
 // #include <runtime/poll.h>
 
@@ -116,6 +116,8 @@ void *loop(struct thread_neper *t)
         // initialising triggers/events
         events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
         t->total_reqs = 0;
+        uint64_t start;
+        bool flag = false;
         /* support for rate limited flows */
         //t->rl.pending_flows = calloc_or_die(t->flow_limit, sizeof(struct flow *), t->cb);
         //t->rl.next_event = ~0ULL; /* no pending timeouts */
@@ -246,7 +248,9 @@ void *loop(struct thread_neper *t)
 
         if(t->index == 0) {
                 //system("perf stat -e cycles,instructions,l3_comb_clstr_state.request_miss -C 1,25 -o perf_output.txt&");
-		system("perf record -F 1000 --call-graph dwarf,16385 -C 1,25&");
+		// system("perf record -e instructions -F 500 --call-graph dwarf,8385 -C 1,25&");
+                // system("perf record -e cycles -F 5000 -C 1,25&");
+                start = microtime();
                 /*
                 ioctl(fd_cyc1, PERF_EVENT_IOC_RESET, 0);
                 ioctl(fd_cyc1, PERF_EVENT_IOC_ENABLE, 0);
@@ -275,6 +279,12 @@ void *loop(struct thread_neper *t)
                 }
                 for (int i = 0; i < nfds && !t->stop; i++) {
                         flow_event(events[i]);
+                }
+                if(t->index == 0 && !flag) {
+                        if(microtime() - start >= 400 * ONE_SECOND) {
+                                thread_ready(t->main_thread);
+                                flag = true;
+                        }
                 }
         }
         printf("Total events recorded by the thread_id: %d - %lld\n", t->index, t->total_reqs);
@@ -339,7 +349,7 @@ void *loop(struct thread_neper *t)
         printf("Event Loop completed for thread_id: %d\n", t->index);
         thread_flush_stat(t);
         free(events);
-
+        // fclose(thread_self()->);
         // TODO: Close tcpqueue
         //do_close(t->epfd);
 

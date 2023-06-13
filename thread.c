@@ -40,7 +40,7 @@
 #include <string.h>
 #include <limits.h>
 
-//#include <runtime/runtime.h>
+#include <runtime/runtime.h>
 //#include <runtime/sync.h>
 
 
@@ -406,6 +406,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
 
                 t[i].flows = NULL;
                 t[i].flow_space = 0;
+                t[i].main_thread = thread_self();
 		
                 /* support for rate limited flows */
 	
@@ -456,9 +457,9 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         //         total_sleep += t[i].rl.sleep_count;
         //         total_reschedule += t[i].rl.reschedule_count;
         // }
-       int a = -1;
-       while(a == -1)
-               a = system("sudo kill -SIGINT `pgrep perf`");
+//        int a = -1;
+//        while(a == -1)
+//               a = system("sudo kill -SIGINT `pgrep perf`");
 
         printf("ALl event loops stopped \n");
         uint64_t stop_us = microtime() + 5 * ONE_SECOND;

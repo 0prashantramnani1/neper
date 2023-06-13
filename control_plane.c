@@ -28,6 +28,7 @@
 
 // CALADAN
 #include <runtime/tcp.h>
+#include <runtime/preempt.h>
 #include <net/ip.h>
 
 
@@ -288,7 +289,7 @@ static int ctrl_connect_linux(const char *host, const char *port,
 {
         int ctrl_conn, optval = 1;
         struct hs_msg msg = {};
-        const char* host_linux = "128.110.219.182";
+        const char* host_linux = "128.110.219.165";
         ctrl_conn = connect_any(host_linux, port, ai, opts, cb);
         if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
                        sizeof(optval)))
@@ -518,6 +519,7 @@ void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueu
 static volatile int termination_requested = 0;
 static void sig_alarm_handler(int sig)
 {
+        printf("TERMINATION REQUESTED\n");
         termination_requested = 1;
 }
 
@@ -525,12 +527,15 @@ void control_plane_wait_until_done(struct control_plane *cp)
 {
         if (cp->opts->client) {
                 if (cp->opts->test_length > 0) {
-                        signal(SIGALRM, sig_alarm_handler);
-                        signal(SIGTERM, sig_alarm_handler);
-                        alarm(cp->opts->test_length);
-                        while (!termination_requested) {
-                                sleep(1);
-                        }
+                        // signal(SIGALRM, sig_alarm_handler);
+                        // signal(SIGTERM, sig_alarm_handler);
+                        // alarm(cp->opts->test_length);
+                        // while (!termination_requested) {
+                        //         sleep(1);
+                        // }
+                        preempt_disable();
+                        thread_park_and_preempt_enable();
+                        // sig_alarm_handler(1);
                         LOG_INFO(cp->cb, "finished sleep");
                 } else if (cp->opts->test_length < 0) {
                         countdown_cond_wait(cp->data_pending);

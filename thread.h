@@ -146,6 +146,7 @@ struct thread_neper {
         int flow_space;  /* space allocated in *flows */
 
         long long int total_reqs;
+        thread_t* main_thread;
 };
 
 
