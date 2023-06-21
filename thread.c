@@ -406,7 +406,6 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
 
                 t[i].flows = NULL;
                 t[i].flow_space = 0;
-                t[i].main_thread = thread_self();
 		
                 /* support for rate limited flows */
 	

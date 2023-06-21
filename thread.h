@@ -146,7 +146,12 @@ struct thread_neper {
         int flow_space;  /* space allocated in *flows */
 
         long long int total_reqs;
-        thread_t* main_thread;
+        long long int succ_write_calls;
+        long long int succ_before_yield;
+        long long int no_work_schedule;
+        long long int volunteer_yields;
+        long long int num_conns;
+        tcpconn_t* conns[100000];
 };
 
 

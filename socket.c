@@ -82,6 +82,7 @@ static void socket_init_established(struct thread_neper *t,  tcpconn_t *c)
 
         // set_nonblocking(s, cb);
         tcp_set_nonblocking(c, true);
+        tcp_init_uthread(c, thread_self());
 }
 
 
@@ -357,6 +358,7 @@ void socket_connect_all(struct thread_neper *t)
         for (i = 0; i < t->flow_limit; i++) {
                 usleep(500);
                 tcpconn_t *c = socket_connect_one(t, flags);
+                t->conns[i] = c;
                 if(c != NULL)
                         stream_flow_init(t, c);
         }

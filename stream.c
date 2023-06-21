@@ -24,6 +24,8 @@
 #include "stats.h"
 #include "thread.h"
 
+#include <base/stddef.h>
+
 static void *stream_alloc(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
@@ -103,16 +105,22 @@ void stream_handler(struct flow *f, uint32_t events)
 
         if (events & SEV_WRITE)
                 do {
-			// printf("going into tcp write\n");
                         n = tcp_write(c, mbuf, opts->buffer_size);
-                        if(n > 0)
+                        if(n > 0) {
                                 t->total_reqs += n;
-			// printf("tcp write done\n");
-                        if (n == -1) {
-                                if (errno != EAGAIN)
-                                        PLOG_ERROR(t->cb, "send");
-                                return;
+                                t->succ_write_calls++;
+                                t->succ_before_yield++;
+                                if(n < 16384)
+                                        thread_yield();
+                        } else if(n == -ENOBUFS) { // No space left
+                                if(t->succ_before_yield == 0)
+                                        t->no_work_schedule++;
+                                t->succ_before_yield = 0;
+                                t->volunteer_yields = 0;
+                                // STAT_INC(STAT_VOLUNTEER_YIELD, 1);
+                                thread_yield();
                         }
+
                         if (opts->delay) {
                                 struct timespec ts;
                                 ts.tv_sec  = opts->delay / NSEC_PER_SEC;

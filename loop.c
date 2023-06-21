@@ -103,7 +103,7 @@ void *loop(struct thread_neper *t)
          * Client sockets don't need to be so but we apply this logic anyway.
          * Wait for its turn to do fn_loop_init() according to t->index.
          */
-	
+	t->num_conns = 0;
         mutex_lock(t->loop_init_m);
         while (*t->loop_inited < t->index)
                 condvar_wait(t->loop_init_c, t->loop_init_m);
@@ -116,6 +116,10 @@ void *loop(struct thread_neper *t)
         // initialising triggers/events
         events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
         t->total_reqs = 0;
+        t->succ_write_calls = 0;
+        t->succ_before_yield = 0;
+        t->no_work_schedule = 0;
+        t->volunteer_yields = 0;
         uint64_t start;
         bool flag = false;
         /* support for rate limited flows */
@@ -248,9 +252,8 @@ void *loop(struct thread_neper *t)
 
         if(t->index == 0) {
                 //system("perf stat -e cycles,instructions,l3_comb_clstr_state.request_miss -C 1,25 -o perf_output.txt&");
-		// system("perf record -e instructions -F 500 --call-graph dwarf,8385 -C 1,25&");
-                // system("perf record -e cycles -F 5000 -C 1,25&");
-                start = microtime();
+		// system("perf record -F 500 --call-graph dwarf,8385 -C 1,25&");
+                // system("perf record -e cycles -g -F 2000 -C 1,25&");
                 /*
                 ioctl(fd_cyc1, PERF_EVENT_IOC_RESET, 0);
                 ioctl(fd_cyc1, PERF_EVENT_IOC_ENABLE, 0);
@@ -280,14 +283,16 @@ void *loop(struct thread_neper *t)
                 for (int i = 0; i < nfds && !t->stop; i++) {
                         flow_event(events[i]);
                 }
-                if(t->index == 0 && !flag) {
-                        if(microtime() - start >= 400 * ONE_SECOND) {
-                                thread_ready(t->main_thread);
-                                flag = true;
-                        }
-                }
         }
-        printf("Total events recorded by the thread_id: %d - %lld\n", t->index, t->total_reqs);
+        printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu \
+        No_work_done_calls %llu Volunteer_yields %llu\n ",
+                 t->index, t->total_reqs, t->succ_write_calls, t->no_work_schedule, t->volunteer_yields);
+        
+        FILE    *fptr = fopen("conn_data.txt", "w");
+        for(int i=0;i<100000;i++) {
+                fprintf(fptr,"Connection_id %d Total_data_sent %llu\n", i, tcp_get_reqs(t->conns[i]));
+                fflush(fptr);
+        }
         barrier_wait(t->papi_end);
 
         ////////////////////////////////////////////

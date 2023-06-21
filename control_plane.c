@@ -29,6 +29,7 @@
 // CALADAN
 #include <runtime/tcp.h>
 #include <runtime/preempt.h>
+#include <runtime/thread.h>
 #include <net/ip.h>
 
 
@@ -520,16 +521,17 @@ static volatile int termination_requested = 0;
 static void sig_alarm_handler(int sig)
 {
         printf("TERMINATION REQUESTED\n");
-        termination_requested = 1;
+        // termination_requested = 1;
+        thread_ready(__u_main);
 }
 
 void control_plane_wait_until_done(struct control_plane *cp)
 {
         if (cp->opts->client) {
                 if (cp->opts->test_length > 0) {
-                        // signal(SIGALRM, sig_alarm_handler);
+                        signal(SIGALRM, sig_alarm_handler);
                         // signal(SIGTERM, sig_alarm_handler);
-                        // alarm(cp->opts->test_length);
+                        alarm(cp->opts->test_length);
                         // while (!termination_requested) {
                         //         sleep(1);
                         // }
