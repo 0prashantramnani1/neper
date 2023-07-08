@@ -64,7 +64,12 @@ void stream_handler(struct flow *f, uint32_t events)
         void *mbuf = flow_mbuf(f);
         // int fd = flow_fd(f);
         tcpconn_t *c = flow_connection(f);
+        // printf("size: %d\n", sizeof(*c));
         const struct options *opts = t->opts;
+
+        if(t->index == 1) {
+                // printf("IN STREAM HANDLE UTH\n");
+        }
         /*
          * The actual size can be calculated with CMSG_SPACE(sizeof(struct X)),
          * where X is unnamed structs defined in kernel source tree based on IP versions.
@@ -102,7 +107,10 @@ void stream_handler(struct flow *f, uint32_t events)
 
                 stat->event(t, stat, n, false, NULL);
         }
+        int k = 2;
 
+        // if(t->index == 1)
+        //         k = 1;
         if (events & SEV_WRITE)
                 do {
                         n = tcp_write(c, mbuf, opts->buffer_size);
@@ -110,16 +118,34 @@ void stream_handler(struct flow *f, uint32_t events)
                                 t->total_reqs += n;
                                 t->succ_write_calls++;
                                 t->succ_before_yield++;
-                                if(n < 16384)
+                                if(n < 16384) {
+                                        t->volunteer_yields++;
+                                        // if(t->index == 0) 
                                         thread_yield();
+                                        // if(t->index == 1)
+                                                // thread_yield_without_ready();
+                                }
                         } else if(n == -ENOBUFS) { // No space left
                                 if(t->succ_before_yield == 0)
                                         t->no_work_schedule++;
                                 t->succ_before_yield = 0;
-                                t->volunteer_yields = 0;
-                                // STAT_INC(STAT_VOLUNTEER_YIELD, 1);
+                                // t->volunteer_yields = 0;
+                                t->volunteer_yields++;
+                                // if(t->index == 0) 
                                 thread_yield();
+                                // if(t->index == 1)
+                                        // thread_yield_without_ready();
                         }
+                        // else if(t->index == 1 && softirq_run()) {
+                                // if(t->index == 0) 
+                                        // thread_yield();
+                                // thread_yield_without_ready();
+                                // t->blocked_calls++;
+                                // if(t->blocked_calls >= 50) {
+                                //         t->blocked_calls = 0;
+                                //         thread_yield();
+                                // }
+                        // }
 
                         if (opts->delay) {
                                 struct timespec ts;
@@ -130,7 +156,7 @@ void stream_handler(struct flow *f, uint32_t events)
                         // if(n == -105) {
                         //         printf("Failed to write for flow: %d\n", flow_id(f));
                         // }
-                } while (opts->edge_trigger);
+                } while(--k);//while (opts->edge_trigger);
 
         //TODO: Look at error
         // if (events & EPOLLERR) {

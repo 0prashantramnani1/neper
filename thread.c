@@ -41,6 +41,7 @@
 #include <limits.h>
 
 #include <runtime/runtime.h>
+#include <runtime/thread.h>
 //#include <runtime/sync.h>
 
 
@@ -378,6 +379,12 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 t[i].num_local_hosts = count_local_hosts(opts);
                 t[i].flow_first = first_flow_in_thread(&t[i]);
                 t[i].flow_limit = flows_in_thread(&t[i]);
+                // if(i == 0) {
+                //         t[i].flow_limit += (5000 - 10);
+                // } else {
+                //         t[i].flow_first += (5000 - 10);
+                //         t[i].flow_limit -= (5000 - 10);
+                // }
                 t[i].flow_count = 0;
                 t[i].percentiles = percentiles;
                 // TODO: LOCAL HOSTS
@@ -414,7 +421,13 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //t[i].rl.pending_count = 0;
                 //t[i].rl.next_event = ~0ULL;
 
-		s = thread_spawn(thread_func, &t[i]);
+                // // if(i == 1) {
+                //         // __secondary_data_thread = thread_spawn_pointer(thread_func, &t[i]);
+                // // } else {
+                printf("Main thread spawning uthread%d on pthreadid %d - kthreadid %d\n", i+1, syscall(__NR_gettid), get_current_affinity());
+                s = thread_spawn(thread_func, &t[i]);
+                // }
+                
                 if (s != 0)
                        LOG_FATAL(cb, "thread_spawn: %s", strerror(s));
 		
@@ -456,9 +469,9 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         //         total_sleep += t[i].rl.sleep_count;
         //         total_reschedule += t[i].rl.reschedule_count;
         // }
-//        int a = -1;
-//        while(a == -1)
-//               a = system("sudo kill -SIGINT `pgrep perf`");
+        // int a = -1;
+        // while(a == -1)
+        //        a = system("sudo kill -SIGINT `pgrep perf`");
 
         printf("ALl event loops stopped \n");
         uint64_t stop_us = microtime() + 5 * ONE_SECOND;

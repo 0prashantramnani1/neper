@@ -76,7 +76,12 @@ static void handler_stop(struct flow *f, uint32_t events)
 
 void *loop(struct thread_neper *t)
 {
-	printf("In main LOOP with thread_id: %d\n", t->index);
+        // if(t->index == 1) {
+        //         printf("Assigning uthread\n");
+        //         __secondary_data_thread = thread_self();
+        // }
+        
+	printf("In main LOOP with neper_thread_id: %d - uthread_id: %d - kthreadid: %d - pthreadid: %d\n", t->index, thread_self()->id, get_current_affinity(), syscall(__NR_gettid));
 
 
         const struct options *opts = t->opts;
@@ -120,6 +125,7 @@ void *loop(struct thread_neper *t)
         t->succ_before_yield = 0;
         t->no_work_schedule = 0;
         t->volunteer_yields = 0;
+        t->blocked_calls = 0;
         uint64_t start;
         bool flag = false;
         /* support for rate limited flows */
@@ -246,14 +252,23 @@ void *loop(struct thread_neper *t)
                 */
         // }
 	
+        if(t->index == 1) {
+                printf("Assigning uthread2 on pthreadid %d - kthreadid %d\n", syscall(__NR_gettid), get_current_affinity());
+                __secondary_data_thread = thread_self();
+        } else {
+                printf("uthread1 running on pthreadid %d - kthreadid %d\n", syscall(__NR_gettid), get_current_affinity());
+        }
 
         barrier_wait(t->ready);
         
 
         if(t->index == 0) {
-                //system("perf stat -e cycles,instructions,l3_comb_clstr_state.request_miss -C 1,25 -o perf_output.txt&");
+                // system("perf stat -e cycles,instructions -C 1,25 -o perf_output.txt&");
 		// system("perf record -F 500 --call-graph dwarf,8385 -C 1,25&");
-                // system("perf record -e cycles -g -F 2000 -C 1,25&");
+                // if(syscall(__NR_gettid) == pthreads[0])
+                //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 1&");
+                // else 
+                //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 25&");
                 /*
                 ioctl(fd_cyc1, PERF_EVENT_IOC_RESET, 0);
                 ioctl(fd_cyc1, PERF_EVENT_IOC_ENABLE, 0);
@@ -271,29 +286,69 @@ void *loop(struct thread_neper *t)
 
 /////////////////////////////////////////////////////////////////////////////
         printf("Starting the event Loop for thread_id: %d\n", t->index);      
-
+        int flow_count = 0;
         while (!t->stop) {      
                 int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
 
-                if (nfds == -1) {
-                        if (errno == EINTR)
-                                continue;
-                        PLOG_FATAL(t->cb, "epoll_wait");
-                }
+                // if (nfds == -1) {
+                //         if (errno == EINTR)
+                //                 continue;
+                //         PLOG_FATAL(t->cb, "epoll_wait");
+                // }
                 for (int i = 0; i < nfds && !t->stop; i++) {
                         flow_event(events[i]);
+                        // if(t->index == 1) {
+                                // thread_yield_without_ready();
+                                // if(microtime() < 10 * ONE_SECOND) {
+                                //         if(i%1)
+                                //                 thread_yield_without_ready();
+                                // } else if(microtime() < 20 * ONE_SECOND) {
+                                //         if(i%2)
+                                //                 thread_yield_without_ready();
+                                // } else if(microtime() < 30 * ONE_SECOND) {
+                                //         if(i%3)
+                                //                 thread_yield_without_ready();
+                                // } else if(microtime() < 40 * ONE_SECOND) {
+                                //         if(i%4)
+                                //                 thread_yield_without_ready();
+                                // } else {//if(microtime() < 40 * ONE_SECOND) {
+                                //         if(i%5)
+                                //                 thread_yield_without_ready();
+                                // }
+                        // }
                 }
+
+                // if(t->index == 1) {
+                        // printf("YIELDING THREAD2 with nfds: %d\n", nfds);
+                        // preempt_disable();
+                        // thread_self()->thread_ready = false;
+                        // thread_park_and_preempt_enable();
+                        // thread_yield_without_ready();
+                // }
         }
         printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu \
         No_work_done_calls %llu Volunteer_yields %llu\n ",
                  t->index, t->total_reqs, t->succ_write_calls, t->no_work_schedule, t->volunteer_yields);
+        FILE    *fptr;
+
+        // if(t->index == 0) {
+        //         fptr = fopen("conn_data.txt", "w");
+        //         for(int i=0;i<t->flow_limit;i++) {
+        //                 fprintf(fptr,"Connection_id %d Total_data_sent %llu\n", i, tcp_get_reqs(t->conns[i]));
+        //                 fflush(fptr);
+        //         }
+        // } 
+        // else {
+        //         fptr = fopen("conn_data1.txt", "w");
+        //         if(t->flow_limit == 200000) {
+        //                 for(int i=200000;i<400000;i++) {
+        //                         fprintf(fptr,"Connection_id %d Total_data_sent %llu\n", i, tcp_get_reqs(t->conns[i]));
+        //                         fflush(fptr);
+        //                 }
+        //         }
+        // }
         
-        FILE    *fptr = fopen("conn_data.txt", "w");
-        for(int i=0;i<100000;i++) {
-                fprintf(fptr,"Connection_id %d Total_data_sent %llu\n", i, tcp_get_reqs(t->conns[i]));
-                fflush(fptr);
-        }
-        barrier_wait(t->papi_end);
+        // barrier_wait(t->papi_end);
 
         ////////////////////////////////////////////
         /*
