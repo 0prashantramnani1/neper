@@ -23,7 +23,7 @@ def restart_iokernel():
 
         tm.sleep(timeout)
         timeout = timeout+5
-        subprocess.Popen("sudo ../iokerneld ias noht", shell=True)
+        subprocess.Popen("sudo ../iokerneld", shell=True)
         tm.sleep(5)
 
         data = "don0"
@@ -62,52 +62,71 @@ t_command = "-T"
 ias       = "ias"
 noht      = "noht"
 
-nflows            = {100:3, 500:3, 1000:3, 10000:3, 50000:3, 100000:3}
+# nflows            = {100:3, 500:3, 1000:3, 10000:3, 50000:3, 100000:3}
+nflows            = {600000:12}
 # nflows            = {10000:3, 20000:3, 30000:4, 40000:8}
 # time_quantum      = [15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100]
-time_quantum      = [20, 100]
+time_quantum      = [40000000000]
+receiver_kthreads = [20, 22, 24, 26, 28, 30, 32, 34, 38, 42, 44, 48]
 encoding          = 'utf-8'
 
 
-for ts in time_quantum:
-    for f, t in nflows.items():
-        if ts == 20:
-            if f < 50000:
-                continue
-        i = 0
-        timeout = 5
-        restart_iokernel()
-        print("Time_Quantum: {} Flows: {} Client_Threads: {}\n".format(ts, f, t))
-        while i < 1:
-            try:
-                data_from_client = conn.recv(4)
+config  = '''# an example runtime config file
+host_addr 10.10.1.1
+host_netmask 255.255.255.0
+host_gateway 192.168.1.1
+runtime_kthreads {}
+#runtime_spinning_kthreads 2
+runtime_guaranteed_kthreads {}
+runtime_priority lc
+#preferred_socket 0
+#disable_watchdog 1
+enable_directpath 1
+#host_mtu 8000'''
+restart_iokernel()
 
-                process = subprocess.run([su, command, f_command, str(f), t_command, str(t)], check=True)
 
-                print("waiting to receive")
-                data_from_client = conn.recv(4)
+for rkt in receiver_kthreads:
+    fi = open("receiver.config", "w")
+    print(config.format(rkt, rkt))
+    fi.write(config.format(rkt, rkt))
+    fi.flush()
+    fi.close()
+    for ts in time_quantum:
+        for f, t in nflows.items():
+            i = 0
+            timeout = 5
+            print("RKT: {} Flows: {} Client_Threads: {}\n".format(rkt, f, t))
+            while i < 1:
+                try:
+                    data_from_client = conn.recv(4)
 
-                if data_from_client.decode() == "don1":
+                    process = subprocess.run([su, command, f_command, str(f), t_command, str(t)], check=True)
+
+                    print("waiting to receive")
+                    data_from_client = conn.recv(4)
+
+                    if data_from_client.decode() == "don1":
+                        data = "don1"
+                        conn.send(data.encode())
+                        restart_iokernel()
+                        continue
+
+                    data = "don0"
+                    conn.send(data.encode())
+
+                    data_from_client = conn.recv(4)
+                    print("EVERYTHING GOOD: ", data_from_client)
+                    if data_from_client.decode() == "don1":
+                        restart_iokernel()
+                        continue
+                    i = i + 1
+
+                except:
+                    timeout = timeout+5
+                    print("ERROR!!!!!!")
+                    dummy = conn.recv(4)
                     data = "don1"
                     conn.send(data.encode())
                     restart_iokernel()
-                    continue
-
-                data = "don0"
-                conn.send(data.encode())
-
-                data_from_client = conn.recv(4)
-                print("EVERYTHING GOOD: ", data_from_client)
-                if data_from_client.decode() == "don1":
-                    restart_iokernel()
-                    continue
-                i = i + 1
-
-            except:
-                timeout = timeout+5
-                print("ERROR!!!!!!")
-                dummy = conn.recv(4)
-                data = "don1"
-                conn.send(data.encode())
-                restart_iokernel()
 
