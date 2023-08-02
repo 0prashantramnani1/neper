@@ -364,7 +364,8 @@ void socket_connect_all(struct thread_neper *t)
         for (i = 0; i < limit; i++) {
                 usleep(500);
                 tcpconn_t *c = socket_connect_one(t, flags);
-                // t->conns[i] = c;
+                t->conns[i] = c;
+                tcp_put_table_id(c, i);
                 if(c != NULL)
                         stream_flow_init(t, c);
         }

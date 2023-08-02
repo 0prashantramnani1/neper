@@ -151,7 +151,10 @@ struct thread_neper {
         long long int no_work_schedule;
         long long int volunteer_yields;
         long long int num_conns;
-        tcpconn_t* conns[100000];
+        tcpconn_t* conns[5000];
+        uint64_t last_time[5000];
+        uint64_t avg_time[5000];
+        uint64_t call_cnt[5000];
 };
 
 

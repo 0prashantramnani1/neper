@@ -64,7 +64,7 @@ void stream_handler(struct flow *f, uint32_t events)
         void *mbuf = flow_mbuf(f);
         // int fd = flow_fd(f);
         tcpconn_t *c = flow_connection(f);
-        // printf("size: %d\n", sizeof(*c));
+        // printf("stat_size: %d - thread_neper_size: %d - mbuf_size: %d - conn_size: 432\n", sizeof(*stat), sizeof(*t), sizeof(*mbuf));
         const struct options *opts = t->opts;
 
         if(t->index == 1) {
@@ -107,7 +107,7 @@ void stream_handler(struct flow *f, uint32_t events)
 
                 stat->event(t, stat, n, false, NULL);
         }
-        int k = 2;
+        int k = 1;
 
         // if(t->index == 1)
         //         k = 1;
@@ -118,6 +118,17 @@ void stream_handler(struct flow *f, uint32_t events)
                                 t->total_reqs += n;
                                 t->succ_write_calls++;
                                 t->succ_before_yield++;
+                                int table_id = tcp_get_table_id(c);
+
+                                uint64_t now = microtime();
+                                if(t->last_time[table_id] != 0) {
+                                        t->avg_time[table_id] += now  - t->last_time[table_id];
+                                } 
+
+                                t->last_time[table_id] = now;
+                                t->call_cnt[table_id]++;
+                                
+
                                 if(n < 16384) {
                                         t->volunteer_yields++;
                                         // if(t->index == 0) 

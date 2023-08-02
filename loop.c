@@ -117,6 +117,11 @@ void *loop(struct thread_neper *t)
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
 
+        for(int i=0;i<5000;i++) {
+                t->last_time[i] = 0;
+                t->avg_time[i]  = 0;
+                t->call_cnt[i]  = 0;
+        }
         // CALADAN
         // initialising triggers/events
         events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
@@ -125,7 +130,6 @@ void *loop(struct thread_neper *t)
         t->succ_before_yield = 0;
         t->no_work_schedule = 0;
         t->volunteer_yields = 0;
-        t->blocked_calls = 0;
         uint64_t start;
         bool flag = false;
         /* support for rate limited flows */
@@ -266,7 +270,7 @@ void *loop(struct thread_neper *t)
                 // system("perf stat -e cycles,instructions -C 1,25 -o perf_output.txt&");
 		// system("perf record -F 500 --call-graph dwarf,8385 -C 1,25&");
                 // if(syscall(__NR_gettid) == pthreads[0])
-                //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 1&");
+                // system("perf record -e cache-misses --call-graph dwarf,8385 -F 200 -C 1,25&");
                 // else 
                 //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 25&");
                 /*
@@ -283,7 +287,8 @@ void *loop(struct thread_neper *t)
                 ioctl(fd_instr2, PERF_EVENT_IOC_ENABLE, 0);
                 */
         }
-
+        int cnt = 0;
+        // uint64_t s = microtime();
 /////////////////////////////////////////////////////////////////////////////
         printf("Starting the event Loop for thread_id: %d\n", t->index);      
         int flow_count = 0;
@@ -317,7 +322,11 @@ void *loop(struct thread_neper *t)
                                 // }
                         // }
                 }
-
+                // cnt++;
+                // if(cnt%100 == 0) {
+                //         printf("Thread id: %d TIME TO BACK: %llu\n", t->index, (microtime() - s)/20);
+                //         s = microtime();
+                // }
                 // if(t->index == 1) {
                         // printf("YIELDING THREAD2 with nfds: %d\n", nfds);
                         // preempt_disable();
@@ -325,6 +334,10 @@ void *loop(struct thread_neper *t)
                         // thread_park_and_preempt_enable();
                         // thread_yield_without_ready();
                 // }
+        }
+
+        for(int i=0;i<5000;i++) {
+                printf("AAVG TIME BETWEEN CALLS: %llu\n", t->avg_time[i]/t->call_cnt[i]);
         }
         printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu \
         No_work_done_calls %llu Volunteer_yields %llu\n ",
