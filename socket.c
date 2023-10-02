@@ -106,8 +106,9 @@ static void socket_accept(struct flow *f)
 
         // Hack to make queue epoll level triggered
         tcpqueue_check_triggers(q);
-
-        // printf("Thread ID: %d - %d connetions accpted\n", t->index, tcpqueue_get_num_connections_accepted(q));
+        
+        if(tcpqueue_get_num_connections_accepted(q)%1000 == 0)
+                printf("Thread ID: %d - %d connetions accpted\n", t->index, tcpqueue_get_num_connections_accepted(q));
 
         if (s < 0) {
                 switch (errno) {

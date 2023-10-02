@@ -132,7 +132,7 @@ struct neper_pq *neper_pq(double (*cmp)(void *, void *), uint32_t maxlen,
         pq->deq  = pq_deq;
         pq->fini = pq_fini;
 
-        impl->pq_maxlen = maxlen;
+        impl->pq_maxlen = 10*maxlen;
         impl->pq_list   = calloc_or_die(maxlen + 1, sizeof(void *), cb);
         impl->pq_cmp    = cmp;
         impl->pq_cb     = cb;

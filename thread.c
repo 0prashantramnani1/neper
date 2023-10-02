@@ -347,7 +347,7 @@ static void get_numa_allowed_cpus(struct callbacks *cb, int numa_idx,
 void start_worker_threads(struct options *opts, struct callbacks *cb,
                           struct thread_neper *t, void *(*thread_func)(void *),
                           const struct neper_fn *fn,
-                          barrier_t *ready, struct timespec *time_start,
+                          barrier_t *ready, barrier_t *finish, struct timespec *time_start,
                           pthread_mutex_t *time_start_mutex,
                           struct rusage *rusage_start, struct addrinfo *ai,
                           struct countdown_cond *data_pending,
@@ -380,6 +380,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
                 //                                     cb);
                 t[i].ready = ready;
+                t[i].finish = finish;
                 t[i].time_start = time_start;
                 t[i].time_start_mutex = time_start_mutex;
                 t[i].rusage_start = rusage_start;
@@ -449,7 +450,7 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         // }
 
         printf("ALl event loops stopped \n");
-        sleep(5);
+        // sleep(5);
 
 	unsigned long long int total_data_sent = 0;
         for (i = 0; i < num_threads; i++) {
@@ -495,6 +496,9 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         //CALADAN
 	barrier_t ready_barrier;
+        barrier_t finish_barrier;
+        barrier_init(&finish_barrier, opts->num_threads + 1);
+
 	tcpqueue_t *control_plane_q;
         
         struct timespec time_start = {0}; /* shared by flows */
@@ -545,7 +549,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));
-        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier,
+        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier, &finish_barrier,
                              &time_start, &time_start_mutex, &rusage_start, ai,
                              data_pending, &loop_init_c,
                              &loop_init_m, &loop_inited);
@@ -601,6 +605,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 	
         mutex_unlock(&time_start_mutex);
         /* end printing rusage */
+        barrier_wait(&finish_barrier);
 
         int ret = fn->fn_report(ts);
 	printf("WORKING 2 \n");

@@ -68,6 +68,7 @@ void *loop(struct thread_neper *t)
          * Wait for its turn to do fn_loop_init() according to t->index.
          */
 	
+        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1026));
         mutex_lock(t->loop_init_m);
         while (*t->loop_inited < t->index)
                 condvar_wait(t->loop_init_c, t->loop_init_m);
@@ -75,7 +76,8 @@ void *loop(struct thread_neper *t)
         (*t->loop_inited)++;
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
-
+        
+        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1025));
         t->total_reqs=0;
         //////CHECK//////////
         for(int i=0;i<100;i++) {
@@ -122,6 +124,7 @@ void *loop(struct thread_neper *t)
         /* TODO: The first flow object is leaking here... */
 
         /* This is technically a thread callback so it must return a (void *) */
+        barrier_wait(t->finish);
         thread_exit();
         // return NULL;
 }
