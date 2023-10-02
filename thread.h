@@ -126,6 +126,7 @@ struct thread_neper {
         int stop;
         void *f_mbuf;                 /* replaces per-flow buffers */
         barrier_t *ready;
+        barrier_t *finish;
 
         // PAPI
         barrier_t *papi_start;
@@ -151,7 +152,7 @@ struct thread_neper {
         long long int no_work_schedule;
         long long int volunteer_yields;
         long long int num_conns;
-        tcpconn_t* conns[100000];
+        //tcpconn_t* conns[100000];
 };
 
 

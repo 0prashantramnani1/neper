@@ -355,17 +355,15 @@ void socket_connect_all(struct thread_neper *t)
 {
         // TODO: look at async connect
         int i, flags = t->opts->async_connect ? SOCK_NONBLOCK : 0;
-        int limit = t->flow_limit;
-        // if(t->index == 0) {
-        //         limit += (5000 - 1);
-        // } else {
-        //         limit -= (5000 - 1);
-        // }
-        for (i = 0; i < limit; i++) {
-                usleep(500);
+        for (i = 0; i < t->flow_limit; i++) {
+                usleep(1500);
                 tcpconn_t *c = socket_connect_one(t, flags);
-                // t->conns[i] = c;
-                if(c != NULL)
+                
+                if(c != NULL) {
                         stream_flow_init(t, c);
+                        // printf("Connected %d connections\n", i+1);
+                        // printf("Connected %d connections\n", i+1);
+                        // printf("Connected %d connections\n", i+1);
+                }
         }
 }

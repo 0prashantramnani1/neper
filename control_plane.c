@@ -154,11 +154,16 @@ static void send_msg_caladan_terminate(tcpconn_t *c, struct hs_msg *msg, struct 
 static int try_connect(int s, const struct sockaddr *addr, socklen_t addr_len)
 {
         for (;;) {
+                printf("TRYING TO CONNECT TO CONTROL PLACE \n");
                 int ret = connect(s, addr, addr_len);
-                if (ret == -1 && (errno == EINTR || errno == EALREADY))
+                if (ret == -1 && (errno == EINTR || errno == EALREADY)) {
+                        printf("ERROR 1\n");
                         continue;
-                if (ret == -1 && errno == EISCONN)
+                }
+                if (ret == -1 && errno == EISCONN) {
+                        printf("ERROR 2\n");
                         return 0;
+                }
                 return ret;
         }
 }
@@ -290,7 +295,7 @@ static int ctrl_connect_linux(const char *host, const char *port,
 {
         int ctrl_conn, optval = 1;
         struct hs_msg msg = {};
-        const char* host_linux = "128.110.219.165";
+        const char* host_linux = "130.207.125.113";
         ctrl_conn = connect_any(host_linux, port, ai, opts, cb);
         if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
                        sizeof(optval)))

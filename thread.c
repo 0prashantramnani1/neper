@@ -348,7 +348,8 @@ static void get_numa_allowed_cpus(struct callbacks *cb, int numa_idx,
 void start_worker_threads(struct options *opts, struct callbacks *cb,
                           struct thread_neper *t, void *(*thread_func)(void *),
                           const struct neper_fn *fn,
-                          barrier_t *ready, barrier_t* papi_start, barrier_t* papi_end, struct timespec *time_start,
+                          barrier_t *ready, barrier_t *finish, 
+                          barrier_t* papi_start, barrier_t* papi_end, struct timespec *time_start,
                           pthread_mutex_t *time_start_mutex,
                           struct rusage *rusage_start, struct addrinfo *ai,
                           struct countdown_cond *data_pending,
@@ -379,18 +380,13 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 t[i].num_local_hosts = count_local_hosts(opts);
                 t[i].flow_first = first_flow_in_thread(&t[i]);
                 t[i].flow_limit = flows_in_thread(&t[i]);
-                // if(i == 0) {
-                //         t[i].flow_limit += (5000 - 10);
-                // } else {
-                //         t[i].flow_first += (5000 - 10);
-                //         t[i].flow_limit -= (5000 - 10);
-                // }
                 t[i].flow_count = 0;
                 t[i].percentiles = percentiles;
                 // TODO: LOCAL HOSTS
                 //t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
                 //                                     cb);
                 t[i].ready = ready;
+                t[i].finish = finish;
                 
                 // PAPI
                 t[i].papi_start = papi_start;
@@ -421,12 +417,8 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //t[i].rl.pending_count = 0;
                 //t[i].rl.next_event = ~0ULL;
 
-                // // if(i == 1) {
-                //         // __secondary_data_thread = thread_spawn_pointer(thread_func, &t[i]);
-                // // } else {
-                printf("Main thread spawning uthread%d on pthreadid %d - kthreadid %d\n", i+1, syscall(__NR_gettid), get_current_affinity());
+                //printf("Main thread spawning uthread%d on pthreadid %d - kthreadid %d\n", i+1, syscall(__NR_gettid), get_current_affinity());
                 s = thread_spawn(thread_func, &t[i]);
-                // }
                 
                 if (s != 0)
                        LOG_FATAL(cb, "thread_spawn: %s", strerror(s));
@@ -474,7 +466,7 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         //        a = system("sudo kill -SIGINT `pgrep perf`");
 
         printf("ALl event loops stopped \n");
-        uint64_t stop_us = microtime() + 5 * ONE_SECOND;
+        uint64_t stop_us = microtime() + 175 * ONE_MS;
         while (microtime() < stop_us);
         
 
@@ -522,6 +514,9 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         //CALADAN
 	barrier_t ready_barrier;
+        barrier_t finish_barrier;
+        barrier_init(&finish_barrier, opts->num_threads + 1);
+
 	tcpqueue_t *control_plane_q;
 
         barrier_t papi_start_barrier;
@@ -576,7 +571,8 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));
-        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier, &papi_start_barrier, &papi_end_barrier, 
+        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier, &finish_barrier, 
+                             &papi_start_barrier, &papi_end_barrier, 
                              &time_start, &time_start_mutex, &rusage_start, ai,
                              data_pending, &loop_init_c,
                              &loop_init_m, &loop_inited);
@@ -626,6 +622,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 	
         mutex_unlock(&time_start_mutex);
         /* end printing rusage */
+        barrier_wait(&finish_barrier);
 
         int ret = fn->fn_report(ts);
 	printf("WORKING 2 \n");

@@ -108,6 +108,7 @@ void *loop(struct thread_neper *t)
          * Client sockets don't need to be so but we apply this logic anyway.
          * Wait for its turn to do fn_loop_init() according to t->index.
          */
+        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1026));
 	t->num_conns = 0;
         mutex_lock(t->loop_init_m);
         while (*t->loop_inited < t->index)
@@ -116,6 +117,7 @@ void *loop(struct thread_neper *t)
         (*t->loop_inited)++;
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
+        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1025));
 
         // CALADAN
         // initialising triggers/events
@@ -125,7 +127,7 @@ void *loop(struct thread_neper *t)
         t->succ_before_yield = 0;
         t->no_work_schedule = 0;
         t->volunteer_yields = 0;
-        t->blocked_calls = 0;
+        //t->blocked_calls = 0;
         uint64_t start;
         bool flag = false;
         /* support for rate limited flows */
@@ -290,46 +292,19 @@ void *loop(struct thread_neper *t)
         while (!t->stop) {      
                 int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
 
-                // if (nfds == -1) {
-                //         if (errno == EINTR)
-                //                 continue;
-                //         PLOG_FATAL(t->cb, "epoll_wait");
-                // }
+                if (nfds == -1) {
+                        if (errno == EINTR)
+                                continue;
+                        PLOG_FATAL(t->cb, "epoll_wait");
+                }
                 for (int i = 0; i < nfds && !t->stop; i++) {
                         flow_event(events[i]);
-                        // if(t->index == 1) {
-                                // thread_yield_without_ready();
-                                // if(microtime() < 10 * ONE_SECOND) {
-                                //         if(i%1)
-                                //                 thread_yield_without_ready();
-                                // } else if(microtime() < 20 * ONE_SECOND) {
-                                //         if(i%2)
-                                //                 thread_yield_without_ready();
-                                // } else if(microtime() < 30 * ONE_SECOND) {
-                                //         if(i%3)
-                                //                 thread_yield_without_ready();
-                                // } else if(microtime() < 40 * ONE_SECOND) {
-                                //         if(i%4)
-                                //                 thread_yield_without_ready();
-                                // } else {//if(microtime() < 40 * ONE_SECOND) {
-                                //         if(i%5)
-                                //                 thread_yield_without_ready();
-                                // }
-                        // }
                 }
-
-                // if(t->index == 1) {
-                        // printf("YIELDING THREAD2 with nfds: %d\n", nfds);
-                        // preempt_disable();
-                        // thread_self()->thread_ready = false;
-                        // thread_park_and_preempt_enable();
-                        // thread_yield_without_ready();
-                // }
         }
         printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu \
         No_work_done_calls %llu Volunteer_yields %llu\n ",
                  t->index, t->total_reqs, t->succ_write_calls, t->no_work_schedule, t->volunteer_yields);
-        FILE    *fptr;
+        // FILE    *fptr;
 
         // if(t->index == 0) {
         //         fptr = fopen("conn_data.txt", "w");
@@ -417,6 +392,7 @@ void *loop(struct thread_neper *t)
 
         /* This is technically a thread callback so it must return a (void *) */
 
+        barrier_wait(t->finish);
         thread_exit();
         // return NULL;
 }

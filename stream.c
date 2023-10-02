@@ -107,45 +107,27 @@ void stream_handler(struct flow *f, uint32_t events)
 
                 stat->event(t, stat, n, false, NULL);
         }
-        int k = 2;
+        int k = 1;
 
-        // if(t->index == 1)
-        //         k = 1;
         if (events & SEV_WRITE)
                 do {
                         n = tcp_write(c, mbuf, opts->buffer_size);
+                        // printf("tcp_write wrote %d bytes\n", n);
                         if(n > 0) {
                                 t->total_reqs += n;
                                 t->succ_write_calls++;
                                 t->succ_before_yield++;
-                                if(n < 16384) {
-                                        t->volunteer_yields++;
-                                        // if(t->index == 0) 
-                                        thread_yield();
-                                        // if(t->index == 1)
-                                                // thread_yield_without_ready();
-                                }
+                                // if(n < 16384) {
+                                //         t->volunteer_yields++;
+                                //         thread_yield();
+                                // }
                         } else if(n == -ENOBUFS) { // No space left
                                 if(t->succ_before_yield == 0)
                                         t->no_work_schedule++;
                                 t->succ_before_yield = 0;
-                                // t->volunteer_yields = 0;
                                 t->volunteer_yields++;
-                                // if(t->index == 0) 
                                 thread_yield();
-                                // if(t->index == 1)
-                                        // thread_yield_without_ready();
                         }
-                        // else if(t->index == 1 && softirq_run()) {
-                                // if(t->index == 0) 
-                                        // thread_yield();
-                                // thread_yield_without_ready();
-                                // t->blocked_calls++;
-                                // if(t->blocked_calls >= 50) {
-                                //         t->blocked_calls = 0;
-                                //         thread_yield();
-                                // }
-                        // }
 
                         if (opts->delay) {
                                 struct timespec ts;
