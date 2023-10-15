@@ -30,12 +30,17 @@ static void *stream_alloc(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
 
-        if (!t->f_mbuf) {
-                t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
-                if (opts->enable_write)
-                        fill_random(t->f_mbuf, opts->buffer_size);
-        }
-        return t->f_mbuf;
+        // if (!t->f_mbuf) {
+        //         t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+        //         if (opts->enable_write)
+        //                 fill_random(t->f_mbuf, opts->buffer_size);
+        // }
+        // return t->f_mbuf;
+
+        void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+        if (opts->enable_write)
+                fill_random(f_mbuf, opts->buffer_size);
+        return f_mbuf;
 }
 
 static uint32_t stream_events(struct thread_neper *t)
@@ -62,6 +67,8 @@ void stream_handler(struct flow *f, uint32_t events)
         struct neper_stat *stat = flow_stat(f);
         struct thread_neper *t = flow_thread(f);
         void *mbuf = flow_mbuf(f);
+        int* offset = flow_data_offset(f);
+
         // int fd = flow_fd(f);
         tcpconn_t *c = flow_connection(f);
         // printf("size: %d\n", sizeof(*c));
@@ -107,14 +114,20 @@ void stream_handler(struct flow *f, uint32_t events)
 
                 stat->event(t, stat, n, false, NULL);
         }
-        int k = 2;
+        int k = 1;
 
-        // if(t->index == 1)
-        //         k = 1;
         if (events & SEV_WRITE)
                 do {
-                        n = tcp_write(c, mbuf, opts->buffer_size);
+                        // printf("to send bytes: %d\n", MIN(opts->batch_size, opts->buffer_size - *offset));
+                        // printf("current offset %d\n", *offset);
+                        n = tcp_write(c, mbuf + *offset, MIN(opts->batch_size, opts->buffer_size - *offset));
+                        // printf("sent bytes: %d\n", n);
                         if(n > 0) {
+                                *offset = (*offset) + n;
+                                if(*offset >= opts->buffer_size) {
+                                        *offset = 0;
+                                }
+
                                 t->total_reqs += n;
                                 t->succ_write_calls++;
                                 t->succ_before_yield++;

@@ -290,7 +290,7 @@ static int ctrl_connect_linux(const char *host, const char *port,
 {
         int ctrl_conn, optval = 1;
         struct hs_msg msg = {};
-        const char* host_linux = "128.110.219.165";
+        const char* host_linux = "128.110.219.168";
         ctrl_conn = connect_any(host_linux, port, ai, opts, cb);
         if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
                        sizeof(optval)))

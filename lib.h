@@ -69,6 +69,7 @@ struct options {
         int num_ports;
         int test_length;
         int buffer_size;
+        int batch_size;
         int listen_backlog;
         int suicide_length;
         int recv_flags;

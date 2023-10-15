@@ -41,6 +41,7 @@ void              *flow_mbuf(const struct flow *);
 void              *flow_opaque(const struct flow *);
 struct neper_stat *flow_stat(const struct flow *);
 struct thread_neper *flow_thread(const struct flow *);
+int*                 flow_data_offset(struct flow *);
 
 tcpqueue_t          *flow_queue(const struct flow *);
 tcpconn_t           *flow_connection(const struct flow *);
