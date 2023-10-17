@@ -108,7 +108,7 @@ void *loop(struct thread_neper *t)
          * Client sockets don't need to be so but we apply this logic anyway.
          * Wait for its turn to do fn_loop_init() according to t->index.
          */
-        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1026));
+        // __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1026));
 	t->num_conns = 0;
         mutex_lock(t->loop_init_m);
         while (*t->loop_inited < t->index)
@@ -117,7 +117,7 @@ void *loop(struct thread_neper *t)
         (*t->loop_inited)++;
         condvar_broadcast(t->loop_init_c);
         mutex_unlock(t->loop_init_m);
-        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1025));
+        // __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1025));
 
         // CALADAN
         // initialising triggers/events

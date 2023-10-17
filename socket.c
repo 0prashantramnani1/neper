@@ -354,6 +354,7 @@ tcpconn_t *socket_connect_one(struct thread_neper *t, int flags)
 void socket_connect_all(struct thread_neper *t)
 {
         // TODO: look at async connect
+        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1026));
         int i, flags = t->opts->async_connect ? SOCK_NONBLOCK : 0;
         for (i = 0; i < t->flow_limit; i++) {
                 usleep(1500);
@@ -366,4 +367,5 @@ void socket_connect_all(struct thread_neper *t)
                         // printf("Connected %d connections\n", i+1);
                 }
         }
+        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1025));
 }
