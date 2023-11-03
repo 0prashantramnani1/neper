@@ -58,6 +58,7 @@ static uint32_t stream_events(struct thread_neper *t)
 void stream_handler(struct flow *f, uint32_t events)
 {
         static const uint64_t NSEC_PER_SEC = 1000*1000*1000;
+        static long long int X = 1;
 
         struct neper_stat *stat = flow_stat(f);
         struct thread_neper *t = flow_thread(f);
@@ -115,7 +116,16 @@ void stream_handler(struct flow *f, uint32_t events)
                         // printf("tcp_write wrote %d bytes\n", n);
                         if(n > 0) {
                                 t->total_reqs += n;
-                                t->succ_write_calls++;
+                                if(opts->data_pending > 0 && t->total_reqs > (opts->data_pending * (1e9))) {
+                                        if(__u_main != NULL) {
+                                                t->total_reqs = 0;
+
+                                                thread_ready(__u_main);
+                                                // preempt_disable();
+                                                // thread_park_and_preempt_enable();
+                                        }
+                                }
+                                // t->succ_write_calls++;
                                 t->succ_before_yield++;
                                 // if(n < 16384) {
                                 //         t->volunteer_yields++;

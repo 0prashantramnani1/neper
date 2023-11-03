@@ -540,14 +540,17 @@ void control_plane_wait_until_done(struct control_plane *cp)
                         // while (!termination_requested) {
                         //         sleep(1);
                         // }
-                        preempt_disable();
-                        thread_park_and_preempt_enable();
+                        // preempt_disable();
+                        // thread_park_and_preempt_enable();
                         // sig_alarm_handler(1);
                         LOG_INFO(cp->cb, "finished sleep");
-                } else if (cp->opts->test_length < 0) {
-                        countdown_cond_wait(cp->data_pending);
-                        LOG_INFO(cp->cb, "finished data wait");
-                }
+                } 
+                preempt_disable();
+                thread_park_and_preempt_enable();
+                // else if (cp->opts->test_length < 0) {
+                //         countdown_cond_wait(cp->data_pending);
+                //         LOG_INFO(cp->cb, "finished data wait");
+                // }
         } else {
                 // TODO: Multi-Client support
                 const int n = cp->opts->num_clients;
