@@ -58,7 +58,7 @@ static uint32_t stream_events(struct thread_neper *t)
 void stream_handler(struct flow *f, uint32_t events)
 {
         static const uint64_t NSEC_PER_SEC = 1000*1000*1000;
-        static long long int X = 1;
+        static bool main_started = false;
 
         struct neper_stat *stat = flow_stat(f);
         struct thread_neper *t = flow_thread(f);
@@ -110,33 +110,31 @@ void stream_handler(struct flow *f, uint32_t events)
         }
         int k = 1;
 
+        static int data_counter = 1;
         if (events & SEV_WRITE)
                 do {
                         n = tcp_write(c, mbuf, opts->buffer_size);
-                        // printf("tcp_write wrote %d bytes\n", n);
                         if(n > 0) {
                                 t->total_reqs += n;
-                                if(opts->data_pending > 0 && t->total_reqs > (opts->data_pending * (1e9))) {
+                                t->succ_write_calls++;
+                                if(t->total_reqs/10000000 == data_counter) {
+                                        printf("Data send %d MB\n", t->total_reqs/1000000);
+                                        data_counter++;
+                                }
+                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (opts->data_pending * (1e9))) {
                                         if(__u_main != NULL) {
-                                                t->total_reqs = 0;
-
+                                                main_started = true;
                                                 thread_ready(__u_main);
-                                                // preempt_disable();
-                                                // thread_park_and_preempt_enable();
                                         }
                                 }
-                                // t->succ_write_calls++;
-                                t->succ_before_yield++;
-                                // if(n < 16384) {
-                                //         t->volunteer_yields++;
-                                //         thread_yield();
-                                // }
                         } else if(n == -ENOBUFS) { // No space left
-                                if(t->succ_before_yield == 0)
-                                        t->no_work_schedule++;
-                                t->succ_before_yield = 0;
+                                // if(t->succ_before_yield == 0)
+                                        // t->no_work_schedule++;
+                                // t->succ_before_yield = 0;
                                 t->volunteer_yields++;
                                 thread_yield();
+                        } else if(n == -EBUSY) { // Waiting for acks
+                                t->failed_write_calls++;
                         }
 
                         if (opts->delay) {
@@ -145,10 +143,8 @@ void stream_handler(struct flow *f, uint32_t events)
                                 ts.tv_nsec = opts->delay % NSEC_PER_SEC;
                                 nanosleep(&ts, NULL);
                         }
-                        // if(n == -105) {
-                        //         printf("Failed to write for flow: %d\n", flow_id(f));
-                        // }
-                } while(--k);//while (opts->edge_trigger);
+
+                } while(--k);
 
         //TODO: Look at error
         // if (events & EPOLLERR) {

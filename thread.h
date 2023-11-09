@@ -151,6 +151,7 @@ struct thread_neper {
         long long int succ_before_yield;
         long long int no_work_schedule;
         long long int volunteer_yields;
+        long long int failed_write_calls;
         long long int num_conns;
         //tcpconn_t* conns[100000];
 };

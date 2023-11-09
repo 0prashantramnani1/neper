@@ -123,6 +123,7 @@ void *loop(struct thread_neper *t)
         // initialising triggers/events
         events = calloc(opts->maxevents, sizeof(poll_trigger_t *));
         t->total_reqs = 0;
+        t->failed_write_calls = 0;
         t->succ_write_calls = 0;
         t->succ_before_yield = 0;
         t->no_work_schedule = 0;
@@ -265,8 +266,7 @@ void *loop(struct thread_neper *t)
         
 
         if(t->index == 0) {
-            ;
-                //system("perf stat -e cycles:uk,cycles:u,cycles:k,instructions:uk,instructions:u,instructions:k,cache-misses -C 1,25 -o perf_output.txt&");
+                // system("perf stat -e cycles:uk,cycles:u,cycles:k,instructions:uk,instructions:u,instructions:k,cache-misses -C 2,3 -o perf_output.txt&");
 		// system("perf record -F 500 --call-graph dwarf,8385 -C 1,25&");
                 // if(syscall(__NR_gettid) == pthreads[0])
                 //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 1&");
@@ -303,8 +303,8 @@ void *loop(struct thread_neper *t)
                 }
         }
         printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu \
-        No_work_done_calls %llu Volunteer_yields %llu\n ",
-                 t->index, t->total_reqs, t->succ_write_calls, t->no_work_schedule, t->volunteer_yields);
+                failed_write_calls %llu Volunteer_yields %llu\n ", \
+                t->index, t->total_reqs, t->succ_write_calls, t->failed_write_calls, t->volunteer_yields);
         // FILE    *fptr;
 
         // if(t->index == 0) {
