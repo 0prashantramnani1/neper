@@ -535,15 +535,15 @@ void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueu
                         cp->fn->fn_ctrl_client(cp->ctrl_conn, cp->cb);
                 }
         } else {
-                // cp->ctrl_port = ctrl_listen(cp->opts->host,
-                //                             cp->opts->control_port, ai,
-                //                             cp->opts, cp->cb, &control_plane_q);
-                // TODO: Refactor                                            
-                // cp->ctrl_queue = control_plane_q;                               
-
-                cp->ctrl_port = ctrl_listen_linux(cp->opts->host,
+                cp->ctrl_port = ctrl_listen(cp->opts->host,
                                             cp->opts->control_port, ai,
-                                            cp->opts, cp->cb);   
+                                            cp->opts, cp->cb, &control_plane_q);
+                // TODO: Refactor                                            
+                cp->ctrl_queue = control_plane_q;                               
+
+                // cp->ctrl_port = ctrl_listen_linux(cp->opts->host,
+                //                             cp->opts->control_port, ai,
+                //                             cp->opts, cp->cb);   
 
                 LOG_INFO(cp->cb, "opened control port");
                 if (cp-> fn->fn_ctrl_server) {
