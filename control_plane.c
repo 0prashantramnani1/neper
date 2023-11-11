@@ -495,13 +495,13 @@ struct control_plane* control_plane_create(struct options *opts,
 void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueue_t *control_plane_q)
 {
         if (cp->opts->client) {
-                // cp->ctrl_connection = ctrl_connect(cp->opts->host,
-                //                              cp->opts->control_port, ai,
-                //                              cp->opts, cp->cb);
-
-                cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
+                cp->ctrl_connection = ctrl_connect(cp->opts->host,
                                              cp->opts->control_port, ai,
                                              cp->opts, cp->cb);
+
+                // cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
+                //                              cp->opts->control_port, ai,
+                //                              cp->opts, cp->cb);
                 LOG_INFO(cp->cb, "connected to control port");
                 if (cp->fn->fn_ctrl_client) {
                         cp->fn->fn_ctrl_client(cp->ctrl_conn, cp->cb);
