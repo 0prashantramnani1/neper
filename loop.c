@@ -46,6 +46,9 @@
 
 #define NUM_EVENTS 2
 
+extern uint64_t rtt;
+extern uint64_t packet_counter;
+
 static long
 perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
                 int cpu, int group_fd, unsigned long flags)
@@ -304,9 +307,8 @@ void *loop(struct thread_neper *t)
                         flow_event(events[i]);
                 }
         }
-        printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu \
-                failed_write_calls %llu Volunteer_yields %llu retransmits %llu\n", \
-                t->index, t->total_reqs, t->succ_write_calls, t->failed_write_calls, t->volunteer_yields, tcp_retransmits);
+        printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu failed_write_calls %llu Volunteer_yields %llu retransmits %llu rtt %lld packet_counter %lld Avg_r rtt %f \n", \
+                t->index, t->total_reqs, t->succ_write_calls, t->failed_write_calls, t->volunteer_yields, tcp_retransmits, rtt, packet_counter, (double)rtt/(double)packet_counter);
         // FILE    *fptr;
 
         // if(t->index == 0) {
