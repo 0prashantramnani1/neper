@@ -103,9 +103,9 @@ static void send_msg_caladan(tcpconn_t *c, struct hs_msg *msg, struct callbacks 
 {
         int n;
 
-	printf("2.1\n");
+	// printf("2.1\n");
         // while ((n = write(fd, msg, sizeof(*msg))) == -1) {
-	printf("SIZE OF MSG: %d\n", sizeof(*msg));
+	// printf("SIZE OF MSG: %d\n", sizeof(*msg));
         while (n = tcp_write(c, msg, sizeof(*msg)) == -1) {                
 		printf("2.2\n");
                 if (errno == EINTR || errno == EAGAIN)
@@ -116,8 +116,8 @@ static void send_msg_caladan(tcpconn_t *c, struct hs_msg *msg, struct callbacks 
         // if(n == 0) {
         //         while(n = tcp_write(c, msg, sizeof(*msg)) == 0);
         // }
-	printf("2.3\n");
-        printf("n: %d\n", n);
+	// printf("2.3\n");
+        // printf("n: %d\n", n);
         //if (n != sizeof(*msg))
         //        LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
 }
@@ -126,10 +126,10 @@ static void send_msg_caladan_terminate(tcpconn_t *c, struct hs_msg *msg, struct 
                      const char *fn)
 {
         int n;
-        printf("in terminate\n");
-	printf("2.1\n");
+        // printf("in terminate\n");
+	// printf("2.1\n");
         // while ((n = write(fd, msg, sizeof(*msg))) == -1) {
-	printf("SIZE OF MSG: %d\n", sizeof(*msg));
+	// printf("SIZE OF MSG: %d\n", sizeof(*msg));
         // while (n = tcp_write(c, msg, sizeof(*msg)) == -1) {                
 	// 	printf("2.2\n");
         //         if (errno == EINTR || errno == EAGAIN)
@@ -140,12 +140,12 @@ static void send_msg_caladan_terminate(tcpconn_t *c, struct hs_msg *msg, struct 
         // if(n == 0) {
         while(1) {
                 n = tcp_write(c, msg, sizeof(*msg));
-                printf("in send while loop - %d \n", n);
+                // printf("in send while loop - %d \n", n);
                 if(n > 0) break;
         }
         // }
-	printf("2.3\n");
-        printf("n: %d\n", n);
+	// printf("2.3\n");
+        // printf("n: %d\n", n);
         //if (n != sizeof(*msg))
         //        LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
 }
@@ -267,20 +267,20 @@ static tcpconn_t *ctrl_connect(const char *host, const char *port,
         LOG_INFO(cb, "+++ CLI --> SER   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
-        
         send_msg_caladan(c, &msg, cb, __func__);
-        printf("Sent control message to Server\n");
+        printf("CP(S): Initiaiting packet sent to the receiver\n");
+
 
         /* Wait for the server to respond */
         msg.type = htonl(SER_ACK);
         
 	int len = 0;
 	len = tcp_read(c, &msg, sizeof(msg));
-        printf("Received control message from Server\n");
+        printf("CP(S): Received reply to the initiating message from the receiver\n");
 
 	if(len <= 0)
                 LOG_FATAL(cb, "exiting");
-	printf("Size of the message read from server: %d\n", len);
+	// printf("Size of the message read from server: %d\n", len);
         LOG_INFO(cb, "+++ CLI <-- SER   SER_ACK -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
@@ -344,7 +344,7 @@ static tcpconn_t *ctrl_accept(int ctrl_port, int *num_incidents, struct callback
                        struct options *opts, tcpqueue_t *ctrl_queue)
 {
         // TODO: check for exit conditions
-        printf("2.1!!!!!!!!\n");
+        // printf("2.1!!!!!!!!\n");
         char dump[8192], host[NI_MAXHOST], port[NI_MAXSERV];
         // struct sockaddr_storage cli_addr;
         // socklen_t cli_len;
@@ -356,7 +356,7 @@ static tcpconn_t *ctrl_accept(int ctrl_port, int *num_incidents, struct callback
         
         ssize_t len;
         struct hs_msg msg = {};
-        printf("2.2!!!!!!!!\n");
+        // printf("2.2!!!!!!!!\n");
 retry:
         // cli_len = sizeof(cli_addr);
         while ((ret = tcp_accept(ctrl_queue, &ctrl_conn_caladan)) != 0) {
@@ -364,7 +364,7 @@ retry:
                 //         continue;
                 PLOG_FATAL(cb, "accept");
         }
-        printf("2.3!!!!!!!!\n");
+        // printf("2.3!!!!!!!!\n");
         // s = getnameinfo((struct sockaddr *)&cli_addr, cli_len,
         //                 host, sizeof(host), port, sizeof(port),
         //                 NI_NUMERICHOST | NI_NUMERICSERV);
@@ -383,7 +383,7 @@ retry:
                 // do_close(ctrl_conn);
                 // goto retry;
         }
-        printf("2.4!!!!!!!!\n");
+        // printf("2.4!!!!!!!!\n");
         if (memcmp(msg.secret, opts->secret, sizeof(msg.secret)) != 0 ||
             ntohl(msg.type) != CLI_HELLO) {
                 if (num_incidents)
@@ -397,7 +397,7 @@ retry:
                 // do_close(ctrl_conn);
                 // goto retry;
         }
-        printf("2.5!!!!!!!!\n");
+        // printf("2.5!!!!!!!!\n");
         LOG_INFO(cb, "+++ SER <-- CLI   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
@@ -408,13 +408,13 @@ retry:
                 .num_flows = htonl(opts->num_flows),
                 .test_length = htonl(opts->test_length),
         };
-        printf("2.6!!!!!!!!\n");
+        // printf("2.6!!!!!!!!\n");
         LOG_INFO(cb, "+++ SER --> CLI   SER_ACK -T %d -F %d -l %d",
                         ntohl(msg.num_threads), ntohl(msg.num_flows),
                         ntohl(msg.test_length));
         // send_msg(ctrl_conn, &msg, cb, __func__);
         send_msg_caladan(ctrl_conn_caladan, &msg, cb, __func__);
-        printf("2.7!!!!!!!!\n");
+        // printf("2.7!!!!!!!!\n");
         LOG_INFO(cb, "Control connection established with %s:%s", host, port);
         return ctrl_conn_caladan;
 }
@@ -499,9 +499,9 @@ void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueu
                                              cp->opts->control_port, ai,
                                              cp->opts, cp->cb);
 
-                // cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
-                //                              cp->opts->control_port, ai,
-                //                              cp->opts, cp->cb);
+                //cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
+                //                             cp->opts->control_port, ai,
+                //                             cp->opts, cp->cb);
                 LOG_INFO(cp->cb, "connected to control port");
                 if (cp->fn->fn_ctrl_client) {
                         cp->fn->fn_ctrl_client(cp->ctrl_conn, cp->cb);
@@ -533,7 +533,9 @@ static void sig_alarm_handler(int sig)
 void control_plane_wait_until_done(struct control_plane *cp)
 {
         if (cp->opts->client) {
+                printf("CP(S): Waiting Until termination\n");
                 if (cp->opts->test_length > 0) {
+                        printf("CP(S): Setting an alarm for %d seconds\n", cp->opts->test_length);
                         signal(SIGALRM, sig_alarm_handler);
                         // signal(SIGTERM, sig_alarm_handler);
                         alarm(cp->opts->test_length);
@@ -544,7 +546,9 @@ void control_plane_wait_until_done(struct control_plane *cp)
                         // thread_park_and_preempt_enable();
                         // sig_alarm_handler(1);
                         LOG_INFO(cp->cb, "finished sleep");
-                } 
+                } else {
+                        printf("CP(S): Terminating after sending %d MB of data\n", cp->opts->data_pending);
+                }
                 preempt_disable();
                 thread_park_and_preempt_enable();
                 // else if (cp->opts->test_length < 0) {
@@ -605,13 +609,15 @@ void control_plane_stop(struct control_plane *cp)
         if (cp->opts->client) {
                 struct hs_msg msg = {.magic = htonl(cp->opts->magic), .type = htonl(SER_BYE)};
 
-                printf("Notifying server to exit\n");
+                // printf("Notifying server to exit\n");
                 ctrl_notify_server(cp->ctrl_connection, cp->opts->magic, cp->opts->local_rate, cp->cb);
-                printf("Notified server to exit\n");
+                // printf("Notified server to exit\n");
+                printf("CP(S): Terminating packet sent to the receiver\n");
                 LOG_INFO(cp->cb, "notified server to exit");
 
                 int len = 0;
 	        len = tcp_read(cp->ctrl_connection, &msg, sizeof(msg));
+                printf("CP(S): ACK to the terminating packet received\n");
                 // if (recv_msg(cp->ctrl_conn, &msg, cp->cb, __func__))
                 if(len <= 0)
                         LOG_FATAL(cp->cb, "Final handshake mismatch");

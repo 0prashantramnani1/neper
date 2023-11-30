@@ -118,10 +118,10 @@ void stream_handler(struct flow *f, uint32_t events)
                                 t->total_reqs += n;
                                 t->succ_write_calls++;
                                 if(t->total_reqs/10000000 == data_counter) {
-                                        printf("Data send %d MB\n", t->total_reqs/1000000);
+                                        printf("Data sent %d MB\n", t->total_reqs/1000000);
                                         data_counter++;
                                 }
-                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (opts->data_pending * (1e9))) {
+                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (opts->data_pending * (1e6))) {
                                         if(__u_main != NULL) {
                                                 main_started = true;
                                                 thread_ready(__u_main);
@@ -135,6 +135,7 @@ void stream_handler(struct flow *f, uint32_t events)
                                 thread_yield();
                         } else if(n == -EBUSY) { // Waiting for acks
                                 t->failed_write_calls++;
+                                thread_yield();
                         }
 
                         if (opts->delay) {

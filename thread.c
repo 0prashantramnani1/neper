@@ -461,13 +461,15 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         //         total_sleep += t[i].rl.sleep_count;
         //         total_reschedule += t[i].rl.reschedule_count;
         // }
-        // int a = -1;
-        // while(a == -1)
-        //        a = system("sudo kill -SIGINT `pgrep perf`");
+        //int a = -1;
+        //while(a == -1)
+        //a = system("sudo kill -SIGINT `pgrep perf`");
+        //a = system("sudo kill -SIGINT `pgrep perf`");
+        //a = system("sudo kill -SIGINT `pgrep perf`");
 
-        printf("ALl event loops stopped \n");
-        uint64_t stop_us = microtime() + 175 * ONE_MS;
-        while (microtime() < stop_us);
+        //printf("ALl event loops stopped \n");
+        //uint64_t stop_us = microtime() + 175 * ONE_MS;
+        //while (microtime() < stop_us);
         
 
         unsigned long long int total_data_sent = 0;
@@ -475,7 +477,7 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
                 total_data_sent += t[i].total_reqs;
         }
 
-        printf("Total data send: %llu\n", total_data_sent);
+        printf("Total data sent: %llu\n", total_data_sent);
         // LOG_INFO(cb, "reschedule=%lu", total_reschedule);
         // LOG_INFO(cb, "delay=%lu", total_delay);
         // LOG_INFO(cb, "sleep=%lu", total_sleep);
@@ -569,8 +571,10 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
                 return 0;
 
         cp = control_plane_create(opts, cb, data_pending, fn);
+        printf("CP(S): Control Plane Created\n");
+
         control_plane_start(cp, &ai, control_plane_q);
-        printf("Started control plane\n");
+        printf("CP(S): Control Plane Started\n");
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));
@@ -587,12 +591,14 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
         mutex_unlock(&time_start_mutex);
         control_plane_wait_until_done(cp);
+        printf("CP(S): Main thread woken up\n");
 
         getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
-        printf("Received Notif from client, going to stop worker threads now\n");
+        // printf("Received Notif from client, going to stop worker threads now\n");
         
         stop_worker_threads(cb, opts->num_threads, ts, &ready_barrier,
                            &loop_init_c, &loop_init_m);
+        printf("CP(S): Worker Threads Terminated\n");
         LOG_INFO(cb, "stopped worker threads");
 
         PRINT(cb, "invalid_secret_count", "%d", control_plane_incidents(cp));
@@ -628,10 +634,11 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         // barrier_wait(&finish_barrier);
 
         int ret = fn->fn_report(ts);
-	printf("WORKING 2 \n");
-        // control_plane_stop_linux(cp);
+	// printf("WORKING 2 \n");
+        //control_plane_stop_linux(cp);
         control_plane_stop(cp);
-        //control_plane_destroy(cp);
+        printf("CP(S): Control Plane stopped\n");
+        control_plane_destroy(cp);
         PRINT(cb, "local_throughput", "%lld", opts->local_rate);
         PRINT(cb, "remote_throughput", "%lld", opts->remote_rate);
 
