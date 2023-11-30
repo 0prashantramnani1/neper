@@ -101,16 +101,16 @@ static void send_msg_caladan(tcpconn_t *c, struct hs_msg *msg, struct callbacks 
 {
         int n;
 
-	printf("2.1\n");
+	// printf("2.1\n");
         // while ((n = write(fd, msg, sizeof(*msg))) == -1) {
-	printf("SIZE OF MSG: %d\n", sizeof(*msg));
+	// printf("SIZE OF MSG: %d\n", sizeof(*msg));
         while (n = tcp_write(c, msg, sizeof(*msg)) == -1) {                
 		printf("2.2\n");
                 if (errno == EINTR || errno == EAGAIN)
                         continue;
                 PLOG_FATAL(cb, "%s: write", fn);
         }
-	printf("2.3\n");
+	// printf("2.3\n");
         //if (n != sizeof(*msg))
         //        LOG_FATAL(cb, "%s: Incomplete write %d", fn, n);
 }
@@ -256,6 +256,7 @@ static int ctrl_listen(const char *host, const char *port,
 	laddr.ip = 0;
 	laddr.port = (uint16_t)atoi(port);	
 	int ret = tcp_listen(laddr, 4096, control_plane_q);
+        printf("CP(R): Listening on the control plane queue\n");
 	if(ret != 0) {
 		LOG_ERROR(cb, "Server listen on control_port failed! \n");
 	} else {
@@ -308,7 +309,7 @@ static tcpconn_t *ctrl_accept(int ctrl_port, int *num_incidents, struct callback
                        struct options *opts, tcpqueue_t *ctrl_queue)
 {
         // TODO: check for exit conditions
-        printf("2.1!!!!!!!!\n");
+        // printf("2.1!!!!!!!!\n");
         char dump[8192], host[NI_MAXHOST], port[NI_MAXSERV];
         // struct sockaddr_storage cli_addr;
         // socklen_t cli_len;
@@ -320,7 +321,7 @@ static tcpconn_t *ctrl_accept(int ctrl_port, int *num_incidents, struct callback
         
         ssize_t len;
         struct hs_msg msg = {};
-        printf("2.2!!!!!!!!\n");
+        // printf("2.2!!!!!!!!\n");
 retry:
         // cli_len = sizeof(cli_addr);
         while ((ret = tcp_accept(ctrl_queue, &ctrl_conn_caladan)) != 0) {
@@ -328,7 +329,8 @@ retry:
                 //         continue;
                 PLOG_FATAL(cb, "accept");
         }
-        printf("2.3!!!!!!!!\n");
+        printf("CP(R): Accepted control plane connection\n");
+        // printf("2.3!!!!!!!!\n");
         // s = getnameinfo((struct sockaddr *)&cli_addr, cli_len,
         //                 host, sizeof(host), port, sizeof(port),
         //                 NI_NUMERICHOST | NI_NUMERICSERV);
@@ -347,7 +349,7 @@ retry:
                 // do_close(ctrl_conn);
                 // goto retry;
         }
-        printf("2.4!!!!!!!!\n");
+        // printf("2.4!!!!!!!!\n");
         if (memcmp(msg.secret, opts->secret, sizeof(msg.secret)) != 0 ||
             ntohl(msg.type) != CLI_HELLO) {
                 if (num_incidents)
@@ -361,7 +363,7 @@ retry:
                 // do_close(ctrl_conn);
                 // goto retry;
         }
-        printf("2.5!!!!!!!!\n");
+        // printf("2.5!!!!!!!!\n");
         LOG_INFO(cb, "+++ SER <-- CLI   CLI_HELLO -T %d -F %d -l %d -m %" PRIu64,
                  ntohl(msg.num_threads), ntohl(msg.num_flows),
                  ntohl(msg.test_length), be64toh(msg.max_pacing_rate));
@@ -372,13 +374,14 @@ retry:
                 .num_flows = htonl(opts->num_flows),
                 .test_length = htonl(opts->test_length),
         };
-        printf("2.6!!!!!!!!\n");
+        // printf("2.6!!!!!!!!\n");
         LOG_INFO(cb, "+++ SER --> CLI   SER_ACK -T %d -F %d -l %d",
                         ntohl(msg.num_threads), ntohl(msg.num_flows),
                         ntohl(msg.test_length));
         // send_msg(ctrl_conn, &msg, cb, __func__);
         send_msg_caladan(ctrl_conn_caladan, &msg, cb, __func__);
-        printf("2.7!!!!!!!!\n");
+        // printf("2.7!!!!!!!!\n");
+        printf("CP(R): Control connection estabilished\n");
         LOG_INFO(cb, "Control connection established with %s:%s", host, port);
         return ctrl_conn_caladan;
 }
@@ -456,13 +459,14 @@ static void ctrl_wait_client(tcpconn_t *ctrl_conn_caladan, struct options *opts,
                              struct callbacks *cb)                             
 {
         struct hs_msg msg = {.magic = htonl(opts->magic), .type = htonl(CLI_DONE)};
-
+        printf("CP(R): Waiting for sender to get done and send the terminating packet\n");
         // if (recv_msg(ctrl_conn, &msg, cb, __func__)) {
         
         if (tcp_read(ctrl_conn_caladan, &msg, sizeof(msg)) <= 0) {                
                 LOG_WARN(cb, "Abandoning client");
                 return;
         }
+        printf("CP(R): Terminating pakcet from the sender received\n");
         LOG_INFO(cb, "+++ SER <-- CLI   CLI_DONE rate %" PRIu64,
                 be64toh(msg.remote_rate));
         opts->remote_rate = be64toh(msg.remote_rate);
@@ -581,10 +585,10 @@ void control_plane_wait_until_done(struct control_plane *cp)
                 const int n = cp->opts->num_clients;
                 int* client_fds = calloc(n, sizeof(int));
                 int i;
-                printf("1!!!!!!!!\n");
+                // printf("1!!!!!!!!\n");
                 tcpconn_t **client_caladan;
                 client_caladan = calloc(n, sizeof(tcpconn_t *));
-                printf("1.5!!!!!!!!\n");
+                // printf("1.5!!!!!!!!\n");
                 // TODO: Refactor
                 if (!client_fds)
                         PLOG_FATAL(cp->cb, "calloc client_fds");
@@ -594,7 +598,7 @@ void control_plane_wait_until_done(struct control_plane *cp)
 
                 cp->client_fds = client_fds;
                 cp->client_cononections = client_caladan;
-                printf("2!!!!!!!!\n");
+                // printf("2!!!!!!!!\n");
                 LOG_INFO(cp->cb, "expecting %d clients", n);
                 for (i = 0; i < n; i++) {
                         // client_fds[i] = ctrl_accept(cp->ctrl_port,
@@ -605,11 +609,11 @@ void control_plane_wait_until_done(struct control_plane *cp)
                                                     cp->opts, cp->ctrl_queue);
                         LOG_INFO(cp->cb, "client %d connected", i);
                 }
-                printf("3!!!!!!!!\n");
+                // printf("3!!!!!!!!\n");
                 // do_close(cp->ctrl_port);  /* disallow further connections */
                 tcp_qclose(cp->ctrl_queue);
-                printf("4!!!!!!!!\n");
-                printf("WAITING FOR CLIENT TO GET DONE\n");
+                // printf("4!!!!!!!!\n");
+                // printf("WAITING FOR CLIENT TO GET DONE\n");
                 // while(1);
                 //TODO:Post Data transfer control plane
                 // if (cp->opts->nonblocking) {
@@ -620,7 +624,7 @@ void control_plane_wait_until_done(struct control_plane *cp)
                 for (i = 0; i < n; i++) {
                         ctrl_wait_client(client_caladan[i], (struct options *)cp->opts,
                                          cp->cb);
-                        printf("Stop notification from client: %d\n", i);
+                        // printf("Stop notification from client: %d\n", i);
                         LOG_INFO(cp->cb, "received notification %d", i);
                 }
         }
@@ -705,6 +709,7 @@ void control_plane_stop(struct control_plane *cp)
                         LOG_INFO(cp->cb, "+++ SER --> CLI SER_BYE rate %" PRIu64,
                                  be64toh(msg.remote_rate));
                         send_msg_caladan(client_connections[i], &msg, cp->cb, __func__);
+                        printf("CP(R): ACK to terminating packet sent\n");
                         // do_close(client_fds[i]);
                 }
                 // free(client_fds);

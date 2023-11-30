@@ -457,7 +457,7 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
                 total_data_sent += t[i].total_reqs;
         }
 
-        printf("Total data send: %llu\n", total_data_sent);
+        printf("Total data received: %llu\n", total_data_sent);
         // LOG_INFO(cb, "reschedule=%lu", total_reschedule);
         // LOG_INFO(cb, "delay=%lu", total_delay);
         // LOG_INFO(cb, "sleep=%lu", total_sleep);
@@ -544,8 +544,10 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
                 return 0;
 
         cp = control_plane_create(opts, cb, data_pending, fn);
+        printf("CP(R): Control Plane Created\n");
+
         control_plane_start(cp, &ai, control_plane_q);
-        printf("Started control plane\n");
+        printf("CP(R): Control Plane Started\n");
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));
@@ -560,24 +562,25 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         mutex_lock(&time_start_mutex);
         getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
         mutex_unlock(&time_start_mutex);
-        printf("Waiting for kill notification from client\n");
+        // printf("Waiting for kill notification from client\n");
         control_plane_wait_until_done(cp);
         // control_plane_wait_until_done_linux(cp);
 
         getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
         printf("Received Notif from client, going to stop worker threads now\n");
         
-        printf("thread_stats_snaps2: %d\n", thread_stats_snaps(ts));
-        printf("thread_stats_flows2: %d\n", thread_stats_flows(ts));
+        // printf("thread_stats_snaps2: %d\n", thread_stats_snaps(ts));
+        // printf("thread_stats_flows2: %d\n", thread_stats_flows(ts));
 
         stop_worker_threads(cb, opts->num_threads, ts, &ready_barrier,
                            &loop_init_c, &loop_init_m);
+        printf("CP(R): Worker Threads Terminated\n");
         LOG_INFO(cb, "stopped worker threads");
 
         PRINT(cb, "invalid_secret_count", "%d", control_plane_incidents(cp));
 	
-        printf("thread_stats_snaps3: %d\n", thread_stats_snaps(ts));
-        printf("thread_stats_flows3: %d\n", thread_stats_flows(ts));
+        // printf("thread_stats_snaps3: %d\n", thread_stats_snaps(ts));
+        // printf("thread_stats_flows3: %d\n", thread_stats_flows(ts));
 
         /* rusage_start and time_start were (are?) visible to other threads */
         mutex_lock(&time_start_mutex);
@@ -609,7 +612,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         barrier_wait(&finish_barrier);
 
         int ret = fn->fn_report(ts);
-	printf("WORKING 2 \n");
+	// printf("WORKING 2 \n");
         control_plane_stop(cp);
         // control_plane_stop_linux(cp);
         control_plane_destroy(cp);
