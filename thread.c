@@ -348,7 +348,7 @@ static void get_numa_allowed_cpus(struct callbacks *cb, int numa_idx,
 void start_worker_threads(struct options *opts, struct callbacks *cb,
                           struct thread_neper *t, void *(*thread_func)(void *),
                           const struct neper_fn *fn,
-                          barrier_t *ready, barrier_t *finish, 
+                          barrier_t *ready, barrier_t *finish, barrier_t *data_pending_barrier,
                           barrier_t* papi_start, barrier_t* papi_end, struct timespec *time_start,
                           pthread_mutex_t *time_start_mutex,
                           struct rusage *rusage_start, struct addrinfo *ai,
@@ -363,6 +363,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         int s, i, allowed_cores;
 
 	barrier_init(ready, opts->num_threads + 1);
+        barrier_init(data_pending_barrier, opts->num_threads);
 
         /// PAPI
         barrier_init(papi_start, opts->num_threads);
@@ -387,6 +388,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //                                     cb);
                 t[i].ready = ready;
                 t[i].finish = finish;
+                t[i].data_pending_barrier = data_pending_barrier;
                 
                 // PAPI
                 t[i].papi_start = papi_start;
@@ -461,9 +463,11 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         //         total_sleep += t[i].rl.sleep_count;
         //         total_reschedule += t[i].rl.reschedule_count;
         // }
-        //int a = -1;
-        //while(a == -1)
-        //a = system("sudo kill -SIGINT `pgrep perf`");
+        // int a = -1;
+        // printf("Trying to perf\n");
+        // while(a == -1)
+        //         a = system("sudo kill -SIGINT `pgrep perf`");
+        printf("perf stopped\n");
         //a = system("sudo kill -SIGINT `pgrep perf`");
         //a = system("sudo kill -SIGINT `pgrep perf`");
 
@@ -517,7 +521,9 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         //CALADAN
 	barrier_t ready_barrier;
         barrier_t finish_barrier;
+        barrier_t data_pending_barrier;
         barrier_init(&finish_barrier, opts->num_threads + 1);
+        
 
 	tcpqueue_t *control_plane_q;
 
@@ -579,7 +585,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         /* start threads *after* control plane is up, to reuse addrinfo. */
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));
         start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier, &finish_barrier, 
-                             &papi_start_barrier, &papi_end_barrier, 
+                             &data_pending_barrier, &papi_start_barrier, &papi_end_barrier, 
                              &time_start, &time_start_mutex, &rusage_start, ai,
                              data_pending, &loop_init_c,
                              &loop_init_m, &loop_inited);

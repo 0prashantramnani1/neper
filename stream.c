@@ -67,6 +67,8 @@ void stream_handler(struct flow *f, uint32_t events)
         tcpconn_t *c = flow_connection(f);
         // printf("size: %d\n", sizeof(*c));
         const struct options *opts = t->opts;
+        long long int data_pending = (opts->data_pending + opts->num_threads - 1)/opts->num_threads;
+
 
         if(t->index == 1) {
                 // printf("IN STREAM HANDLE UTH\n");
@@ -118,11 +120,12 @@ void stream_handler(struct flow *f, uint32_t events)
                                 t->total_reqs += n;
                                 t->succ_write_calls++;
                                 if(t->total_reqs/10000000 == data_counter) {
-                                        printf("Data sent %d MB\n", t->total_reqs/1000000);
+                                        // printf("Data sent %d MB\n", t->total_reqs/1000000);
                                         data_counter++;
                                 }
-                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (opts->data_pending * (1e6))) {
-                                        if(__u_main != NULL) {
+                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (data_pending * (1e6))) {
+                                        barrier_wait(t->data_pending_barrier);
+                                        if(__u_main != NULL && t->index == 0) {
                                                 main_started = true;
                                                 thread_ready(__u_main);
                                         }
