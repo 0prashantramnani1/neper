@@ -420,7 +420,8 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //t[i].rl.next_event = ~0ULL;
 
                 //printf("Main thread spawning uthread%d on pthreadid %d - kthreadid %d\n", i+1, syscall(__NR_gettid), get_current_affinity());
-                s = thread_spawn(thread_func, &t[i]);
+                // s = thread_spawn(thread_func, &t[i]);
+                s = thread_spawn_type(thread_func, &t[i], 10);
                 
                 if (s != 0)
                        LOG_FATAL(cb, "thread_spawn: %s", strerror(s));
@@ -466,8 +467,8 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         // int a = -1;
         // printf("Trying to perf\n");
         // while(a == -1)
-        //         a = system("sudo kill -SIGINT `pgrep perf`");
-        printf("perf stopped\n");
+        //          a = system("sudo kill -SIGINT `pgrep perf`");
+        // printf("perf stopped\n");
         //a = system("sudo kill -SIGINT `pgrep perf`");
         //a = system("sudo kill -SIGINT `pgrep perf`");
 

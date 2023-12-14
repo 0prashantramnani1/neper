@@ -16,6 +16,7 @@
 
 #ifndef THIRD_PARTY_NEPER_THREAD_H
 #define THIRD_PARTY_NEPER_THREAD_H
+#pragma once
 
 #include <pthread.h>
 #include <stdint.h>
@@ -127,6 +128,7 @@ struct thread_neper {
         void *f_mbuf;                 /* replaces per-flow buffers */
         barrier_t *ready;
         barrier_t *finish;
+        barrier_t *data_pending_barrier;
 
         // PAPI
         barrier_t *papi_start;
