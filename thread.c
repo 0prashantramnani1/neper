@@ -421,7 +421,11 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
 
                 //printf("Main thread spawning uthread%d on pthreadid %d - kthreadid %d\n", i+1, syscall(__NR_gettid), get_current_affinity());
                 // s = thread_spawn(thread_func, &t[i]);
-                s = thread_spawn_type(thread_func, &t[i], 10);
+                #ifdef PIN 
+                        s = thread_spawn_type(thread_func, &t[i], 10);
+                #else
+                        s = thread_spawn(thread_func, &t[i]);
+                #endif
                 
                 if (s != 0)
                        LOG_FATAL(cb, "thread_spawn: %s", strerror(s));

@@ -30,12 +30,17 @@ static void *stream_alloc(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
 
-        if (!t->f_mbuf) {
-                t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
-                if (opts->enable_write)
-                        fill_random(t->f_mbuf, opts->buffer_size);
-        }
-        return t->f_mbuf;
+        // if (!t->f_mbuf) {
+        //         t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+        //         if (opts->enable_write)
+        //                 fill_random(t->f_mbuf, opts->buffer_size);
+        // }
+        // return t->f_mbuf;
+
+        void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+        if (opts->enable_write)
+                fill_random(f_mbuf, opts->buffer_size);
+        return f_mbuf;
 }
 
 static uint32_t stream_events(struct thread_neper *t)
@@ -113,17 +118,22 @@ void stream_handler(struct flow *f, uint32_t events)
         int k = 1;
 
         static int data_counter = 1;
+        static int data_counter1 = 1;
         if (events & SEV_WRITE)
                 do {
                         n = tcp_write(c, mbuf, opts->buffer_size);
                         if(n > 0) {
                                 t->total_reqs += n;
                                 t->succ_write_calls++;
-                                if(t->total_reqs/10000000 == data_counter) {
-                                        // printf("Data sent %d MB\n", t->total_reqs/1000000);
+                                if(t->total_reqs/10000000 == data_counter && t->index == 0) {
+                                        // printf("THREAD ID: %d - Data sent %d MB\n", t->index, t->total_reqs/1000000);
                                         data_counter++;
+                                } else if(t->total_reqs/10000000 == data_counter1 && t->index == 1) {
+                                        // printf("THREAD ID: %d - Data sent %d MB\n", t->index, t->total_reqs/1000000);
+                                        data_counter1++;
                                 }
                                 if(!main_started && opts->data_pending > 0 && t->total_reqs > (data_pending * (1e6))) {
+                                        printf("WAITING FOR BARRIER\n");
                                         barrier_wait(t->data_pending_barrier);
                                         if(__u_main != NULL && t->index == 0) {
                                                 main_started = true;
