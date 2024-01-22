@@ -69,12 +69,12 @@ exp_len   = 100
 numports_command = "--num-ports"
 server_threads = 1
 
-nflows            = [10, 100, 1000]
-time_quantum      = [1]
+nflows            = [100]#, 100, 1000]
+#time_quantum      = [1]
 buffer_size       = [16384]
-batch_size        = [16384]
-uthreads          = [1, 5, 10]
-kthreads          = [1, 2, 5, 24]
+batch_size        = [4096]
+uthreads          = [1]#, 5, 10]
+kthreads          = [2]#, 2, 5, 24]
 encoding          = 'utf-8'
 
 
@@ -102,7 +102,7 @@ restart_iokernel()
 
 
 for f in nflows:
-    file1 = open("kegs/test_{}.txt".format(f), "a")
+    file1 = open("test_{}.txt".format(f), "a")
     for kthread in kthreads:
         fi = open("sender.config", "w")
         fi.write(config.format(kthread))

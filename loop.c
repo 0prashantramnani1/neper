@@ -42,6 +42,8 @@ FILE* data_thread = NULL;
 // #include <runtime/tcp.h>
 // #include <runtime/poll.h>
 
+extern long long int tcp_retransmits;
+
 #define NETPERF_PORT	8000
 #define BUF_SIZE	32768
 
@@ -107,12 +109,13 @@ void *loop(struct thread_neper *t)
         };
 
         flow_create(&args);
-
+        /*
         #ifdef timescale
                 char buffer [1000];
 		snprintf ( buffer, 1000, "sc_log/data_thread");
 		data_thread = fopen(buffer, "w");
         #endif
+        */
 	
         /* Server sockets must be created in order
          * so that the ebpf filter works.
@@ -278,9 +281,13 @@ void *loop(struct thread_neper *t)
         
 
         if(t->index == 0) {
-            ;
-                // system("perf stat -e cycles:uk,cycles:u,cycles:k,instructions:uk,instructions:u,instructions:k,cache-misses -C 2,3 -o perf_output.txt&");
-                // system("perf record -F 500 --call-graph dwarf,8385 -C 3&");
+                //system("perf stat -e cycles:u,cycles:k,instructions:u,instructions:k,cache-misses -C 2,3 -o perf_output.txt&");
+            __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1030));
+
+            __asm__ __volatile__("xchg %%rdx, %%rdx;" : : "d"(2));
+            printf("dump 0\n");
+                //system("perf stat -e cycles:uk,cycles:u,cycles:k,instructions:uk,instructions:u,instructions:k,cache-misses -C 1,25 -o perf_output.txt&");
+		// system("perf record -F 500 --call-graph dwarf,8385 -C 1,25&");
                 // if(syscall(__NR_gettid) == pthreads[0])
                 //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 1&");
                 // else 
@@ -303,12 +310,12 @@ void *loop(struct thread_neper *t)
 /////////////////////////////////////////////////////////////////////////////
         printf("Starting the event Loop for thread_id: %d at %llu time\n", t->index, microtime());      
         int flow_count = 0;
-        uint64_t start_time, end_time;
         while (!t->stop) {  
-                start_time = microtime();    
+                //start_time = microtime();    
                 int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
-                end_time = microtime();
-                fprintf(data_thread,"events - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+                //end_time = microtime();
+                //fprintf(data_thread,"events - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+                //printf("events - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
 
                 if (nfds == -1) {
                         if (errno == EINTR)
@@ -316,16 +323,14 @@ void *loop(struct thread_neper *t)
                         PLOG_FATAL(t->cb, "epoll_wait");
                 }
 
-                start_time = microtime();
                 for (int i = 0; i < nfds && !t->stop; i++) {
                         flow_event(events[i]);
                 }
-                end_time = microtime();
-                fprintf(data_thread,"send - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+
+                //fprintf(data_thread,"send - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+                //printf("send - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+
         }
-        printf("Ending the event Loop for thread_id: %d at %llu time\n", t->index, microtime());      
-        printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu failed_write_calls %llu Volunteer_yields %llu retransmits %llu rtt %lld packet_counter %lld Avg_r rtt %f \n", \
-                t->index, t->total_reqs, t->succ_write_calls, t->failed_write_calls, t->volunteer_yields, tcp_retransmits, rtt, packet_counter, (double)rtt/(double)packet_counter);
         // FILE    *fptr;
 
         // if(t->index == 0) {
@@ -375,6 +380,7 @@ void *loop(struct thread_neper *t)
         */
 
         if(t->index == 0) {
+                //__asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1030));
                 /*
                 long long count;
 
@@ -403,7 +409,10 @@ void *loop(struct thread_neper *t)
                 */
         }
         ///////////////////////////////////////////////////////////////////////////////////////////////////
-        printf("Event Loop completed for thread_id: %d\n", t->index);
+        //__asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1026));
+        //printf("Event Loop completed for thread_id: %d\n", t->index);
+        //printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu failed_write_calls %llu Volunteer_yields %llu retransmits %llu rtt %lld packet_counter %lld Avg_r rtt %f \n", \
+        //        t->index, t->total_reqs, t->succ_write_calls, t->failed_write_calls, t->volunteer_yields, tcp_retransmits, rtt, packet_counter, (double)rtt/(double)packet_counter);
         thread_flush_stat(t);
         free(events);
         // fclose(thread_self()->);

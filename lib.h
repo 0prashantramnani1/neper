@@ -123,6 +123,9 @@ struct options {
 
         /* tcp_crr */
         bool nostats;
+
+        int batch_size;
+
 };
 
 struct arg_struct {
