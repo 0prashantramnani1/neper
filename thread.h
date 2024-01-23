@@ -126,6 +126,7 @@ struct thread_neper {
         int stop;
         void *f_mbuf;                 /* replaces per-flow buffers */
         barrier_t *ready;
+        barrier_t *data_pending_barrier;
 
         // PAPI
         barrier_t *papi_start;

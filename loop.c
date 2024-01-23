@@ -262,8 +262,8 @@ void *loop(struct thread_neper *t)
         
 
         if(t->index == 0) {
-                system("perf stat -e cycles,instructions,dTLB-load-misses,iTLB-load-misses,cache-misses -C 1,25 -o perf_output.txt&");
-		// system("perf record -F 500 --call-graph dwarf,8385 -C 1,25&");
+                system("perf stat -e cycles:u,cycles:k,instructions:u,instructions:k -C 1,25 -o perf_output.txt&");
+		//system("perf record -e cycles, instructions -F 500 --call-graph dwarf,8385 -C 2,3&");
                 // if(syscall(__NR_gettid) == pthreads[0])
                 //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 1&");
                 // else 

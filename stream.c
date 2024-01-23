@@ -30,17 +30,17 @@ static void *stream_alloc(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
 
-        // if (!t->f_mbuf) {
-        //         t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
-        //         if (opts->enable_write)
-        //                 fill_random(t->f_mbuf, opts->buffer_size);
-        // }
-        // return t->f_mbuf;
+        if (!t->f_mbuf) {
+                t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+                if (opts->enable_write)
+                        fill_random(t->f_mbuf, opts->buffer_size);
+        }
+        return t->f_mbuf;
 
-        void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
-        if (opts->enable_write)
-                fill_random(f_mbuf, opts->buffer_size);
-        return f_mbuf;
+        // void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+        // if (opts->enable_write)
+        //         fill_random(f_mbuf, opts->buffer_size);
+        // return f_mbuf;
 }
 
 static uint32_t stream_events(struct thread_neper *t)
@@ -68,11 +68,13 @@ void stream_handler(struct flow *f, uint32_t events)
         struct thread_neper *t = flow_thread(f);
         void *mbuf = flow_mbuf(f);
         int* offset = flow_data_offset(f);
+        static bool main_started = false;
 
         // int fd = flow_fd(f);
         tcpconn_t *c = flow_connection(f);
         // printf("size: %d\n", sizeof(*c));
         const struct options *opts = t->opts;
+        long long int data_pending = (opts->data_pending + opts->num_threads - 1)/opts->num_threads;
 
         if(t->index == 1) {
                 // printf("IN STREAM HANDLE UTH\n");
@@ -129,6 +131,16 @@ void stream_handler(struct flow *f, uint32_t events)
                                 }
 
                                 t->total_reqs += n;
+                                if(opts->data_pending > 0 && t->total_reqs > (data_pending * (1e9))) {
+                                        barrier_wait(t->data_pending_barrier);
+                                        if(!main_started && __u_main != NULL && t->index == 0) {
+                                                main_started = true;
+                                                thread_ready(__u_main);
+                                                // preempt_disable();
+                                                // thread_park_and_preempt_enable();
+                                        }
+                                }
+
                                 t->succ_write_calls++;
                                 t->succ_before_yield++;
                                 if(n < 16384) {

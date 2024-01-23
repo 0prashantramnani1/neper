@@ -348,7 +348,9 @@ static void get_numa_allowed_cpus(struct callbacks *cb, int numa_idx,
 void start_worker_threads(struct options *opts, struct callbacks *cb,
                           struct thread_neper *t, void *(*thread_func)(void *),
                           const struct neper_fn *fn,
-                          barrier_t *ready, barrier_t* papi_start, barrier_t* papi_end, struct timespec *time_start,
+                          barrier_t *ready, barrier_t *data_pending_barrier,
+                          barrier_t* papi_start, barrier_t* papi_end, 
+                           struct timespec *time_start,
                           pthread_mutex_t *time_start_mutex,
                           struct rusage *rusage_start, struct addrinfo *ai,
                           struct countdown_cond *data_pending,
@@ -362,6 +364,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
         int s, i, allowed_cores;
 
 	barrier_init(ready, opts->num_threads + 1);
+        barrier_init(data_pending_barrier, opts->num_threads);
 
         /// PAPI
         barrier_init(papi_start, opts->num_threads);
@@ -391,6 +394,7 @@ void start_worker_threads(struct options *opts, struct callbacks *cb,
                 //t[i].local_hosts = parse_local_hosts(opts, t[i].num_local_hosts,
                 //                                     cb);
                 t[i].ready = ready;
+                t[i].data_pending_barrier = data_pending_barrier;
                 
                 // PAPI
                 t[i].papi_start = papi_start;
@@ -473,9 +477,9 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         while(a == -1)
                a = system("sudo kill -SIGINT `pgrep perf`");
 
-        printf("ALl event loops stopped \n");
-        uint64_t stop_us = microtime() + 5 * ONE_SECOND;
-        while (microtime() < stop_us);
+        // printf("ALl event loops stopped \n");
+        // uint64_t stop_us = microtime() + 5 * ONE_SECOND;
+        // while (microtime() < stop_us);
         
 
         unsigned long long int total_data_sent = 0;
@@ -522,6 +526,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         //CALADAN
 	barrier_t ready_barrier;
+        barrier_t data_pending_barrier;
 	tcpqueue_t *control_plane_q;
 
         barrier_t papi_start_barrier;
@@ -566,6 +571,9 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
                 PRINT(cb, "total_run_time", "%d", opts->test_length);
                 data_pending = NULL;
         } 
+        if(opts->data_pending > 0) {
+                opts->test_length = 0;
+        }
 
         if (opts->dry_run)
                 return 0;
@@ -576,7 +584,8 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         /* start threads *after* control plane is up, to reuse addrinfo. */
         ts = calloc(opts->num_threads, sizeof(struct thread_neper));
-        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier, &papi_start_barrier, &papi_end_barrier, 
+        start_worker_threads(opts, cb, ts, thread_func, fn,  &ready_barrier, &data_pending_barrier,
+                             &papi_start_barrier, &papi_end_barrier, 
                              &time_start, &time_start_mutex, &rusage_start, ai,
                              data_pending, &loop_init_c,
                              &loop_init_m, &loop_inited);
@@ -629,7 +638,8 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         int ret = fn->fn_report(ts);
 	printf("WORKING 2 \n");
-        control_plane_stop_linux(cp);
+        control_plane_stop(cp);
+        // control_plane_stop_linux(cp);
         //control_plane_destroy(cp);
         PRINT(cb, "local_throughput", "%lld", opts->local_rate);
         PRINT(cb, "remote_throughput", "%lld", opts->remote_rate);

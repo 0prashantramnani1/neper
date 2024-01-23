@@ -290,7 +290,7 @@ static int ctrl_connect_linux(const char *host, const char *port,
 {
         int ctrl_conn, optval = 1;
         struct hs_msg msg = {};
-        const char* host_linux = "128.110.219.168";
+        const char* host_linux = "128.110.219.180";
         ctrl_conn = connect_any(host_linux, port, ai, opts, cb);
         if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
                        sizeof(optval)))
@@ -490,13 +490,13 @@ struct control_plane* control_plane_create(struct options *opts,
 void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueue_t *control_plane_q)
 {
         if (cp->opts->client) {
-                // cp->ctrl_connection = ctrl_connect(cp->opts->host,
-                //                              cp->opts->control_port, ai,
-                //                              cp->opts, cp->cb);
-
-                cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
+                cp->ctrl_connection = ctrl_connect(cp->opts->host,
                                              cp->opts->control_port, ai,
                                              cp->opts, cp->cb);
+
+                // cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
+                //                              cp->opts->control_port, ai,
+                //                              cp->opts, cp->cb);
                 LOG_INFO(cp->cb, "connected to control port");
                 if (cp->fn->fn_ctrl_client) {
                         cp->fn->fn_ctrl_client(cp->ctrl_conn, cp->cb);
@@ -535,14 +535,18 @@ void control_plane_wait_until_done(struct control_plane *cp)
                         // while (!termination_requested) {
                         //         sleep(1);
                         // }
-                        preempt_disable();
-                        thread_park_and_preempt_enable();
+                        // preempt_disable();
+                        // thread_park_and_preempt_enable();
                         // sig_alarm_handler(1);
                         LOG_INFO(cp->cb, "finished sleep");
-                } else if (cp->opts->test_length < 0) {
-                        countdown_cond_wait(cp->data_pending);
-                        LOG_INFO(cp->cb, "finished data wait");
-                }
+                } 
+                // else if (cp->opts->test_length < 0) {
+                //         countdown_cond_wait(cp->data_pending);
+                //         LOG_INFO(cp->cb, "finished data wait");
+                // }
+                preempt_disable();
+                thread_park_and_preempt_enable();
+                
         } else {
                 // TODO: Multi-Client support
                 const int n = cp->opts->num_clients;

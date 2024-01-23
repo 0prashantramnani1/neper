@@ -70,6 +70,7 @@ struct options {
         int test_length;
         int buffer_size;
         int batch_size;
+        int data_pending;
         int listen_backlog;
         int suicide_length;
         int recv_flags;
