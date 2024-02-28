@@ -28,7 +28,7 @@ struct thread_neper;
 
 //void stream_flow_init(struct thread *, int fd);
 void stream_flow_init(struct thread_neper *, tcpconn_t *);
-void stream_handler(struct flow *, uint32_t events);
+void stream_handler(struct flow *, struct flow *, uint32_t events);
 int stream_report(struct thread_neper *);
 
 #endif

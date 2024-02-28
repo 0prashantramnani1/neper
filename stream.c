@@ -25,22 +25,23 @@
 #include "thread.h"
 
 #include <base/stddef.h>
+#include <base/mem.h>
 
 static void *stream_alloc(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
 
-        // if (!t->f_mbuf) {
-        //         t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
-        //         if (opts->enable_write)
-        //                 fill_random(t->f_mbuf, opts->buffer_size);
-        // }
-        // return t->f_mbuf;
+        if (!t->f_mbuf) {
+                t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+                if (opts->enable_write)
+                        fill_random(t->f_mbuf, opts->buffer_size);
+        }
+        return t->f_mbuf;
 
-        void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
-        if (opts->enable_write)
-                fill_random(f_mbuf, opts->buffer_size);
-        return f_mbuf;
+        //void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+        //if (opts->enable_write)
+        //        fill_random(f_mbuf, opts->buffer_size);
+        //return f_mbuf;
 }
 
 static uint32_t stream_events(struct thread_neper *t)
@@ -60,7 +61,7 @@ static uint32_t stream_events(struct thread_neper *t)
         return events;
 }
 
-void stream_handler(struct flow *f, uint32_t events)
+void stream_handler(struct flow *f, struct flow *f_next, uint32_t events)
 {
         static const uint64_t NSEC_PER_SEC = 1000*1000*1000;
         static bool main_started = false;
@@ -70,10 +71,14 @@ void stream_handler(struct flow *f, uint32_t events)
         void *mbuf = flow_mbuf(f);
         // int fd = flow_fd(f);
         tcpconn_t *c = flow_connection(f);
-        // printf("size: %d\n", sizeof(*c));
+        
+        //printf("size of neper thread: %d\n", sizeof(struct thread_neper));
         const struct options *opts = t->opts;
         long long int data_pending = (opts->data_pending + opts->num_threads - 1)/opts->num_threads;
 
+
+        //prefetch(flow_mbuf(f_next));
+        prefetch_len(flow_mbuf(f_next), opts->buffer_size);
 
         if(t->index == 1) {
                 // printf("IN STREAM HANDLE UTH\n");
@@ -125,14 +130,7 @@ void stream_handler(struct flow *f, uint32_t events)
                         if(n > 0) {
                                 t->total_reqs += n;
                                 t->succ_write_calls++;
-                                if(t->total_reqs/10000000 == data_counter && t->index == 0) {
-                                        // printf("THREAD ID: %d - Data sent %d MB\n", t->index, t->total_reqs/1000000);
-                                        data_counter++;
-                                } else if(t->total_reqs/10000000 == data_counter1 && t->index == 1) {
-                                        // printf("THREAD ID: %d - Data sent %d MB\n", t->index, t->total_reqs/1000000);
-                                        data_counter1++;
-                                }
-                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (data_pending * (1e6))) {
+                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (data_pending * (1e9))) {
                                         printf("WAITING FOR BARRIER\n");
                                         barrier_wait(t->data_pending_barrier);
                                         if(__u_main != NULL && t->index == 0) {
@@ -145,10 +143,10 @@ void stream_handler(struct flow *f, uint32_t events)
                                         // t->no_work_schedule++;
                                 // t->succ_before_yield = 0;
                                 t->volunteer_yields++;
-                                thread_yield();
+                                //thread_yield();
                         } else if(n == -EBUSY) { // Waiting for acks
                                 t->failed_write_calls++;
-                                thread_yield();
+                                //thread_yield();
                         }
 
                         if (opts->delay) {

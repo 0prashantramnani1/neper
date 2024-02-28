@@ -48,7 +48,7 @@ poll_trigger_t      *flow_trigger(const struct flow *);
 
 int flow_postpone(struct flow *);
 int flow_serve_pending(struct thread *t);  /* process postponed events */
-void flow_event(const poll_trigger_t *);  /* process one epoll event */
+void flow_event(const poll_trigger_t *, const poll_trigger_t *);  /* process one epoll event */
 void flow_mod(struct flow *, flow_handler, uint32_t events, bool or_die);
 void flow_reconnect(struct flow *, flow_handler, uint32_t events);
 

@@ -279,7 +279,8 @@ void *loop(struct thread_neper *t)
 
         if(t->index == 0) {
             ;
-                // system("perf stat -e cycles:uk,cycles:u,cycles:k,instructions:uk,instructions:u,instructions:k,cache-misses -C 2,3 -o perf_output.txt&");
+                //system("perf stat -e cycles,instructions,cache-misses -C 2,3 --per-core -o perf_output.txt&");
+                //system("perf stat -e sw_prefetch_access.nta,sw_prefetch_access.prefetchw,sw_prefetch_access.t0,sw_prefetch_access.t1_t2 -C 2,3 --per-core -o perf_output.txt&");
                 // system("perf record -F 500 --call-graph dwarf,8385 -C 3&");
                 // if(syscall(__NR_gettid) == pthreads[0])
                 //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 1&");
@@ -305,10 +306,15 @@ void *loop(struct thread_neper *t)
         int flow_count = 0;
         uint64_t start_time, end_time;
         while (!t->stop) {  
+                //printf("size of poll_trigger_t: %d\n", sizeof(poll_trigger_t));
+
                 start_time = microtime();    
                 int nfds = poll_return_triggers(t->waiter, events, opts->maxevents);
                 end_time = microtime();
-                fprintf(data_thread,"events - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+
+                #ifdef timescale
+                        fprintf(data_thread,"events - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+                #endif
 
                 if (nfds == -1) {
                         if (errno == EINTR)
@@ -318,10 +324,13 @@ void *loop(struct thread_neper *t)
 
                 start_time = microtime();
                 for (int i = 0; i < nfds && !t->stop; i++) {
-                        flow_event(events[i]);
+                        flow_event(events[i], events[(i+1)%nfds]);
                 }
                 end_time = microtime();
-                fprintf(data_thread,"send - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+
+                #ifdef timescale
+                        fprintf(data_thread,"send - %ld - %llu - %llu\n", syscall(__NR_gettid), start_time, end_time);
+                #endif
         }
         printf("Ending the event Loop for thread_id: %d at %llu time\n", t->index, microtime());      
         printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu failed_write_calls %llu Volunteer_yields %llu retransmits %llu rtt %lld packet_counter %lld Avg_r rtt %f \n", \

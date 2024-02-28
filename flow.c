@@ -19,6 +19,8 @@
 #include "socket.h"
 #include "thread.h"
 #include "stats.h"
+#include "stream.h"
+
 
 /*
  * We define the flow struct locally to this file to force outside users to go
@@ -36,6 +38,7 @@ struct flow {
         tcpconn_t *f_c;               /* associated tcp connection*/
         // TODO: Maybe move f_q to neper_thread
         tcpqueue_t *f_q;              /* associated tcp queue for accepting connections*/
+        int data_offset;              /* where to send data from */
 
         /* support for paced send: track next event and epoll events */
         uint64_t        f_next_event;  /* absolute time (ns) of next event */
@@ -43,6 +46,11 @@ struct flow {
 
         struct neper_stat *f_stat;
 };
+
+int*  flow_data_offset(struct flow *f)
+{
+        return &f->data_offset;
+}
 
 int flow_fd(const struct flow *f)
 {
@@ -56,6 +64,7 @@ int flow_id(const struct flow *f)
 
 void *flow_mbuf(const struct flow *f)
 {
+        //printf("size of neper flow: %d\n", sizeof(struct flow));
         return f->f_mbuf;
 }
 
@@ -89,16 +98,23 @@ poll_trigger_t *flow_trigger(const struct flow *f)
         return f->f_trigger;
 }
 
-void flow_event(const poll_trigger_t *e)
+void flow_event(const poll_trigger_t *e, const poll_trigger_t *e_next)
 {
         // struct flow *f = e->data.ptr;
 
         struct flow* f = e->data_poll;
+        struct flow* f_next = e_next->data_poll;
         
         // TODO: Paced send??
         // f->f_events = e->events; /* support for paced send */
 //        f->f_handler(f, e->events);
-        f->f_handler(f, e->event_type);
+        //f->f_handler(f, e->event_type);
+
+        if(f->f_handler == stream_handler) {
+            stream_handler(f, f_next, e->event_type);
+        } else {
+            f->f_handler(f, e->event_type);
+        }
 }
 
 static void flow_ctl(struct flow *f, int op, flow_handler fh, uint32_t events,
