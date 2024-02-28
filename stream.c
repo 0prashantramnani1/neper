@@ -61,6 +61,8 @@ static uint32_t stream_events(struct thread_neper *t)
         return events;
 }
 
+long long int temp = 0;
+bool flag = true;
 void stream_handler(struct flow *f, struct flow *f_next, uint32_t events)
 {
         static const uint64_t NSEC_PER_SEC = 1000*1000*1000;
@@ -124,17 +126,54 @@ void stream_handler(struct flow *f, struct flow *f_next, uint32_t events)
 
         static int data_counter = 1;
         static int data_counter1 = 1;
+        uint64_t start_time, end_time;
         if (events & SEV_WRITE)
                 do {
-                        n = tcp_write(c, mbuf, opts->buffer_size);
+                        #ifdef timescale
+                        start_time = nanotime();
+                        #endif
+                        //__asm__ __volatile__("xchg %%rdx, %%rdx;" : : "d"(4));
+                       
+                        n = tcp_write(c, mbuf, opts->buffer_size, t->start_times_nest, t->end_times_nest, &t->size_nest);
+
+                        //__asm__ __volatile__("xchg %%rdx, %%rdx;" : : "d"(4));
+                        #ifdef timescale
+                        end_time = nanotime();
+                        #endif
+                        //printf("tcp_write wrote %d bytes\n", n);
                         if(n > 0) {
+                                #ifdef timescale
+                                t->start_times[t->size] = start_time;
+                                t->end_times[t->size] = end_time;
+                                t->size++;                          
+                                #endif
                                 t->total_reqs += n;
+                                //printf("data_pending %d\n", opts->data_pending);
                                 t->succ_write_calls++;
-                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (data_pending * (1e9))) {
+                                if(unlikely(flag)){
+                                        unsigned long timer = rdtsc();
+                                        printf("tcp wrote %d, cycle %llu\n",n,timer);
+                                        flag = false;
+                                }
+                                if(t->total_reqs > temp) {
+                                        temp += 100000000;
+                                        __asm__ __volatile__("xchg %%rdx, %%rdx;" : : "c"((long long unsigned)(t->total_reqs)), "d"(1));
+                                }
+                                if(t->total_reqs/10000000 == data_counter && t->index == 0) {
+                                        // printf("THREAD ID: %d - Data sent %d MB\n", t->index, t->total_reqs/1000000);
+                                        data_counter++;
+                                } else if(t->total_reqs/10000000 == data_counter1 && t->index == 1) {
+                                        // printf("THREAD ID: %d - Data sent %d MB\n", t->index, t->total_reqs/1000000);
+                                        data_counter1++;
+                                }
+                                if(!main_started && opts->data_pending > 0 && t->total_reqs > (data_pending * (1e6))) {
                                         printf("WAITING FOR BARRIER\n");
                                         barrier_wait(t->data_pending_barrier);
                                         if(__u_main != NULL && t->index == 0) {
                                                 main_started = true;
+                                                //printf("thread ready\n");
+                                                unsigned long timer = rdtsc();
+                                                printf("tcp wrote %d, cycle %llu\n",n,timer);
                                                 thread_ready(__u_main);
                                         }
                                 }

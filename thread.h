@@ -130,6 +130,7 @@ struct thread_neper {
         barrier_t *finish;
         barrier_t *data_pending_barrier;
 
+
         // PAPI
         barrier_t *papi_start;
         barrier_t *papi_end;
@@ -155,6 +156,11 @@ struct thread_neper {
         long long int volunteer_yields;
         long long int failed_write_calls;
         long long int num_conns;
+        long int start_times[10000], end_times[10000];
+        long int size;
+
+        long int start_times_nest[1000000], end_times_nest[1000000];
+        long int size_nest;
         //tcpconn_t* conns[100000];
 };
 

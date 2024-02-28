@@ -38,8 +38,7 @@ struct flow {
         tcpconn_t *f_c;               /* associated tcp connection*/
         // TODO: Maybe move f_q to neper_thread
         tcpqueue_t *f_q;              /* associated tcp queue for accepting connections*/
-        int data_offset;              /* where to send data from */
-
+        int data_offset;
         /* support for paced send: track next event and epoll events */
         uint64_t        f_next_event;  /* absolute time (ns) of next event */
         uint32_t        f_events;   /* pending epoll events */
@@ -96,6 +95,11 @@ tcpconn_t *flow_connection(const struct flow *f)
 poll_trigger_t *flow_trigger(const struct flow *f)
 {
         return f->f_trigger;
+}
+
+int*  flow_data_offset(struct flow *f)
+{
+        return &f->data_offset;
 }
 
 void flow_event(const poll_trigger_t *e, const poll_trigger_t *e_next)
@@ -198,6 +202,7 @@ void flow_create(const struct flow_create_args *args)
                 /* traffic implies a flow_id is needed. */
                 f->f_id   = t->flow_count++;
                 f->f_mbuf = args->mbuf_alloc(t);
+                f->data_offset = 0;
         }
         // TODO: Look at stats
         if (args->stat) {

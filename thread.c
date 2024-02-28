@@ -52,6 +52,10 @@
 
 /* Callbacks for the neper_stats sumforeach() function. */
 
+extern long long int tcp_retransmits;
+extern uint64_t rtt;
+extern uint64_t packet_counter;
+
 static int
 fn_count_events(struct neper_stat *stat, void *ptr)
 {
@@ -462,31 +466,52 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         //         s = pthread_join(t[i].id, NULL);
         //         if (s != 0)
         //                 LOG_FATAL(cb, "pthread_join: %s", strerror(s));
-        //         else
+        //         else 
         //                 LOG_INFO(cb, "joined thread %d", i);
         //         total_delay += t[i].rl.delay_count;
         //         total_sleep += t[i].rl.sleep_count;
         //         total_reschedule += t[i].rl.reschedule_count;
         // }
-        // int a = -1;
-        // printf("Trying to perf\n");
-        // while(a == -1)
-        //          a = system("sudo kill -SIGINT `pgrep perf`");
-        // printf("perf stopped\n");
-        //a = system("sudo kill -SIGINT `pgrep perf`");
-        //a = system("sudo kill -SIGINT `pgrep perf`");
+        //int a = -1;
+        //while(a == -1)
+        //        a = system("sudo kill -SIGINT `pgrep perf`");
 
-        //printf("ALl event loops stopped \n");
+        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1030));
+
+        __asm__ __volatile__("xchg %%rcx, %%rcx;" : : "c"(1026));
+
+        printf("ALl event loops stopped \n");
         //uint64_t stop_us = microtime() + 175 * ONE_MS;
         //while (microtime() < stop_us);
-        
+
+        FILE* data_thread = NULL;
+        char buffer [1000];
+        snprintf ( buffer, 1000, "sc_log/data_thread");
+        data_thread = fopen(buffer, "w");
+
+        FILE* data_thread_nest = NULL;
+        char buffer_nest [1000];
+        snprintf ( buffer_nest, 1000, "sc_log/data_thread_net_tx_ip");
+        data_thread_nest = fopen(buffer_nest, "w");
 
         unsigned long long int total_data_sent = 0;
         for (i = 0; i < num_threads; i++) {
                 total_data_sent += t[i].total_reqs;
         }
-
-        printf("Total data sent: %llu\n", total_data_sent);
+        for (i = 0; i < num_threads; i++) {
+                
+                printf("Event Loop completed for thread_id: %d\n", t[i].index);
+                printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu failed_write_calls %llu Volunteer_yields %llu retransmits %llu rtt %lld packet_counter %lld Avg_r rtt %f \n", \
+                t[i].index, t[i].total_reqs, t[i].succ_write_calls, t[i].failed_write_calls, t[i].volunteer_yields, tcp_retransmits, rtt, packet_counter, (double)rtt/(double)packet_counter);
+        
+        #ifdef timescale
+                for(int j=0; j<t[i].size; j++)
+                        fprintf(data_thread,"send - %ld - %llu - %llu\n", t[i].index, t[i].start_times[j], t[i].end_times[j]);
+                for(int j=0; j<t[i].size_nest; j++)
+                        fprintf(data_thread_nest,"net_tx_ip - %ld - %llu - %llu\n", t[i].index, t[i].start_times_nest[j], t[i].end_times_nest[j]);
+        #endif
+        }
+        printf("Total data send: %llu\n", total_data_sent);
         // LOG_INFO(cb, "reschedule=%lu", total_reschedule);
         // LOG_INFO(cb, "delay=%lu", total_delay);
         // LOG_INFO(cb, "sleep=%lu", total_sleep);
@@ -582,8 +607,7 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
                 return 0;
 
         cp = control_plane_create(opts, cb, data_pending, fn);
-        printf("CP(S): Control Plane Created\n");
-
+        printf("cp created\n");
         control_plane_start(cp, &ai, control_plane_q);
         printf("CP(S): Control Plane Started\n");
 

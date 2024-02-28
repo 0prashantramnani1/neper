@@ -106,7 +106,7 @@ static void send_msg_caladan(tcpconn_t *c, struct hs_msg *msg, struct callbacks 
 	// printf("2.1\n");
         // while ((n = write(fd, msg, sizeof(*msg))) == -1) {
 	// printf("SIZE OF MSG: %d\n", sizeof(*msg));
-        while (n = tcp_write(c, msg, sizeof(*msg)) == -1) {                
+        while (n = tcp_write(c, msg, sizeof(*msg), NULL, NULL, NULL) == -1) {                
 		printf("2.2\n");
                 if (errno == EINTR || errno == EAGAIN)
                         continue;
@@ -139,7 +139,7 @@ static void send_msg_caladan_terminate(tcpconn_t *c, struct hs_msg *msg, struct 
 
         // if(n == 0) {
         while(1) {
-                n = tcp_write(c, msg, sizeof(*msg));
+                n = tcp_write(c, msg, sizeof(*msg), NULL, NULL, NULL);
                 // printf("in send while loop - %d \n", n);
                 if(n > 0) break;
         }
@@ -496,6 +496,7 @@ void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueu
 {
         if (cp->opts->client) {
                 cp->ctrl_connection = ctrl_connect(cp->opts->host,
+                //cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
                                              cp->opts->control_port, ai,
                                              cp->opts, cp->cb);
 
