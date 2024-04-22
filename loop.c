@@ -420,8 +420,6 @@ void *loop(struct thread_neper *t)
         // for(int i=0;i<20;i++) {
         //         printf("thread_id %d - time_bucket id %d - %d\n", t->index, i, t->time_buckets[i]);
         // }
-        thread_flush_stat(t);
-        free(events);
         // printf("thread_stats_snaps1: %d\n", thread_stats_snaps(t));
         // printf("thread_stats_flows1: %d\n", thread_stats_flows(t));
 
