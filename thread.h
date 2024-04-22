@@ -153,11 +153,15 @@ struct thread_neper {
         long long int volunteer_yields;
         long long int num_conns;
         tcpconn_t* conns[100000];
+
+        ///// CHECK ////////
+        long long int time_buckets[100];
 };
 
 
-int thread_stats_events(const struct thread *);
+int thread_stats_events(const struct thread_neper *);
 int thread_stats_snaps(const struct thread_neper *);
+static int thread_stats_flows(const struct thread_neper *);
 
 struct neper_pq *thread_stats_pq(struct thread_neper *);
 

@@ -128,7 +128,7 @@ struct neper_coef *neper_stat_print(struct thread_neper *ts, FILE *csv,
                 struct neper_snaps *snaps = impl->snaps;
                 const struct neper_snap *snap = snaps->iter_next(snaps);
                 
-                printf("Stat-> Thread Index: %d - Flow Inde:x %d - things: %lld\n", impl->thread_index, impl->flow_index, (long long int)impl->things);
+                // printf("Stat-> Thread Index: %d - Flow Inde:x %d - things: %lld\n", impl->thread_index, impl->flow_index, (long long int)impl->things);
 
                 current_total += snap->things - impl->scratch;
                 impl->scratch = snap->things;

@@ -68,6 +68,7 @@ struct options {
         int num_clients;
         int num_ports;
         int test_length;
+        const char *config;
         int buffer_size;
         int batch_size;
         int data_pending;

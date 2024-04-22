@@ -87,7 +87,12 @@ int main(int argc, char **argv)
 
         thread_fn_t fn;
 	fn = tcp_stream;
-	char *config = "sender.config";
+
+        const char* config = opts.config;
+        if(config == NULL)
+                printf("NULL\n");
+        printf("%s\n", config);
+
 	exit_code = runtime_init(config, fn, &arg);
         // exit_code = tcp_stream(&opts, &cb);
 exit:

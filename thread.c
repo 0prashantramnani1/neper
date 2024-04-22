@@ -152,7 +152,7 @@ thread_store_flow_or_die(struct thread_neper *ts, struct flow *f) {
 
 /* Return the total number of events across all threads.  */
 
-int thread_stats_events(const struct thread *ts)
+int thread_stats_events(const struct thread_neper *ts)
 {
         const struct options *opts = ts[0].opts;
         int i, sum = 0;
@@ -212,6 +212,7 @@ struct neper_pq *thread_stats_pq(struct thread_neper *ts)
                 return NULL;
         }
 
+        printf("Thread stats flows/pq maxlen : %d\n", thread_stats_flows(ts));
         struct neper_pq *pq = neper_pq(neper_stat_cmp, thread_stats_flows(ts),
                                        cb);
 
@@ -504,15 +505,15 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
         //         LOG_FATAL(cb, "pthread_mutex_destroy: %s", strerror(s));
 }
 
-static void free_worker_threads(int num_threads, struct thread *t)
+static void free_worker_threads(int num_threads, struct thread_neper *t)
 {
         int i;
 
         for (i = 0; i < num_threads; i++) {
-                do_close(t[i].stop_efd);
-                free(t[i].ai);
+                // do_close(t[i].stop_efd);
+                // free(t[i].ai);
                 t[i].rusage->fini(t[i].rusage);
-                free(t[i].rl.pending_flows);
+                // free(t[i].rl.pending_flows);
                 free(t[i].f_mbuf);
                 free(t[i].flows);
         }
@@ -596,18 +597,24 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         mutex_lock(&time_start_mutex);
         getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
         mutex_unlock(&time_start_mutex);
-        control_plane_wait_until_done(cp);
+        printf("Waiting for kill notification from client\n");
+        control_plane_wait_until_done_linux(cp);
 
         getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
         printf("Received Notif from client, going to stop worker threads now\n");
         
+        printf("thread_stats_snaps2: %d\n", thread_stats_snaps(ts));
+        printf("thread_stats_flows2: %d\n", thread_stats_flows(ts));
+
         stop_worker_threads(cb, opts->num_threads, ts, &ready_barrier,
                            &loop_init_c, &loop_init_m);
         LOG_INFO(cb, "stopped worker threads");
 
         PRINT(cb, "invalid_secret_count", "%d", control_plane_incidents(cp));
 	
-	
+        printf("thread_stats_snaps3: %d\n", thread_stats_snaps(ts));
+        printf("thread_stats_flows3: %d\n", thread_stats_flows(ts));
+
         /* rusage_start and time_start were (are?) visible to other threads */
         mutex_lock(&time_start_mutex);
         /* begin printing rusage */
@@ -637,14 +644,16 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         /* end printing rusage */
 
         int ret = fn->fn_report(ts);
-	printf("WORKING 2 \n");
-        control_plane_stop(cp);
-        // control_plane_stop_linux(cp);
-        //control_plane_destroy(cp);
+
+        //control_plane_stop(cp);
+        control_plane_stop_linux(cp);
+	
+        control_plane_destroy(cp);
+	
         PRINT(cb, "local_throughput", "%lld", opts->local_rate);
         PRINT(cb, "remote_throughput", "%lld", opts->remote_rate);
 
-        //free_worker_threads(opts->num_threads, ts);
+        free_worker_threads(opts->num_threads, ts);
         //free(data_pending);
         return ret;
 }
