@@ -729,16 +729,22 @@ void control_plane_wait_until_done_linux(struct control_plane *cp)
         if (cp->opts->client) {
                 if (cp->opts->test_length > 0) {
                         signal(SIGALRM, sig_alarm_handler);
-                        signal(SIGTERM, sig_alarm_handler);
+                        // signal(SIGTERM, sig_alarm_handler);
                         alarm(cp->opts->test_length);
-                        while (!termination_requested) {
-                                sleep(1);
-                        }
+                        // while (!termination_requested) {
+                        //         sleep(1);
+                        // }
+                        // preempt_disable();
+                        // thread_park_and_preempt_enable();
+                        // sig_alarm_handler(1);
                         LOG_INFO(cp->cb, "finished sleep");
-                } else if (cp->opts->test_length < 0) {
-                        countdown_cond_wait(cp->data_pending);
-                        LOG_INFO(cp->cb, "finished data wait");
-                }
+                } 
+                // else if (cp->opts->test_length < 0) {
+                //         countdown_cond_wait(cp->data_pending);
+                //         LOG_INFO(cp->cb, "finished data wait");
+                // }
+                preempt_disable();
+                thread_park_and_preempt_enable();
         } else {
                 const int n = cp->opts->num_clients;
                 int* client_fds = calloc(n, sizeof(int));
