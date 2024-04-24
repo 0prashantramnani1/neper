@@ -29,6 +29,13 @@
 static void *stream_alloc(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
+        
+        if(opts->shared_buffers) {
+                void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
+                if (opts->enable_write)
+                        fill_random(f_mbuf, opts->buffer_size);
+                return f_mbuf;
+        }
 
         if (!t->f_mbuf) {
                 t->f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
@@ -36,11 +43,6 @@ static void *stream_alloc(struct thread_neper *t)
                         fill_random(t->f_mbuf, opts->buffer_size);
         }
         return t->f_mbuf;
-
-        // void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
-        // if (opts->enable_write)
-        //         fill_random(f_mbuf, opts->buffer_size);
-        // return f_mbuf;
 }
 
 static uint32_t stream_events(struct thread_neper *t)

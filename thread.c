@@ -598,7 +598,12 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
         getrusage_enhanced(RUSAGE_SELF, &rusage_start); /* rusage start! */
         mutex_unlock(&time_start_mutex);
         printf("Waiting for kill notification from client\n");
-        control_plane_wait_until_done_linux(cp);
+
+        if(opts->linuxcp) {
+                control_plane_wait_until_done_linux(cp);
+        } else {
+                control_plane_wait_until_done(cp);
+        }
 
         getrusage_enhanced(RUSAGE_SELF, &rusage_end); /* rusage end! */
         printf("Received Notif from client, going to stop worker threads now\n");
@@ -645,8 +650,11 @@ int run_main_thread(struct options *opts, struct callbacks *cb,
 
         int ret = fn->fn_report(ts);
 
-        //control_plane_stop(cp);
-        control_plane_stop_linux(cp);
+        if(opts->linuxcp) {
+                control_plane_stop_linux(cp);
+        } else {
+                control_plane_stop(cp);
+        }
 	
         control_plane_destroy(cp);
 	

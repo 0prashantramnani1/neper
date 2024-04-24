@@ -290,7 +290,7 @@ static int ctrl_connect_linux(const char *host, const char *port,
 {
         int ctrl_conn, optval = 1;
         struct hs_msg msg = {};
-        const char* host_linux = "128.110.219.168";
+        const char* host_linux = opts->linuxcp;
         ctrl_conn = connect_any(host_linux, port, ai, opts, cb);
         if (setsockopt(ctrl_conn, IPPROTO_TCP, TCP_NODELAY, &optval,
                        sizeof(optval)))
@@ -611,27 +611,37 @@ struct control_plane* control_plane_create(struct options *opts,
 void control_plane_start(struct control_plane *cp, struct addrinfo **ai, tcpqueue_t *control_plane_q)
 {
         if (cp->opts->client) {
-                //cp->ctrl_connection = ctrl_connect(cp->opts->host,
-                //                             cp->opts->control_port, ai,
-                //                             cp->opts, cp->cb);
-
-                cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
+                if(cp->opts->linuxcp) {
+                        cp->ctrl_conn = ctrl_connect_linux(cp->opts->host,
                                              cp->opts->control_port, ai,
                                              cp->opts, cp->cb);
+                } else {
+                        cp->ctrl_connection = ctrl_connect(cp->opts->host,
+                                                    cp->opts->control_port, ai,
+                                                    cp->opts, cp->cb);
+                }
+
+                
                 LOG_INFO(cp->cb, "connected to control port");
                 if (cp->fn->fn_ctrl_client) {
                         cp->fn->fn_ctrl_client(cp->ctrl_conn, cp->cb);
                 }
         } else {
-                // cp->ctrl_port = ctrl_listen(cp->opts->host,
-                //                             cp->opts->control_port, ai,
-                //                             cp->opts, cp->cb, &control_plane_q);
-                // TODO: Refactor                                            
-                // cp->ctrl_queue = control_plane_q;                               
+                
 
-                cp->ctrl_port = ctrl_listen_linux(cp->opts->host,
+                if(cp->opts->linuxcp) {
+                        cp->ctrl_port = ctrl_listen_linux(cp->opts->host,
                                             cp->opts->control_port, ai,
                                             cp->opts, cp->cb);   
+                } else {
+                        cp->ctrl_port = ctrl_listen(cp->opts->host,
+                                            cp->opts->control_port, ai,
+                                            cp->opts, cp->cb, &control_plane_q);
+                        // TODO: Refactor                                            
+                        cp->ctrl_queue = control_plane_q;  
+                }
+
+                
 
                 LOG_INFO(cp->cb, "opened control port");
                 if (cp-> fn->fn_ctrl_server) {

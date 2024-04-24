@@ -71,6 +71,8 @@ struct options {
         const char *config;
         int buffer_size;
         int batch_size;
+        bool shared_buffers;
+        const char *linuxcp;
         int data_pending;
         int listen_backlog;
         int suicide_length;
