@@ -107,9 +107,7 @@ void stream_handler(struct flow *f, uint32_t events)
 
         if (events & SEV_READ) {
                 n = tcp_read(c, mbuf, opts->buffer_size);
-                // printf("stream_handler: read %d bytes\n", n);
                 tcpconn_check_triggers(c);
-                // printf("Thread ID: %d - tcp->reqs %lld\n", t->index, tcp_get_reqs(c));
                 if (n < 0) {
                         // if (errno != EAGAIN)
                         // PLOG_ERROR(t->cb, "read");
@@ -130,10 +128,7 @@ void stream_handler(struct flow *f, uint32_t events)
 
         if (events & SEV_WRITE)
                 do {
-                        // printf("to send bytes: %d\n", MIN(opts->batch_size, opts->buffer_size - *offset));
-                        // printf("current offset %d\n", *offset);
                         n = tcp_write(c, mbuf + *offset, MIN(opts->batch_size, opts->buffer_size - *offset));
-                        // printf("sent bytes: %d\n", n);
                         if(n > 0) {
                                 *offset = (*offset) + n;
                                 if(*offset >= opts->buffer_size) {

@@ -488,7 +488,7 @@ void stop_worker_threads(struct callbacks *cb, int num_threads,
                 total_data_sent += t[i].total_reqs;
         }
 
-        printf("Total data send: %llu\n", total_data_sent);
+        printf("Total data sent: %llu\n", total_data_sent);
         // LOG_INFO(cb, "reschedule=%lu", total_reschedule);
         // LOG_INFO(cb, "delay=%lu", total_delay);
         // LOG_INFO(cb, "sleep=%lu", total_sleep);

@@ -76,10 +76,6 @@ static void handler_stop(struct flow *f, uint32_t events)
 
 void *loop(struct thread_neper *t)
 {
-        // if(t->index == 1) {
-        //         printf("Assigning uthread\n");
-        //         __secondary_data_thread = thread_self();
-        // }
         
 	printf("In main LOOP with neper_thread_id: %d - uthread_id: %d - kthreadid: %d - pthreadid: %d\n", t->index, thread_self()->id, get_current_affinity(), syscall(__NR_gettid));
 
@@ -141,121 +137,9 @@ void *loop(struct thread_neper *t)
         
         // poll_trigger_t *last_trigger = NULL;
 
-//////////////////////////// PAPI //////////////////////////////////////////////
 
-
-        /*
-        // Initialising PAPI
-        int retval;
-	
-	int EventSet = PAPI_NULL;
-	unsigned long long values[NUM_EVENTS];
-	retval = PAPI_create_eventset(&EventSet);
-        
-	if (retval != PAPI_OK) {
-		printf("PAPI create event set failed\n");
-                printf("Error: %d\n", retval);
-                printf("pthread: %lu\n", pthread_self());
-                int c = sched_getcpu();
-                printf("CPU: %d\n", c);
-	} else {
-                printf("PAP create event Success\n");
-                printf("pthread: %lu\n", pthread_self());
-                int c = sched_getcpu();
-                printf("CPU: %d\n", c);
-        }
-        
-	int Events[NUM_EVENTS]={ PAPI_TOT_CYC, PAPI_TOT_INS};
-        //, PAPI_L3_DCM, PAPI_L3_ICM};
-        retval = PAPI_add_events (EventSet, Events, NUM_EVENTS);
-        
-        
-	if (retval != PAPI_OK) {
-		printf("PAPI add events failed\n");
-                printf("Error: %d\n", retval);
-                printf("pthread: %lu\n", pthread_self());
-                int c = sched_getcpu();
-                printf("CPU: %d\n", c);
-	}  else {
-                printf("PAP add Success\n");
-                printf("pthread: %lu\n", pthread_self());
-                int c = sched_getcpu();
-                printf("CPU: %d\n", c);
-        }
-       	for(int i=0;i<100000000;i++); 
-       	retval = PAPI_start (EventSet);
-
-        
-	if (retval != PAPI_OK) {
-		printf("PAP start failed\n");
-                printf("Error: %d\n", retval);
-                printf("pthread: %lu\n", pthread_self());
-                int c = sched_getcpu();
-                printf("CPU: %d\n", c);
-	} else {
-                printf("PAP start Success\n");
-                printf("pthread: %lu\n", pthread_self());
-                int c = sched_getcpu();
-                printf("CPU: %d\n", c);
-        }
-        */
         int fd_cyc1, fd_cyc2, fd_instr1, fd_instr2;
-        // if(t->index == 0) {
-                /*
-                int retval;
-                unsigned long int tid;
 
-                struct perf_event_attr pe_cyc1, pe_cyc2, pe_instr1, pe_instr2;
-
-                memset(&pe_cyc1, 0, sizeof(pe_cyc1));
-                memset(&pe_cyc2, 0, sizeof(pe_cyc2));
-                memset(&pe_instr1, 0, sizeof(pe_instr1));
-                memset(&pe_instr2, 0, sizeof(pe_instr2));
-
-
-                ////// CORE 1 ////////////////
-                pe_cyc1.type = PERF_TYPE_HARDWARE;
-                pe_cyc1.size = sizeof(pe_cyc1);
-                pe_cyc1.config = PERF_COUNT_HW_CPU_CYCLES;
-                pe_cyc1.disabled = 1;
-
-                pe_instr1.type = PERF_TYPE_HARDWARE;
-                pe_instr1.size = sizeof(pe_instr2);
-                pe_instr1.config = PERF_COUNT_HW_INSTRUCTIONS;
-                pe_instr1.disabled = 1;
-
-                fd_cyc1 = perf_event_open(&pe_cyc1, -1, 1, -1, 0);
-                if (fd_cyc1 == -1) {
-                        fprintf(stderr, "Error opening fd_cyc1 %llx\n", pe_cyc1.config);
-                }
-
-                fd_instr1 = perf_event_open(&pe_instr1, -1, 1, -1, 0);
-                if (fd_instr1 == -1) {
-                        fprintf(stderr, "Error opening fd_instr1 %llx\n", pe_cyc1.config);
-                }
-
-                ////// CORE 2 ////////////////
-                pe_cyc2.type = PERF_TYPE_HARDWARE;
-                pe_cyc2.size = sizeof(pe_cyc2);
-                pe_cyc2.config = PERF_COUNT_HW_CPU_CYCLES;
-                pe_cyc2.disabled = 1;
-
-                pe_instr2.type = PERF_TYPE_HARDWARE;
-                pe_instr2.size = sizeof(pe_instr2);
-                pe_instr2.config = PERF_COUNT_HW_INSTRUCTIONS;
-                pe_instr2.disabled = 1;
-
-                fd_cyc2 = perf_event_open(&pe_cyc2, -1, 25, -1, 0);
-                if (fd_cyc2 == -1) {
-                        fprintf(stderr, "Error opening fd_cyc2 %llx\n", pe_cyc1.config);
-                }
-
-                fd_instr2 = perf_event_open(&pe_instr2, -1, 25, -1, 0);
-                if (fd_instr2 == -1) {
-                        fprintf(stderr, "Error opening fd_instr2 %llx\n", pe_cyc1.config);
-                }
-                */
-        // }
 	
         if(t->index == 1) {
                 printf("Assigning uthread2 on pthreadid %d - kthreadid %d\n", syscall(__NR_gettid), get_current_affinity());
@@ -267,8 +151,10 @@ void *loop(struct thread_neper *t)
         barrier_wait(t->ready);
         
 
+        // Running Perf on uthread 0
         if(t->index == 0) {
                 system("perf stat -e cycles:u,cycles:k,instructions:u,instructions:k -C 1,25 -o perf_output.txt&");
+
 		//system("perf record -e cycles, instructions -F 500 --call-graph dwarf,8385 -C 2,3&");
                 // if(syscall(__NR_gettid) == pthreads[0])
                 //         system("perf record -e cycles --call-graph dwarf,8385 -F 200 -C 1&");
@@ -302,34 +188,7 @@ void *loop(struct thread_neper *t)
                 // }
                 for (int i = 0; i < nfds && !t->stop; i++) {
                         flow_event(events[i]);
-                        // if(t->index == 1) {
-                                // thread_yield_without_ready();
-                                // if(microtime() < 10 * ONE_SECOND) {
-                                //         if(i%1)
-                                //                 thread_yield_without_ready();
-                                // } else if(microtime() < 20 * ONE_SECOND) {
-                                //         if(i%2)
-                                //                 thread_yield_without_ready();
-                                // } else if(microtime() < 30 * ONE_SECOND) {
-                                //         if(i%3)
-                                //                 thread_yield_without_ready();
-                                // } else if(microtime() < 40 * ONE_SECOND) {
-                                //         if(i%4)
-                                //                 thread_yield_without_ready();
-                                // } else {//if(microtime() < 40 * ONE_SECOND) {
-                                //         if(i%5)
-                                //                 thread_yield_without_ready();
-                                // }
-                        // }
                 }
-
-                // if(t->index == 1) {
-                        // printf("YIELDING THREAD2 with nfds: %d\n", nfds);
-                        // preempt_disable();
-                        // thread_self()->thread_ready = false;
-                        // thread_park_and_preempt_enable();
-                        // thread_yield_without_ready();
-                // }
         }
         printf("Thread_id %d Total_events %llu Successfll_Write_calls %llu \
         No_work_done_calls %llu Volunteer_yields %llu\n ",
