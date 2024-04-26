@@ -30,7 +30,7 @@ static void *stream_alloc(struct thread_neper *t)
 {
         const struct options *opts = t->opts;
         
-        if(opts->shared_buffers) {
+        if(opts->private_buffers) {
                 void* f_mbuf = malloc_or_die(opts->buffer_size, t->cb);
                 if (opts->enable_write)
                         fill_random(f_mbuf, opts->buffer_size);

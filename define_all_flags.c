@@ -137,7 +137,7 @@ struct flags_parser *add_flags_tcp_stream(struct flags_parser *fp)
         DEFINE_FLAG(fp, const char *,  config,          "server.config",   0, "Config file for caladan");
         DEFINE_FLAG(fp, int,           buffer_size,    131072,   'B', "Number of bytes that each read/write uses as the buffer");
         DEFINE_FLAG(fp, int,           batch_size,     131072,    0,  "Number of bytes that each read/write sends/receives from the buffer");
-        DEFINE_FLAG(fp, bool,          shared_buffers,      0,    0,  "Use shared buffers for connections");
+        DEFINE_FLAG(fp, bool,          private_buffers,      0,    0,  "Use shared buffers for connections");
         DEFINE_FLAG(fp, const char *,  linuxcp,             NULL,    0,  "Use linux control_plane, takes in address of the receiver");
         DEFINE_FLAG(fp, int,           data_pending,        0,    0, "Number of bytes that each read/write uses as the buffer");
         DEFINE_FLAG(fp, bool,          skip_rx_copy,    false,    0,  "Skip kernel->user payload copy on receives");
